@@ -1,21 +1,18 @@
-const API_BASE = (() => {
-	// Prefer explicit env override for dev/stage/prod
-	const envBase = (import.meta as any)?.env?.VITE_API_BASE as string | undefined;
-	if (envBase) return envBase;
-
-	// Fallback to hostname-based inference
-	if (typeof window !== "undefined" && window.location) {
-		const hostname = window.location.hostname;
-		if (hostname === "localhost" || hostname === "127.0.0.1") {
-			return "http://localhost:3000";
+const API_BASE =
+	import.meta.env.VITE_API_BASE ||
+	(() => {
+		if (typeof window !== "undefined" && window.location) {
+			const hostname = window.location.hostname;
+			if (hostname === "localhost" || hostname === "127.0.0.1") {
+				return "http://localhost:3000";
+			}
+			if (hostname.includes("staging")) {
+				return "https://staging-api.sportsdey.com";
+			}
+			return "https://api.sportsdey.com";
 		}
-		if (hostname.includes("staging")) {
-			return "https://staging-api.sportsdey.com";
-		}
-		return "https://api.sportsdey.com";
-	}
-	return "https://api.sportsdey.com";
-})();
+		return "https://staging-api.sportsdey.com";
+	})();
 
 export interface Admin {
 	id: string;
@@ -46,23 +43,46 @@ class AdminAuth {
 	}
 
 	private logBase(reason: string) {
-		if (import.meta.env?.MODE === "development") {
-			console.debug(`[adminAuth] ${reason} baseUrl=${this.baseUrl}`);
-		}
+		console.debug(`[adminAuth] ${reason} baseUrl=${this.baseUrl}`);
 	}
 
 	async signIn(email: string, password: string): Promise<SignInResponse> {
 		this.logBase("signIn");
-		const response = await fetch(`${this.baseUrl}/admin/auth/sign-in`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ email, password }),
-			credentials: "include",
-		});
+		try {
+			const response = await fetch(`${this.baseUrl}/admin/auth/sign-in`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ email, password }),
+				credentials: "include",
+			});
 
-		return response.json();
+			if (!response.ok) {
+				if (response.status === 503) {
+					return {
+						success: false,
+						error: "Service unavailable. Please try again later.",
+					};
+				}
+				if (response.status === 401) {
+					return { success: false, error: "Invalid credentials" };
+				}
+				return {
+					success: false,
+					error: "An error occurred. Please try again.",
+				};
+			}
+
+			const data = await response.json();
+			console.log(data);
+			return data;
+		} catch (err) {
+			return {
+				success: false,
+				error: "Unable to connect. Please check your connection.",
+			};
+		}
 	}
 
 	async signOut(): Promise<void> {
@@ -73,12 +93,19 @@ class AdminAuth {
 	}
 
 	async getSession(): Promise<Admin | null> {
+		console.log(this.baseUrl);
 		try {
 			const response = await fetch(`${this.baseUrl}/admin/me`, {
 				credentials: "include",
 			});
 
-			if (response.status === 401) {
+			if (!response.ok) {
+				if (response.status === 503) {
+					return null;
+				}
+				if (response.status === 401) {
+					return null;
+				}
 				return null;
 			}
 

@@ -11,12 +11,12 @@ import tsconfigPaths from "vite-tsconfig-paths";
 const config = defineConfig({
 	plugins: [
 		cloudflare({ viteEnvironment: { name: "ssr" } }),
-		tsconfigPaths({ projects: ["./tsconfig.json"] }),
+		tsconfigPaths(),
 		tailwindcss(),
 		tanstackStart(),
-		tanstackRouter(),
+		// tanstackRouter(),
 		viteReact(),
-		devtools(),
+		// devtools(),
 		svgr(),
 	],
 });

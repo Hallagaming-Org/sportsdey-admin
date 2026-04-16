@@ -1,15 +1,15 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
+	createRootRoute,
 	HeadContent,
 	Outlet,
 	Scripts,
-	createRootRoute,
 	useRouter,
 	useRouterState,
 } from "@tanstack/react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import appCss from "../index.css?url";
 import Layout from "../components/Layout";
+import appCss from "../index.css?url";
 import { type Admin, adminAuth } from "../lib/auth";
 
 const queryClient = new QueryClient({
@@ -57,8 +57,12 @@ function ErrorBoundary({ error }: { error: Error }) {
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center">
 			<div className="text-center">
-				<h1 className="mb-2 font-bold text-2xl text-gray-900">An error occurred</h1>
-				<p className="mb-4 text-gray-600">{error?.message || "Something went wrong"}</p>
+				<h1 className="mb-2 font-bold text-2xl text-gray-900">
+					An error occurred
+				</h1>
+				<p className="mb-4 text-gray-600">
+					{error?.message || "Something went wrong"}
+				</p>
 				<button
 					onClick={() => router.navigate({ to: "/" })}
 					className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
@@ -88,28 +92,21 @@ function RootLayout() {
 
 		setChecking(true);
 		(async () => {
-			try {
-				const session = await adminAuth.getSession();
-				if (!session) {
-					router.navigate({ to: "/sign-in", replace: true });
-					return;
-				}
-				if (isMounted) {
+			const session = await adminAuth.getSession();
+			if (isMounted) {
+				if (session) {
 					setAdmin(session);
+				} else {
+					// router.navigate({ to: "/sign-in", replace: true });
 				}
-			} catch (err) {
-				router.navigate({ to: "/sign-in", replace: true });
-			} finally {
-				if (isMounted) {
-					setChecking(false);
-				}
+				setChecking(false);
 			}
 		})();
 
 		return () => {
 			isMounted = false;
 		};
-	}, [isAuthRoute, router]);
+	}, [isAuthRoute]);
 
 	const handleLogout = async () => {
 		await adminAuth.signOut();

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { type Admin, adminAuth } from "../lib/auth";
 import { cn } from "../lib/utils";
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/sign-in")({
 });
 
 function SignInPage() {
-	const navigate = useNavigate();
+	const router = useRouter();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
@@ -16,20 +16,18 @@ function SignInPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		console.log("[sign-in] submit", { email, passwordLength: password.length });
 		setError("");
 		setLoading(true);
 
 		try {
 			const result = await adminAuth.signIn(email, password);
-			console.log("[sign-in] response", result);
+			console.log(result);
 			if (result.success && result.data) {
-				navigate({ to: "/" });
+				router.navigate({ to: "/", replace: true });
 			} else {
 				setError(result.error || "Invalid credentials");
 			}
 		} catch (err) {
-			console.error("[sign-in] error", err);
 			setError("An error occurred. Please try again.");
 		} finally {
 			setLoading(false);
