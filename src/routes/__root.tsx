@@ -97,7 +97,7 @@ function RootLayout() {
 				if (session) {
 					setAdmin(session);
 				} else {
-					// router.navigate({ to: "/sign-in", replace: true });
+					router.navigate({ to: "/sign-in", replace: true });
 				}
 				setChecking(false);
 			}
@@ -106,7 +106,7 @@ function RootLayout() {
 		return () => {
 			isMounted = false;
 		};
-	}, [isAuthRoute]);
+	}, [isAuthRoute, router]);
 
 	const handleLogout = async () => {
 		await adminAuth.signOut();
