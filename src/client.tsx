@@ -4,16 +4,10 @@ import { getRouter } from "./router";
 
 const router = getRouter();
 
-let rootElement = document.getElementById("root");
+const rootElement = document.getElementById("root");
 
-if (!rootElement) {
-	rootElement = document.createElement("div");
-	rootElement.id = "root";
-	document.body.appendChild(rootElement);
-}
-
-if (rootElement.hasChildNodes()) {
+if (rootElement?.hasChildNodes()) {
 	hydrateRoot(rootElement, <RouterProvider router={router} />);
-} else {
+} else if (rootElement) {
 	createRoot(rootElement).render(<RouterProvider router={router} />);
 }

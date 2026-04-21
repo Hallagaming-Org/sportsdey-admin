@@ -1,37 +1,44 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useMutation } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { type Admin, adminAuth } from "../lib/auth";
+import { adminAuth } from "../lib/auth";
 import { cn } from "../lib/utils";
 
 export const Route = createFileRoute("/sign-in")({
+	ssr: false,
 	component: SignInPage,
 });
 
 function SignInPage() {
-	const router = useRouter();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
-	const [loading, setLoading] = useState(false);
+	const signInMutation = useMutation({
+		mutationFn: ({ email, password }: { email: string; password: string }) =>
+			adminAuth.signIn(email, password),
+		onSuccess: async (result) => {
+			if (result.success && result.data) {
+				await new Promise((resolve) => setTimeout(resolve, 5000));
+				window.location.replace("/app");
+				return;
+			}
+			setError(result.error || "Invalid credentials");
+		},
+		onError: () => {
+			setError("An error occurred. Please try again.");
+		},
+	});
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setError("");
-		setLoading(true);
 
-		try {
-			const result = await adminAuth.signIn(email, password);
-			console.log(result);
-			if (result.success && result.data) {
-				router.navigate({ to: "/", replace: true });
-			} else {
-				setError(result.error || "Invalid credentials");
-			}
-		} catch (err) {
-			setError("An error occurred. Please try again.");
-		} finally {
-			setLoading(false);
+		if (!email || !password) {
+			setError("Please enter email and password");
+			return;
 		}
+
+		signInMutation.mutate({ email, password });
 	};
 
 	return (
@@ -96,14 +103,14 @@ function SignInPage() {
 
 					<button
 						type="submit"
-						disabled={loading}
+						disabled={signInMutation.isPending}
 						className={cn(
 							"w-full cursor-pointer rounded-md border border-transparent px-4 py-2 font-medium text-white shadow-sm",
 							"bg-accent hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2",
 							"disabled:cursor-not-allowed disabled:opacity-50",
 						)}
 					>
-						{loading ? "Signing in..." : "Log in"}
+						{signInMutation.isPending ? "Signing in..." : "Log in"}
 					</button>
 				</form>
 			</div>

@@ -7,7 +7,10 @@ export const getRouter = () => {
 		routeTree,
 		scrollRestoration: true,
 		defaultPreloadStaleTime: 0,
+		defaultPendingMinMs: 0,
 		defaultNotFoundComponent: () => <div>Not Found</div>,
+		defaultPendingComponent: () => null,
+		defaultLoadComponent: () => null,
 	});
 	return router;
 };

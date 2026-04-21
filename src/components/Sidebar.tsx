@@ -29,8 +29,8 @@ type NavItem = {
 };
 
 const menuItems: NavItem[] = [
-	{ icon: Home, label: "Dashboard", to: "/" },
-	{ icon: Users, label: "User management", to: "/users" },
+	{ icon: Home, label: "Dashboard", to: "/app" },
+	{ icon: Users, label: "User management", to: "/app/users" },
 	{ icon: Wallet, label: "Wallet & Payments" },
 	{ icon: Gamepad2, label: "Game management" },
 	{ icon: Ticket, label: "Ticket history" },
@@ -98,9 +98,8 @@ export default function Sidebar({
 				>
 					{menuItems.map((item) => {
 						const isActive = item.to
-							? item.to === "/"
-								? location.pathname === "/"
-								: location.pathname.startsWith(item.to)
+							? location.pathname === item.to ||
+							  (item.to !== "/app" && location.pathname.startsWith(item.to))
 							: false;
 
 						return (
