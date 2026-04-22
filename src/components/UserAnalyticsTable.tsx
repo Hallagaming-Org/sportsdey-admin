@@ -46,7 +46,7 @@ export function UserAnalyticsTable() {
           </thead>
           <tbody>
             {users.map((user, idx) => (
-              <tr key={idx} className="border-b border-gray-50 last:border-0 even:bg-[#F9F9F9]">
+              <tr key={idx} className="border-b border-gray-50 last:border-0 odd:bg-[#F9F9F9]">
                 <td className="py-4 pl-4 text-gray-900">{user.id}</td>
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
