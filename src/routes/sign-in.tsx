@@ -13,7 +13,6 @@ function SignInPage() {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
-
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
@@ -21,7 +20,6 @@ function SignInPage() {
 
 		try {
 			const result = await adminAuth.signIn(email, password);
-			console.log(result);
 			if (result.success && result.data) {
 				router.navigate({ to: "/", replace: true });
 			} else {
@@ -95,6 +93,7 @@ function SignInPage() {
 					</div>
 
 					<button
+						
 						type="submit"
 						disabled={loading}
 						className={cn(
