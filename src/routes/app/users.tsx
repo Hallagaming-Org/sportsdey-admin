@@ -240,25 +240,25 @@ function UsersPage() {
 				emptyMessage="No user found"
 			/>
 
-			{totalPages > 1 && (
-				<div className="flex items-center justify-center gap-2">
-					<button
-						onClick={() => setPage((p) => Math.max(1, p - 1))}
-						disabled={page === 1}
-						className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-					>
-						Previous
-					</button>
-					<span className="text-gray-900 text-sm">
-						Page {page} of {totalPages}
-					</span>
-					<button
-						onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-						disabled={page === totalPages}
-						className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-					>
-						Next
-					</button>
+			{total > limit && (
+				<div className="mt-6 flex items-center justify-between text-sm text-gray-500">
+					<span>Page {page} of {totalPages}</span>
+					<div className="flex gap-3">
+						<button
+							onClick={() => setPage((p) => Math.max(1, p - 1))}
+							disabled={page === 1}
+							className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							Previous
+						</button>
+						<button
+							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+							disabled={page === totalPages}
+							className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							Next
+						</button>
+					</div>
 				</div>
 			)}
 
