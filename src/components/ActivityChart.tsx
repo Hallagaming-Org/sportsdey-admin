@@ -1,4 +1,4 @@
-import { Filter } from "lucide-react";
+import FilterIcon from "@/logo/filter.svg?react";
 
 export function ActivityChart() {
   const days = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Today"];
@@ -19,7 +19,7 @@ export function ActivityChart() {
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900">Activity Trends/Reports</h2>
         <button className="flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
-          <Filter className="h-3 w-3" />
+          <FilterIcon className="h-3 w-3" />
           Filter by Region
         </button>
       </div>
