@@ -13,7 +13,7 @@ export default function Layout({ children, admin, onLogout }: LayoutProps) {
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
 	return (
-		<div className="flex min-h-screen bg-background">
+		<div className="flex h-screen bg-background overflow-hidden">
 			<Sidebar
 				admin={admin}
 				onLogout={onLogout}
