@@ -214,14 +214,12 @@ function UsersPage() {
 				)}
 			</div>
 
-			<div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-				<DataTable
-					data={users}
-					isLoading={isLoading}
-					columns={columns}
-					emptyMessage="No user found"
-				/>
-			</div>
+			<DataTable
+				data={users}
+				isLoading={isLoading}
+				columns={columns}
+				emptyMessage="No user found"
+			/>
 
 			{totalPages > 1 && (
 				<div className="flex items-center justify-center gap-2">
