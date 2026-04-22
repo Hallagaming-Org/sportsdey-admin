@@ -18,6 +18,7 @@ interface DataTableProps<T> {
   maxHeight?: string;
   showPagination?: boolean;
   onActionClick?: (item: T) => void;
+  isLoading?: boolean;
 }
 
 export function DataTable<T>({ 
@@ -28,7 +29,8 @@ export function DataTable<T>({
   filters,
   maxHeight = "400px",
   showPagination = true,
-  onActionClick
+  onActionClick,
+  isLoading = false
 }: DataTableProps<T>) {
   return (
     <div className="flex flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -44,8 +46,14 @@ export function DataTable<T>({
       </div>
 
       {/* Table Section */}
-      <div className={`overflow-auto custom-scrollbar`} style={{ maxHeight }}>
-        <table className="w-full min-w-[800px] text-left text-sm relative border-collapse">
+      <div className="relative overflow-hidden rounded-lg">
+        {isLoading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-[1px]">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+          </div>
+        )}
+        <div className={`overflow-auto custom-scrollbar`} style={{ maxHeight }}>
+          <table className="w-full min-w-[800px] text-left text-sm relative border-collapse">
           <thead className="sticky top-0 bg-[#F9F9F9] z-10 shadow-[0_1px_0_#f3f4f6]">
             <tr className="border-b border-gray-100 text-gray-500">
               {columns.map((col, idx) => (
@@ -90,6 +98,7 @@ export function DataTable<T>({
           </tbody>
         </table>
       </div>
+    </div>
 
       {/* Pagination Section */}
       {showPagination && (
