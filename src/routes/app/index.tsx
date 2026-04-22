@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Users, Gamepad2, Plus, CircleDotDashed } from "lucide-react";
+import { Gamepad2, Plus, CircleDotDashed } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { ActivityChart } from "@/components/ActivityChart";
 import { TopBets } from "@/components/TopBets";
 import { UserAnalyticsTable } from "@/components/UserAnalyticsTable";
+import { FaPeopleGroup } from "react-icons/fa6";
 import { IoFilterSharp } from "react-icons/io5";
 
 export const Route = createFileRoute("/app/")({
@@ -33,7 +34,7 @@ function DashboardPage() {
 				<StatCard 
 					title="Total Users" 
 					value="2,341" 
-					icon={<Users className="h-5 w-5 text-[#001A26]" />} 
+					icon={<FaPeopleGroup className="h-5 w-5 text-[#001A26]" />} 
 				/>
 				<StatCard 
 					title="Active Players" 
