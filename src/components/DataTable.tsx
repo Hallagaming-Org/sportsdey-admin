@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { MoreHorizontal } from "lucide-react";
+import { TableSkeleton } from "./TableSkeleton";
 
 export interface Column<T> {
   header: string;
@@ -66,17 +67,10 @@ export function DataTable<T>({
             </thead>
             <tbody>
               {isLoading ? (
-                // Skeleton Rows
-                Array.from({ length: 5 }).map((_, rowIdx) => (
-                  <tr key={rowIdx} className="border-b border-gray-50 animate-pulse">
-                    {columns.map((_, colIdx) => (
-                      <td key={colIdx} className={`py-6 ${colIdx === 0 ? "pl-4" : "px-4"}`}>
-                        <div className="h-4 bg-gray-100 rounded-md w-full" />
-                      </td>
-                    ))}
-                    {onActionClick && <td className="py-6 pr-4"><div className="h-4 bg-gray-100 rounded-md w-4 ml-auto" /></td>}
-                  </tr>
-                ))
+                <TableSkeleton 
+                  columnsCount={columns.length} 
+                  showActionColumn={!!onActionClick} 
+                />
               ) : data.length === 0 ? (
                 // Empty State
                 <tr>
