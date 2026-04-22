@@ -8,43 +8,51 @@ interface StatCardProps {
 
 export function StatCard({ title, value, icon }: StatCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLSpanElement>(null);
-  const [fontSize, setFontSize] = useState<string>("1.875rem"); // text-3xl
+  const [scale, setScale] = useState(1);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
-    const text = textRef.current;
-    
-    if (!container || !text) return;
+    if (!container) return;
 
-    const adjustFontSize = () => {
+    // We use a temporary element or measure the existing one while unscaled
+    const measure = () => {
+      const textElement = container.firstChild as HTMLElement;
+      if (!textElement) return;
+
+      // Ensure we measure the full unscaled width
       const containerWidth = container.offsetWidth;
-      const textWidth = text.scrollWidth;
       
-      if (textWidth > containerWidth) {
-        const ratio = containerWidth / textWidth;
-        // Clamp the font size between 1rem and 1.875rem
-        const newSize = Math.max(1, 1.875 * ratio);
-        setFontSize(`${newSize}rem`);
+      // Temporarily remove transform to measure natural width
+      const originalTransform = textElement.style.transform;
+      textElement.style.transform = 'none';
+      const textWidth = textElement.offsetWidth;
+      textElement.style.transform = originalTransform;
+
+      if (textWidth > containerWidth && containerWidth > 0) {
+        // Calculate scale but don't go below a reasonable limit (e.g., 0.5)
+        setScale(Math.max(0.5, containerWidth / textWidth));
       } else {
-        setFontSize("1.4rem");
+        setScale(1);
       }
     };
 
-    adjustFontSize();
+    measure();
     
-    // Optional: Re-adjust on window resize
-    window.addEventListener('resize', adjustFontSize);
-    return () => window.removeEventListener('resize', adjustFontSize);
+    // Use ResizeObserver for more robust detection than window.resize
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    
+    return () => observer.disconnect();
   }, [value]);
 
   return (
     <div className="flex flex-col justify-between rounded-xl border border-gray-100 bg-white p-5 shadow-sm min-w-0">
-      <div ref={containerRef} className="mb-4 overflow-hidden whitespace-nowrap">
+      <div ref={containerRef} className="mb-4 overflow-hidden relative h-10 flex items-center">
         <span 
-          ref={textRef} 
-          className="font-bold text-gray-900 transition-all duration-100"
-          style={{ fontSize }}
+          className="stat-value inline-block font-bold text-gray-900 origin-left transition-transform duration-200 whitespace-nowrap text-3xl"
+          style={{ 
+            transform: `scale(${scale})`,
+          }}
         >
           {value}
         </span>
