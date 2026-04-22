@@ -14,13 +14,6 @@ const API_BASE =
 		return "https://staging-api.sportsdey.com";
 	})();
 
-console.log(
-	"API_BASE available:",
-	!!import.meta.env.VITE_API_BASE,
-	"->",
-	API_BASE,
-);
-
 export interface Admin {
 	id: string;
 	email: string;
@@ -49,13 +42,7 @@ class AdminAuth {
 		this.baseUrl = baseUrl;
 	}
 
-	private logBase(reason: string) {
-		console.debug(`[adminAuth] ${reason} baseUrl=${this.baseUrl}`);
-	}
-
 	async signIn(email: string, password: string): Promise<SignInResponse> {
-		// this.logBase("signIn");
-		console.log("sign in");
 		try {
 			const response = await fetch(`${this.baseUrl}/admin/auth/sign-in`, {
 				method: "POST",
@@ -67,7 +54,6 @@ class AdminAuth {
 			});
 
 			if (!response.ok) {
-				console.log("response status", response.status);
 				if (response.status === 503) {
 					return {
 						success: false,
@@ -84,9 +70,8 @@ class AdminAuth {
 			}
 
 			const data = await response.json();
-			console.log("sign in data", data);
 			return data;
-		} catch (err) {
+		} catch {
 			return {
 				success: false,
 				error: "Unable to connect. Please check your connection.",
@@ -102,14 +87,11 @@ class AdminAuth {
 	}
 
 	async getSession(): Promise<Admin | null> {
-		console.log("getSession called, baseUrl:", this.baseUrl);
 		try {
 			const response = await fetch(`${this.baseUrl}/admin/me`, {
 				credentials: "include",
 				cache: "no-store",
 			});
-
-			console.log("getSession response status:", response.status);
 
 			if (!response.ok) {
 				if (response.status === 503) {
@@ -122,13 +104,11 @@ class AdminAuth {
 			}
 
 			const data = await response.json();
-			console.log("getSession data:", data);
 			if (data.success) {
 				return data.data;
 			}
 			return null;
-		} catch (err) {
-			console.log("getSession error:", err);
+		} catch {
 			return null;
 		}
 	}

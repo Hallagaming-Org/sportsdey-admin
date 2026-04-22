@@ -1,45 +1,33 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import {
+	createFileRoute,
+	Outlet,
+	redirect,
+	useNavigate,
+} from "@tanstack/react-router";
 import Layout from "../components/Layout";
-import { type Admin, adminAuth } from "../lib/auth";
+import { adminAuth } from "../lib/auth";
 
 export const Route = createFileRoute("/app")({
+	beforeLoad: async () => {
+		const session = await adminAuth.getSession();
+		if (!session) {
+			throw redirect({ to: "/sign-in", replace: true });
+		}
+		return { admin: session };
+	},
 	component: AppLayoutComponent,
 });
 
 function AppLayoutComponent() {
-	const [admin, setAdmin] = useState<Admin | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		const checkSession = async () => {
-			console.log("Checking session...");
-			const session = await adminAuth.getSession();
-			console.log("Session result:", session);
-			if (!session) {
-				setError("No session found");
-				window.location.replace("/sign-in");
-				return;
-			}
-			setAdmin(session);
-			setLoading(false);
-		};
-
-		checkSession();
-	}, []);
+	const { admin } = Route.useRouteContext();
+	const navigate = useNavigate();
 
 	async function handleLogout() {
 		await adminAuth.signOut();
-		window.location.replace("/sign-in");
-	}
-
-	if (loading) {
-		return (
-			<div className="flex min-h-screen items-center justify-center">
-				<div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
-			</div>
-		);
+		navigate({
+			to: "/sign-in",
+			replace: true,
+		});
 	}
 
 	return (

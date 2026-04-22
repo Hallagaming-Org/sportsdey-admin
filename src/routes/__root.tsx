@@ -5,23 +5,13 @@ import {
 	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
+import { useState } from "react";
 import appCss from "../index.css?url";
-
-const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			staleTime: 1000 * 60 * 5,
-			retry: 1,
-		},
-	},
-});
 
 export const Route = createRootRoute({
 	head: () => ({
 		meta: [
-			{
-				charSet: "utf-8",
-			},
+			{ charSet: "utf-8" },
 			{
 				name: "viewport",
 				content: "width=device-width, initial-scale=1",
@@ -41,11 +31,30 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+	const [queryClient] = useState(
+		() =>
+			new QueryClient({
+				defaultOptions: {
+					queries: {
+						staleTime: 1000 * 60 * 5,
+						retry: 1,
+					},
+				},
+			}),
+	);
+
 	return (
-		<QueryClientProvider client={queryClient}>
-			<HeadContent />
-			<Outlet />
-			<Scripts />
-		</QueryClientProvider>
+		<html lang="en">
+			<head>
+				<HeadContent />
+			</head>
+
+			<body>
+				<QueryClientProvider client={queryClient}>
+					<Outlet />
+					<Scripts />
+				</QueryClientProvider>
+			</body>
+		</html>
 	);
 }

@@ -10,7 +10,7 @@ export const getRouter = () => {
 		defaultPendingMinMs: 0,
 		defaultNotFoundComponent: () => <div>Not Found</div>,
 		defaultPendingComponent: () => null,
-		defaultLoadComponent: () => null,
+		// defaultLoadComponent: () => null,
 	});
 	return router;
 };

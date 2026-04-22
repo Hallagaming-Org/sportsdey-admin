@@ -1,13 +1,12 @@
-import { RouterProvider } from "@tanstack/react-router";
-import { createRoot, hydrateRoot } from "react-dom/client";
-import { getRouter } from "./router";
+import { StrictMode, startTransition } from "react";
+import { hydrateRoot } from "react-dom/client";
+import { StartClient } from "@tanstack/react-start/client";
 
-const router = getRouter();
-
-const rootElement = document.getElementById("root");
-
-if (rootElement?.hasChildNodes()) {
-	hydrateRoot(rootElement, <RouterProvider router={router} />);
-} else if (rootElement) {
-	createRoot(rootElement).render(<RouterProvider router={router} />);
-}
+startTransition(() => {
+	hydrateRoot(
+		document,
+		<StrictMode>
+			<StartClient />
+		</StrictMode>,
+	);
+});
