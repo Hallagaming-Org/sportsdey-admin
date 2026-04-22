@@ -144,7 +144,7 @@ export default function Sidebar({
 				</nav>
 			</div>
 
-			<div className="mt-auto border-white/08 border-t px-4 py-4">
+			<div className="mt-auto mb-10">
 				<button
 					type="button"
 					onClick={onLogout}
@@ -155,7 +155,7 @@ export default function Sidebar({
 				</button>
 
 				<div
-					className={`mt-4 flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}
+					className={`border-white/08 border-t px-4 py-4 flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}
 				>
 					<img
 						src="https://i.pravatar.cc/40"
