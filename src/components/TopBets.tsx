@@ -12,8 +12,8 @@ export function TopBets() {
       <h2 className="mb-6 text-lg font-bold text-gray-900">Top 5 Biggest Bets for today</h2>
       <div className="flex flex-1 flex-col justify-between gap-4">
         {bets.map((bet) => (
-          <div key={bet.id} className="flex items-center justify-between">
-            <div className="flex items-center gap-3 w-1/3">
+          <div key={bet.id} className="flex items-center justify-between gap-2 overflow-hidden">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-orange-100">
                 <img 
                   src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${bet.id + 10}`} 
@@ -23,8 +23,8 @@ export function TopBets() {
               </div>
               <span className="font-semibold text-gray-900 truncate">{bet.name}</span>
             </div>
-            <span className="text-sm font-medium text-gray-500 w-1/4">{bet.type}</span>
-            <span className="rounded-lg bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-900">
+            <span className="text-xs font-medium text-gray-500 truncate hidden sm:block">{bet.type}</span>
+            <span className="shrink-0 rounded-lg bg-gray-50 px-2 py-1.5 text-[10px] font-bold text-gray-900">
               {bet.amount}
             </span>
           </div>
