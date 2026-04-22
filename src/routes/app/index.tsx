@@ -48,7 +48,7 @@ function DashboardPage() {
 				/>
 				<StatCard 
 					title="Total Income" 
-					value="₦540,000,000" 
+					value="₦540,000,000,000,000,000,000" 
 					icon={<span className="font-bold text-lg text-[#001A26]">₦</span>} 
 				/>
 			</div>
