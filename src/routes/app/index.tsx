@@ -33,22 +33,22 @@ function DashboardPage() {
 				<StatCard 
 					title="Total Users" 
 					value="2,341" 
-					icon={<Users className="h-5 w-5" />} 
+					icon={<Users className="h-5 w-5 text-[#001A26]" />} 
 				/>
 				<StatCard 
 					title="Active Players" 
 					value="120" 
-					icon={<Gamepad2 className="h-5 w-5" />} 
+					icon={<Gamepad2 className="h-5 w-5 text-[#001A26]" />} 
 				/>
 				<StatCard 
 					title="Pending Payouts" 
 					value="80" 
-					icon={<CircleDotDashed className="h-5 w-5" />} 
+					icon={<CircleDotDashed className="h-5 w-5 text-[#001A26]" />} 
 				/>
 				<StatCard 
 					title="Total Income" 
 					value="₦540,000" 
-					icon={<span className="font-bold text-lg">₦</span>} 
+					icon={<span className="font-bold text-lg text-[#001A26]">₦</span>} 
 				/>
 			</div>
 
