@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Users, Gamepad2, Eye, Plus } from "lucide-react";
+import { Users, Gamepad2, Plus, CircleDotDashed } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { ActivityChart } from "@/components/ActivityChart";
 import { TopBets } from "@/components/TopBets";
@@ -43,7 +43,7 @@ function DashboardPage() {
 				<StatCard 
 					title="Pending Payouts" 
 					value="80" 
-					icon={<Eye className="h-4 w-4" />} 
+					icon={<CircleDotDashed className="h-4 w-4" />} 
 				/>
 				<StatCard 
 					title="Total Income" 
