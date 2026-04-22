@@ -15,7 +15,7 @@ import {
 	Wallet,
 } from "lucide-react";
 import type { Admin } from "../lib/auth";
-	import { FaSun } from "react-icons/fa";
+	import { FaSun, FaMoon } from "react-icons/fa";
 
 type SidebarProps = {
 	admin?: Admin | null;
@@ -67,14 +67,14 @@ export default function Sidebar({
 					<img
 						src="/sportsdey-logo.png"
 						alt="SportsDey"
-						className="h-8 w-auto object-contain"
+						className="h-auto w-auto object-contain"
 					/>
 				)}
 				<button
 					type="button"
 					className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[#4b4a4a] text-white transition-all duration-180 hover:bg-white/12 hover:text-white ${collapsed ? "" : ""}`}
 				>
-					<FaSun />
+					{new Date().getHours() >= 6 && new Date().getHours() < 18 ? <FaSun className="text-white" /> : <FaMoon className="text-white" />}
 				</button>
 			</div>
 
