@@ -31,8 +31,8 @@ export function DataTable<T>({
     <div className="relative overflow-hidden">
       <div className={`overflow-auto custom-scrollbar`} style={maxHeight ? { maxHeight } : {}}>
         <table className="w-full min-w-[800px] text-left text-sm relative border-collapse">
-          <thead className="sticky top-0 bg-[#F9F9F9] z-10 shadow-[0_1px_0_#f3f4f6]">
-            <tr className="border-b border-gray-100 text-gray-500">
+          <thead className="sticky top-0 z-10 shadow-[0_1px_0_#f3f4f6]">
+            <tr className="border-b border-gray-100 text-gray-500 bg-[#F9F9F9]">
               {columns.map((col, idx) => (
                 <th 
                   key={idx} 
