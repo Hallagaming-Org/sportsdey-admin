@@ -37,7 +37,7 @@ export function UserAnalyticsTable() {
         </div>
       </div>
 
-      <div className="overflow-auto max-h-[400px]">
+      <div className="overflow-auto max-h-[400px] custom-scrollbar">
         <table className="w-full min-w-[800px] text-left text-sm relative">
           <thead className="sticky top-0 bg-[#F9F9F9] z-10 shadow-[0_1px_0_#f3f4f6]">
             <tr className="border-b border-gray-100 text-gray-500">
