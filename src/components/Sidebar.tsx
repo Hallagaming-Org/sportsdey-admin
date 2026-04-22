@@ -54,7 +54,7 @@ export default function Sidebar({
 
 	return (
 		<aside
-			className={`relative z-20 flex min-h-screen w-60 shrink-0 flex-col bg-black text-white transition-all duration-250 ${collapsed ? "w-[72px]" : ""}`}
+			className={`relative z-20 flex min-h-screen px-6 shrink-0 flex-col bg-black text-white transition-all duration-250 ${collapsed ? "w-[72px]" : "w-[20%]"}`}
 		>
 			<div
 				className={`flex items-center justify-between px-5 py-5 ${collapsed ? "justify-center" : ""}`}
@@ -68,9 +68,9 @@ export default function Sidebar({
 				)}
 				<button
 					type="button"
-					className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-white/15 bg-white/06 text-white/60 transition-all duration-180 hover:bg-white/12 hover:text-white"
+					className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[#4b4a4a] text-white transition-all duration-180 hover:bg-white/12 hover:text-white"
 				>
-					{/* <Settings size={18} /> */}
+
 				
 <FaSun />
 				</button>
