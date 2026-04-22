@@ -80,7 +80,7 @@ export default function Sidebar({
 
 			<button
 				type="button"
-				className="absolute top-[72px] -right-6 z-25 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-accent text-white transition-all duration-180 hover:bg-accent/90"
+				className="absolute top-[72px] -right-6 z-25 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-accent text-white transition-all duration-180"
 				onClick={onToggleCollapse}
 				title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
 			>
