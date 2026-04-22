@@ -90,10 +90,10 @@ export function UserAnalyticsTable() {
       <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
         <span>Page 1 of 10</span>
         <div className="flex gap-3">
-          <button className="rounded-lg bg-[#10C300] px-4 py-2 font-medium text-white hover:bg-[#0ea800]">
+          <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800]">
             Previous
           </button>
-          <button className="rounded-lg bg-[#10C300] px-4 py-2 font-medium text-white hover:bg-[#0ea800]">
+          <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800]">
             Next
           </button>
         </div>
