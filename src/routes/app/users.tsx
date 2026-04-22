@@ -89,8 +89,13 @@ function UsersPage() {
 		{ id: "USR011", name: "Bessie Cooper", email: "bessie@example.com", wallet: 1100000, status: "pending_verification", registeredDate: Date.now() },
 	];
 
-	const users = (usersData?.users && usersData.users.length > 0) ? usersData.users : dummyUsers;
-	const total = (usersData?.users && usersData.users.length > 0) ? usersData.total : dummyUsers.length;
+	const isUsingDummyData = !usersData?.users || usersData.users.length === 0;
+	
+	const users = isUsingDummyData 
+		? dummyUsers.slice((page - 1) * limit, page * limit) 
+		: usersData.users;
+		
+	const total = isUsingDummyData ? dummyUsers.length : usersData.total;
 	const totalPages = Math.ceil(total / limit);
 
 	const columns: Column<User>[] = [
