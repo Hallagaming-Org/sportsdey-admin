@@ -54,7 +54,7 @@ export default function Sidebar({
 
 	return (
 		<aside
-			className={`relative z-20 flex h-screen sticky top-0 overflow-y-auto px-6 shrink-0 flex-col bg-black text-white transition-all duration-250 ${collapsed ? "w-[72px]" : "w-[20%]"}`}
+			className={`relative z-20 flex h-screen sticky top-0 px-6 shrink-0 flex-col bg-black text-white transition-all duration-250 ${collapsed ? "w-[72px]" : "w-[20%]"}`}
 		>
 			<div
 				className={`flex items-center justify-between px-5 py-5 ${collapsed ? "justify-center" : ""}`}
