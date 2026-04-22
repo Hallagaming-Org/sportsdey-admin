@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import {
 	Activity,
 	ChevronLeft,
@@ -53,8 +54,11 @@ export default function Sidebar({
 	const { location } = useRouterState();
 
 	return (
-		<aside
-			className={`relative z-20 flex h-screen shrink-0 flex-col bg-black text-white transition-all duration-250 ${collapsed ? "w-[80px]" : "w-[20%]"}`}
+		<motion.aside
+			initial={false}
+			animate={{ width: collapsed ? 80 : "20%" }}
+			transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+			className="relative z-20 flex h-screen shrink-0 flex-col bg-black text-white"
 		>
 			<div
 				className={`flex items-center py-5 ${collapsed ? "justify-center px-0" : "justify-between px-6"}`}
@@ -178,7 +182,7 @@ export default function Sidebar({
 					)}
 				</div>
 			</div>
-		</aside>
+		</motion.aside>
 	);
 }
 
