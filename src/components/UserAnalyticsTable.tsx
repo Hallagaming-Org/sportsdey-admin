@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { DataTable, type Column } from "./DataTable";
+import { useState } from "react";
 
 interface User {
   id: string;
@@ -11,7 +12,10 @@ interface User {
 }
 
 export function UserAnalyticsTable() {
-  const users: User[] = [
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const allUsers: User[] = [
     { id: "012345", name: "George jones", email: "georgejones@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Verified" },
     { id: "012346", name: "Robert Fox", email: "robertfox@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Pending" },
     { id: "012347", name: "Savannah Nguyen", email: "savannahnguyen@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Not verified" },
@@ -29,8 +33,13 @@ export function UserAnalyticsTable() {
     { id: "012359", name: "Jerome Bell", email: "jeromebell@gmail.com", date: "Aug 14, 2025", balance: "₦5,000,000", status: "Verified" },
   ];
 
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(users.length / itemsPerPage);
+  const totalPages = Math.ceil(allUsers.length / itemsPerPage);
+  
+  // Slice data for the current page
+  const displayedUsers = allUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const columns: Column<User>[] = [
     { 
@@ -109,20 +118,28 @@ export function UserAnalyticsTable() {
       </div>
 
       <DataTable
-        data={users}
+        data={displayedUsers}
         columns={columns}
         maxHeight="400px"
         onActionClick={(user) => console.log("Action clicked for", user.name)}
       />
 
-      {users.length > itemsPerPage && (
+      {allUsers.length > itemsPerPage && (
         <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
-          <span>Page 1 of {totalPages}</span>
+          <span>Page {currentPage} of {totalPages}</span>
           <div className="flex gap-3">
-            <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors">
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Previous
             </button>
-            <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors">
+            <button 
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Next
             </button>
           </div>
