@@ -97,11 +97,13 @@ class AdminAuth {
 	async getSession(): Promise<Admin | null> {
 		try {
 			// First check local storage for instant loads and to prevent dev refresh issues
-			const cached = localStorage.getItem("admin_session");
-			if (cached) {
-				try {
-					return JSON.parse(cached);
-				} catch (e) {}
+			if (typeof window !== "undefined") {
+				const cached = localStorage.getItem("admin_session");
+				if (cached) {
+					try {
+						return JSON.parse(cached);
+					} catch (e) {}
+				}
 			}
 
 			const response = await fetch(`${this.baseUrl}/admin/me`, {
