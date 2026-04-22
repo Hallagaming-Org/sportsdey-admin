@@ -12,7 +12,7 @@ export function StatCard({ title, value, icon }: StatCardProps) {
       <span className="mb-4 text-3xl font-bold text-gray-900">{value}</span>
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-gray-500">{title}</span>
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gray-50 text-gray-600">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#EBEBECCC]/80 text-gray-600">
           {icon}
         </div>
       </div>
