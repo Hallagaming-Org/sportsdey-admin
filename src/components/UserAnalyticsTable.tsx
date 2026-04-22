@@ -95,6 +95,7 @@ export function UserAnalyticsTable() {
       data={users}
       columns={columns}
       filters={filters}
+      maxHeight="400px"
       onActionClick={(user) => console.log("Action clicked for", user.name)}
     />
   );
