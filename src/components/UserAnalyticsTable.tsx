@@ -35,20 +35,20 @@ export function UserAnalyticsTable() {
         <table className="w-full min-w-[800px] text-left text-sm">
           <thead>
             <tr className="border-b border-gray-100 text-gray-500">
-              <th className="pb-4 font-medium">User ID</th>
-              <th className="pb-4 font-medium">Player Name</th>
-              <th className="pb-4 font-medium">Email address</th>
-              <th className="pb-4 font-medium">Registration Date</th>
-              <th className="pb-4 font-medium">Wallet Balance</th>
-              <th className="pb-4 font-medium">Status</th>
-              <th className="pb-4 font-medium"></th>
+              <th className="pb-4 pl-4 font-medium">User ID</th>
+              <th className="pb-4 px-4 font-medium">Player Name</th>
+              <th className="pb-4 px-4 font-medium">Email address</th>
+              <th className="pb-4 px-4 font-medium">Registration Date</th>
+              <th className="pb-4 px-4 font-medium">Wallet Balance</th>
+              <th className="pb-4 px-4 font-medium">Status</th>
+              <th className="pb-4 pr-4 font-medium"></th>
             </tr>
           </thead>
           <tbody>
             {users.map((user, idx) => (
-              <tr key={idx} className="border-b border-gray-50 last:border-0">
-                <td className="py-4 text-gray-900">{user.id}</td>
-                <td className="py-4">
+              <tr key={idx} className="border-b border-gray-50 last:border-0 even:bg-[#F9F9F9]">
+                <td className="py-4 pl-4 text-gray-900">{user.id}</td>
+                <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
                     <img 
                       src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
@@ -58,10 +58,10 @@ export function UserAnalyticsTable() {
                     <span className="font-medium text-gray-900">{user.name}</span>
                   </div>
                 </td>
-                <td className="py-4 text-gray-500">{user.email}</td>
-                <td className="py-4 text-gray-500">{user.date}</td>
-                <td className="py-4 font-medium text-gray-900">{user.balance}</td>
-                <td className="py-4">
+                <td className="py-4 px-4 text-gray-500">{user.email}</td>
+                <td className="py-4 px-4 text-gray-500">{user.date}</td>
+                <td className="py-4 px-4 font-medium text-gray-900">{user.balance}</td>
+                <td className="py-4 px-4">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
                     user.status === 'Verified' ? 'bg-[#E8F8E5] text-[#10C300]' :
                     user.status === 'Pending' ? 'bg-[#FFF8E5] text-[#FFB000]' :
@@ -70,7 +70,7 @@ export function UserAnalyticsTable() {
                     {user.status}
                   </span>
                 </td>
-                <td className="py-4 text-right">
+                <td className="py-4 pr-4 text-right">
                   <button className="text-gray-400 hover:text-gray-600">
                     <MoreHorizontal className="h-5 w-5" />
                   </button>
