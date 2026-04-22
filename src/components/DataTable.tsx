@@ -29,7 +29,7 @@ export function DataTable<T>({
   data, 
   columns, 
   filters,
-  maxHeight = "400px",
+  maxHeight,
   showPagination = true,
   onActionClick,
   isLoading = false,
@@ -50,7 +50,7 @@ export function DataTable<T>({
 
       {/* Table Section */}
       <div className="relative overflow-hidden rounded-lg">
-        <div className={`overflow-auto custom-scrollbar`} style={{ maxHeight }}>
+        <div className={`overflow-auto custom-scrollbar`} style={maxHeight ? { maxHeight } : {}}>
           <table className="w-full min-w-[800px] text-left text-sm relative border-collapse">
             <thead className="sticky top-0 bg-[#F9F9F9] z-10 shadow-[0_1px_0_#f3f4f6]">
               <tr className="border-b border-gray-100 text-gray-500">
