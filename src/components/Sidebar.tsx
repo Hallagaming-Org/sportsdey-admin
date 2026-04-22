@@ -87,7 +87,7 @@ export default function Sidebar({
 				{collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
 			</button>
 
-			<div className="flex-1 overflow-y-auto pb-3">
+			<div className="flex-1 overflow-y-auto pb-3 custom-scrollbar">
 				<div
 					className={`flex items-center justify-between px-5 py-2 ${collapsed ? "justify-center" : ""}`}
 				>
