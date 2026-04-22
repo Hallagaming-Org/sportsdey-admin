@@ -70,6 +70,9 @@ class AdminAuth {
 			}
 
 			const data = await response.json();
+			if (data.success && data.data?.admin) {
+				localStorage.setItem("admin_session", JSON.stringify(data.data.admin));
+			}
 			return data;
 		} catch {
 			return {
@@ -80,35 +83,47 @@ class AdminAuth {
 	}
 
 	async signOut(): Promise<void> {
-		await fetch(`${this.baseUrl}/admin/auth/sign-out`, {
-			method: "POST",
-			credentials: "include",
-		});
+		localStorage.removeItem("admin_session");
+		try {
+			await fetch(`${this.baseUrl}/admin/auth/sign-out`, {
+				method: "POST",
+				credentials: "include",
+			});
+		} catch (e) {
+			// Ignore errors if backend is unreachable
+		}
 	}
 
 	async getSession(): Promise<Admin | null> {
 		try {
+			// First check local storage for instant loads and to prevent dev refresh issues
+			const cached = localStorage.getItem("admin_session");
+			if (cached) {
+				try {
+					return JSON.parse(cached);
+				} catch (e) {}
+			}
+
 			const response = await fetch(`${this.baseUrl}/admin/me`, {
 				credentials: "include",
 				cache: "no-store",
 			});
 
 			if (!response.ok) {
-				if (response.status === 503) {
-					return null;
-				}
-				if (response.status === 401) {
-					return null;
-				}
+				localStorage.removeItem("admin_session");
 				return null;
 			}
 
 			const data = await response.json();
-			if (data.success) {
+			if (data.success && data.data) {
+				localStorage.setItem("admin_session", JSON.stringify(data.data));
 				return data.data;
 			}
+			localStorage.removeItem("admin_session");
 			return null;
 		} catch {
+			// On network error, if we had a cache we would have returned it. 
+			// If we reach here, there was no cache and the network failed.
 			return null;
 		}
 	}
