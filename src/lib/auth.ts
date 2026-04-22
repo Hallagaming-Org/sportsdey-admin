@@ -43,11 +43,12 @@ class AdminAuth {
 	}
 
 	private logBase(reason: string) {
-		console.debug(`[adminAuth] ${reason} baseUrl=${this.baseUrl}`);
+		console.log(`[adminAuth] ${reason} baseUrl=${this.baseUrl}`);
 	}
 
 	async signIn(email: string, password: string): Promise<SignInResponse> {
 		this.logBase("signIn");
+		console.log({email}, " sign in")
 		try {
 			const response = await fetch(`${this.baseUrl}/admin/auth/sign-in`, {
 				method: "POST",
@@ -78,6 +79,7 @@ class AdminAuth {
 			console.log(data);
 			return data;
 		} catch (err) {
+			console.error("[adminAuth] signIn error:", err);
 			return {
 				success: false,
 				error: "Unable to connect. Please check your connection.",
