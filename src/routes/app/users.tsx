@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
-import { type NewUser, userService } from "../../lib/users";
-import { DataTable } from "#/components/DataTable";
+import { type NewUser, type User, userService } from "../../lib/users";
+import { DataTable, type Column } from "#/components/DataTable";
 
 export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
@@ -78,6 +78,53 @@ function UsersPage() {
 	const users = usersData?.users || [];
 	const total = usersData?.total || 0;
 	const totalPages = Math.ceil(total / limit);
+
+	const columns: Column<User>[] = [
+		{ 
+			header: "User Id", 
+			accessor: "id" 
+		},
+		{ 
+			header: "Player Name", 
+			accessor: (user) => (
+				<div className="flex items-center gap-3">
+					<img 
+						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
+						alt="avatar" 
+						className="h-8 w-8 rounded-full bg-gray-100 object-cover" 
+					/>
+					<span className="font-medium text-gray-900">{user.name}</span>
+				</div>
+			)
+		},
+		{ 
+			header: "Email address", 
+			accessor: "email",
+			cellClassName: "text-gray-500"
+		},
+		{ 
+			header: "Registration Date", 
+			accessor: (user) => user.registeredDate ? new Date(user.registeredDate).toLocaleDateString() : "-",
+			cellClassName: "text-gray-500"
+		},
+		{ 
+			header: "Wallet Balance", 
+			accessor: (user) => `₦${user.wallet.toLocaleString()}`,
+			cellClassName: "font-medium text-gray-900"
+		},
+		{ 
+			header: "Status", 
+			accessor: (user) => (
+				<span className={`rounded-full px-2.5 py-1 font-medium text-xs ${
+					user.status === "verified" ? "bg-green-100 text-green-800" :
+					user.status === "pending_verification" ? "bg-yellow-100 text-yellow-800" :
+					"bg-gray-100 text-gray-800"
+				}`}>
+					{user.status}
+				</span>
+			)
+		}
+	];
 
 	return (
 		<div className="space-y-6">
@@ -172,68 +219,9 @@ function UsersPage() {
 				subtitle="Manage all your users and activities"
 				data={users}
 				isLoading={isLoading}
-				columns={[
-					{ 
-						header: "User Id", 
-						accessor: "id" 
-					},
-					{ 
-						header: "Player Name", 
-						accessor: (user) => (
-							<div className="flex items-center gap-3">
-								<img 
-									src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
-									alt="avatar" 
-									className="h-8 w-8 rounded-full bg-gray-100 object-cover" 
-								/>
-								<span className="font-medium text-gray-900">{user.name}</span>
-							</div>
-						)
-					},
-					{ 
-						header: "Email address", 
-						accessor: "email",
-						cellClassName: "text-gray-500"
-					},
-					{ 
-						header: "Registration Date", 
-						accessor: (user) => user.registeredDate ? new Date(user.registeredDate).toLocaleDateString() : "-",
-						cellClassName: "text-gray-500"
-					},
-					{ 
-						header: "Wallet Balance", 
-						accessor: (user) => `₦${user.wallet.toLocaleString()}`,
-						cellClassName: "font-medium text-gray-900"
-					},
-					{ 
-						header: "Status", 
-						accessor: (user) => (
-							<span className={`rounded-full px-2.5 py-1 font-medium text-xs ${
-								user.status === "verified" ? "bg-green-100 text-green-800" :
-								user.status === "pending_verification" ? "bg-yellow-100 text-yellow-800" :
-								"bg-gray-100 text-gray-800"
-							}`}>
-								{user.status}
-							</span>
-						)
-					}
-				]}
+				columns={columns}
 				showPagination={false}
-				filters={
-					<div className="flex items-center gap-3">
-						<button
-							onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
-							className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-gray-100 px-3 py-1.5 font-medium text-gray-900 text-xs hover:bg-gray-50"
-						>
-							<SortIcon className="h-3 w-3" />
-							Sort
-						</button>
-						<button className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-gray-100 px-3 py-1.5 font-medium text-gray-900 text-xs hover:bg-gray-50">
-							<FilterIcon className="h-3 w-3" />
-							Filter
-						</button>
-					</div>
-				}
+				emptyMessage="No user found"
 			/>
 
 			{totalPages > 1 && (
