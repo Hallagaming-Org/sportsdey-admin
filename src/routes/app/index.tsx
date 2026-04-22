@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Users, Gamepad2, Eye, Plus, ChevronDown } from "lucide-react";
+import { Users, Gamepad2, Eye, Plus } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { ActivityChart } from "@/components/ActivityChart";
 import { TopBets } from "@/components/TopBets";
 import { UserAnalyticsTable } from "@/components/UserAnalyticsTable";
+import { IoFilterSharp } from "react-icons/io5";
 
 export const Route = createFileRoute("/app/")({
 	component: DashboardPage,
@@ -22,7 +23,7 @@ function DashboardPage() {
 					</button>
 					<button className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
 						Time periods
-						<ChevronDown className="h-4 w-4 text-gray-400" />
+						<IoFilterSharp className="h-4 w-4 text-gray-400" />
 					</button>
 				</div>
 			</div>
