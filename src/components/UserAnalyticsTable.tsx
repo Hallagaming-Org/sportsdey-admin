@@ -89,14 +89,35 @@ export function UserAnalyticsTable() {
   );
 
   return (
-    <DataTable
-      title="User Analytics"
-      subtitle="Manage all your users and activities."
-      data={users}
-      columns={columns}
-      filters={filters}
-      maxHeight="400px"
-      onActionClick={(user) => console.log("Action clicked for", user.name)}
-    />
+    <div className="flex flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">User Analytics</h2>
+          <p className="mt-1 text-sm text-gray-500">Manage all your users and activities.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {filters}
+        </div>
+      </div>
+
+      <DataTable
+        data={users}
+        columns={columns}
+        maxHeight="400px"
+        onActionClick={(user) => console.log("Action clicked for", user.name)}
+      />
+
+      <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
+        <span>Page 1 of 10</span>
+        <div className="flex gap-3">
+          <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors">
+            Previous
+          </button>
+          <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
