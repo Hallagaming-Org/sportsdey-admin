@@ -19,6 +19,7 @@ interface DataTableProps<T> {
   showPagination?: boolean;
   onActionClick?: (item: T) => void;
   isLoading?: boolean;
+  emptyMessage?: string;
 }
 
 export function DataTable<T>({ 
@@ -30,7 +31,8 @@ export function DataTable<T>({
   maxHeight = "400px",
   showPagination = true,
   onActionClick,
-  isLoading = false
+  isLoading = false,
+  emptyMessage = "No user found"
 }: DataTableProps<T>) {
   return (
     <div className="flex flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -47,58 +49,78 @@ export function DataTable<T>({
 
       {/* Table Section */}
       <div className="relative overflow-hidden rounded-lg">
-        {isLoading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-[1px]">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
-          </div>
-        )}
         <div className={`overflow-auto custom-scrollbar`} style={{ maxHeight }}>
           <table className="w-full min-w-[800px] text-left text-sm relative border-collapse">
-          <thead className="sticky top-0 bg-[#F9F9F9] z-10 shadow-[0_1px_0_#f3f4f6]">
-            <tr className="border-b border-gray-100 text-gray-500">
-              {columns.map((col, idx) => (
-                <th 
-                  key={idx} 
-                  className={`py-4 font-medium ${idx === 0 ? "pl-4" : "px-4"} ${col.headerClassName || ""}`}
-                >
-                  {col.header}
-                </th>
-              ))}
-              {onActionClick && <th className="py-4 pr-4 font-medium text-right"></th>}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, rowIdx) => (
-              <tr 
-                key={rowIdx} 
-                className="border-b border-gray-50 last:border-0 even:bg-[#F9F9F9] hover:bg-gray-50/50 transition-colors"
-              >
-                {columns.map((col, colIdx) => (
-                  <td 
-                    key={colIdx} 
-                    className={`py-4 ${colIdx === 0 ? "pl-4 text-gray-900" : "px-4"} ${col.cellClassName || ""}`}
+            <thead className="sticky top-0 bg-[#F9F9F9] z-10 shadow-[0_1px_0_#f3f4f6]">
+              <tr className="border-b border-gray-100 text-gray-500">
+                {columns.map((col, idx) => (
+                  <th 
+                    key={idx} 
+                    className={`py-4 font-medium ${idx === 0 ? "pl-4" : "px-4"} ${col.headerClassName || ""}`}
                   >
-                    {typeof col.accessor === "function" 
-                      ? col.accessor(item) 
-                      : (item[col.accessor] as ReactNode)}
-                  </td>
+                    {col.header}
+                  </th>
                 ))}
-                {onActionClick && (
-                  <td className="py-4 pr-4 text-right">
-                    <button 
-                      onClick={() => onActionClick(item)}
-                      className="text-gray-400 hover:text-gray-600 cursor-pointer"
-                    >
-                      <MoreHorizontal className="h-5 w-5" />
-                    </button>
-                  </td>
-                )}
+                {onActionClick && <th className="py-4 pr-4 font-medium text-right"></th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                // Skeleton Rows
+                Array.from({ length: 5 }).map((_, rowIdx) => (
+                  <tr key={rowIdx} className="border-b border-gray-50 animate-pulse">
+                    {columns.map((_, colIdx) => (
+                      <td key={colIdx} className={`py-6 ${colIdx === 0 ? "pl-4" : "px-4"}`}>
+                        <div className="h-4 bg-gray-100 rounded-md w-full" />
+                      </td>
+                    ))}
+                    {onActionClick && <td className="py-6 pr-4"><div className="h-4 bg-gray-100 rounded-md w-4 ml-auto" /></td>}
+                  </tr>
+                ))
+              ) : data.length === 0 ? (
+                // Empty State
+                <tr>
+                  <td 
+                    colSpan={columns.length + (onActionClick ? 1 : 0)} 
+                    className="py-12 text-center text-gray-500 font-medium"
+                  >
+                    {emptyMessage}
+                  </td>
+                </tr>
+              ) : (
+                // Data Rows
+                data.map((item, rowIdx) => (
+                  <tr 
+                    key={rowIdx} 
+                    className="border-b border-gray-50 last:border-0 even:bg-[#F9F9F9] hover:bg-gray-50/50 transition-colors"
+                  >
+                    {columns.map((col, colIdx) => (
+                      <td 
+                        key={colIdx} 
+                        className={`py-4 ${colIdx === 0 ? "pl-4 text-gray-900" : "px-4"} ${col.cellClassName || ""}`}
+                      >
+                        {typeof col.accessor === "function" 
+                          ? col.accessor(item) 
+                          : (item[col.accessor] as ReactNode)}
+                      </td>
+                    ))}
+                    {onActionClick && (
+                      <td className="py-4 pr-4 text-right">
+                        <button 
+                          onClick={() => onActionClick(item)}
+                          className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          <MoreHorizontal className="h-5 w-5" />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
       {/* Pagination Section */}
       {showPagination && (
