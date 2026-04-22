@@ -241,29 +241,14 @@ function UsersPage() {
 				columns={columns}
 				onActionClick={(user) => console.log("Action clicked for", user.name)}
 				emptyMessage="No user found"
+				pagination={{
+					currentPage: page,
+					totalPages,
+					onPageChange: setPage,
+					totalItems: total,
+					itemsPerPage: limit,
+				}}
 			/>
-
-			{total > limit && (
-				<div className="mt-6 flex items-center justify-between text-sm text-gray-500">
-					<span>Page {page} of {totalPages}</span>
-					<div className="flex gap-3">
-						<button
-							onClick={() => setPage((p) => Math.max(1, p - 1))}
-							disabled={page === 1}
-							className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							Previous
-						</button>
-						<button
-							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-							disabled={page === totalPages}
-							className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							Next
-						</button>
-					</div>
-				</div>
-			)}
 
 			{showAddModal && (
 				<div
