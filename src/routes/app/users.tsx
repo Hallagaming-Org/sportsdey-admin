@@ -85,11 +85,12 @@ function UsersPage() {
 		{ id: "USR007", name: "Eleanor Pena", email: "eleanor@example.com", wallet: 900000, status: "verified", registeredDate: Date.now() },
 		{ id: "USR008", name: "Arlene McCoy", email: "arlene@example.com", wallet: 800000, status: "not_verified", registeredDate: Date.now() },
 		{ id: "USR009", name: "Cody Fisher", email: "cody@example.com", wallet: 4500000, status: "verified", registeredDate: Date.now() },
-		{ id: "USR010", name: "Bessie Cooper", email: "bessie@example.com", wallet: 1100000, status: "pending_verification", registeredDate: Date.now() },
+		{ id: "USR010", name: "Coady Gakpo", email: "coady@example.com", wallet: 4500000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR011", name: "Bessie Cooper", email: "bessie@example.com", wallet: 1100000, status: "pending_verification", registeredDate: Date.now() },
 	];
 
-	const users = usersData?.users || dummyUsers;
-	const total = usersData?.total || dummyUsers.length;
+	const users = (usersData?.users && usersData.users.length > 0) ? usersData.users : dummyUsers;
+	const total = (usersData?.users && usersData.users.length > 0) ? usersData.total : dummyUsers.length;
 	const totalPages = Math.ceil(total / limit);
 
 	const columns: Column<User>[] = [
