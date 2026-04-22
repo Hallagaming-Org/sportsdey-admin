@@ -75,8 +75,21 @@ function UsersPage() {
 		},
 	});
 
-	const users = usersData?.users || [];
-	const total = usersData?.total || 0;
+	const dummyUsers: User[] = [
+		{ id: "USR001", name: "George Jones", email: "george@example.com", wallet: 3000000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR002", name: "Robert Fox", email: "robert@example.com", wallet: 1200000, status: "pending_verification", registeredDate: Date.now() },
+		{ id: "USR003", name: "Savannah Nguyen", email: "savannah@example.com", wallet: 500000, status: "not_verified", registeredDate: Date.now() },
+		{ id: "USR004", name: "Leslie Alexander", email: "leslie@example.com", wallet: 4100000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR005", name: "Jenny Wilson", email: "jenny@example.com", wallet: 1500000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR006", name: "Courtney Henry", email: "courtney@example.com", wallet: 2200000, status: "pending_verification", registeredDate: Date.now() },
+		{ id: "USR007", name: "Eleanor Pena", email: "eleanor@example.com", wallet: 900000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR008", name: "Arlene McCoy", email: "arlene@example.com", wallet: 800000, status: "not_verified", registeredDate: Date.now() },
+		{ id: "USR009", name: "Cody Fisher", email: "cody@example.com", wallet: 4500000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR010", name: "Bessie Cooper", email: "bessie@example.com", wallet: 1100000, status: "pending_verification", registeredDate: Date.now() },
+	];
+
+	const users = usersData?.users || dummyUsers;
+	const total = usersData?.total || dummyUsers.length;
 	const totalPages = Math.ceil(total / limit);
 
 	const columns: Column<User>[] = [
