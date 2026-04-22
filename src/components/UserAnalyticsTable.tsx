@@ -22,7 +22,15 @@ export function UserAnalyticsTable() {
     { id: "012352", name: "Arlene McCoy", email: "arlenemccoy@gmail.com", date: "Aug 10, 2025", balance: "₦800,000", status: "Not verified" },
     { id: "012353", name: "Cody Fisher", email: "codyfisher@gmail.com", date: "Aug 11, 2025", balance: "₦4,100,000", status: "Verified" },
     { id: "012354", name: "Bessie Cooper", email: "bessiecooper@gmail.com", date: "Aug 11, 2025", balance: "₦900,000", status: "Pending" },
+    { id: "012355", name: "Wade Warren", email: "wadewarren@gmail.com", date: "Aug 12, 2025", balance: "₦1,200,000", status: "Verified" },
+    { id: "012356", name: "Jane Cooper", email: "janecooper@gmail.com", date: "Aug 12, 2025", balance: "₦2,800,000", status: "Verified" },
+    { id: "012357", name: "Guy Hawkins", email: "guyhawkins@gmail.com", date: "Aug 13, 2025", balance: "₦3,400,000", status: "Pending" },
+    { id: "012358", name: "Brooklyn Simmons", email: "brooklynsimmons@gmail.com", date: "Aug 13, 2025", balance: "₦1,900,000", status: "Verified" },
+    { id: "012359", name: "Jerome Bell", email: "jeromebell@gmail.com", date: "Aug 14, 2025", balance: "₦5,000,000", status: "Verified" },
   ];
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(users.length / itemsPerPage);
 
   const columns: Column<User>[] = [
     { 
@@ -107,17 +115,19 @@ export function UserAnalyticsTable() {
         onActionClick={(user) => console.log("Action clicked for", user.name)}
       />
 
-      <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
-        <span>Page 1 of 10</span>
-        <div className="flex gap-3">
-          <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors">
-            Previous
-          </button>
-          <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors">
-            Next
-          </button>
+      {users.length > itemsPerPage && (
+        <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
+          <span>Page 1 of {totalPages}</span>
+          <div className="flex gap-3">
+            <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors">
+              Previous
+            </button>
+            <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors">
+              Next
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
