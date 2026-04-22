@@ -144,18 +144,18 @@ export default function Sidebar({
 				</nav>
 			</div>
 
-			<div className="mt-auto mb-10">
+			<div className="mt-auto mb-10 px-8 space-y-1">
 				<button
 					type="button"
 					onClick={onLogout}
-					className={`flex w-full cursor-pointer items-center gap-2.5 border-none bg-none py-2 text-sm text-white/50 transition-colors duration-180 hover:text-white ${collapsed ? "justify-center" : ""}`}
+					className={`flex w-full cursor-pointer items-center gap-2.5 border-none bg-none py-2 text-sm text-white transition-colors duration-180 hover:text-white ${collapsed ? "justify-center" : ""}`}
 				>
 					<LogOut size={18} />
 					{!collapsed && <span>Log out</span>}
 				</button>
 
 				<div
-					className={`border-white/08 border-t px-4 py-4 flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}
+					className={`border-[#475467] border-t px-4 py-4 flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}
 				>
 					<img
 						src="https://i.pravatar.cc/40"
