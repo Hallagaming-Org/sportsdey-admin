@@ -1,7 +1,17 @@
-import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { DataTable, type Column } from "./DataTable";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  date: string;
+  balance: string;
+  status: "Verified" | "Pending" | "Not verified";
+}
 
 export function UserAnalyticsTable() {
-  const users = [
+  const users: User[] = [
     { id: "012345", name: "George jones", email: "georgejones@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Verified" },
     { id: "012346", name: "Robert Fox", email: "robertfox@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Pending" },
     { id: "012347", name: "Savannah Nguyen", email: "savannahnguyen@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Not verified" },
@@ -14,90 +24,78 @@ export function UserAnalyticsTable() {
     { id: "012354", name: "Bessie Cooper", email: "bessiecooper@gmail.com", date: "Aug 11, 2025", balance: "₦900,000", status: "Pending" },
   ];
 
-  return (
-    <div className="flex flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">User Analytics</h2>
-          <p className="mt-1 text-sm text-gray-500">Manage all your users and activities.</p>
-        </div>
+  const columns: Column<User>[] = [
+    { 
+      header: "User ID", 
+      accessor: "id" 
+    },
+    { 
+      header: "Player Name", 
+      accessor: (user) => (
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-full bg-[#F6F6F6] px-4 py-2 text-sm font-medium text-gray-600 ">
-            All Users
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-          </button>
-          <button className="flex items-center gap-2 rounded-full bg-[#F6F6F6] px-4 py-2 text-sm font-medium text-gray-600">
-            Status
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-          </button>
-          <button className="flex items-center gap-2 rounded-full bg-[#F6F6F6] px-4 py-2 text-sm font-medium text-gray-600">
-            Today
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-          </button>
+          <img 
+            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
+            alt="avatar" 
+            className="h-8 w-8 rounded-full bg-gray-100 object-cover" 
+          />
+          <span className="font-medium text-gray-900">{user.name}</span>
         </div>
-      </div>
+      )
+    },
+    { 
+      header: "Email address", 
+      accessor: "email",
+      cellClassName: "text-gray-500"
+    },
+    { 
+      header: "Registration Date", 
+      accessor: "date",
+      cellClassName: "text-gray-500"
+    },
+    { 
+      header: "Wallet Balance", 
+      accessor: "balance",
+      cellClassName: "font-medium text-gray-900"
+    },
+    { 
+      header: "Status", 
+      accessor: (user) => (
+        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+          user.status === 'Verified' ? 'bg-[#E8F8E5] text-[#10C300]' :
+          user.status === 'Pending' ? 'bg-[#FFF8E5] text-[#FFB000]' :
+          'bg-[#FEECEB] text-[#EE201C]'
+        }`}>
+          {user.status}
+        </span>
+      )
+    }
+  ];
 
-      <div className="overflow-auto max-h-[400px] custom-scrollbar">
-        <table className="w-full min-w-[800px] text-left text-sm relative">
-          <thead className="sticky top-0 bg-[#F9F9F9] z-10 shadow-[0_1px_0_#f3f4f6]">
-            <tr className="border-b border-gray-100 text-gray-500">
-              <th className="py-4 pl-4 font-medium">User ID</th>
-              <th className="py-4 px-4 font-medium">Player Name</th>
-              <th className="py-4 px-4 font-medium">Email address</th>
-              <th className="py-4 px-4 font-medium">Registration Date</th>
-              <th className="py-4 px-4 font-medium">Wallet Balance</th>
-              <th className="py-4 px-4 font-medium">Status</th>
-              <th className="py-4 pr-4 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user, idx) => (
-              <tr key={idx} className="border-b border-gray-50 last:border-0 even:bg-[#F9F9F9]">
-                <td className="py-4 pl-4 text-gray-900">{user.id}</td>
-                <td className="py-4 px-4">
-                  <div className="flex items-center gap-3">
-                    <img 
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
-                      alt="avatar" 
-                      className="h-8 w-8 rounded-full bg-gray-100 object-cover" 
-                    />
-                    <span className="font-medium text-gray-900">{user.name}</span>
-                  </div>
-                </td>
-                <td className="py-4 px-4 text-gray-500">{user.email}</td>
-                <td className="py-4 px-4 text-gray-500">{user.date}</td>
-                <td className="py-4 px-4 font-medium text-gray-900">{user.balance}</td>
-                <td className="py-4 px-4">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-                    user.status === 'Verified' ? 'bg-[#E8F8E5] text-[#10C300]' :
-                    user.status === 'Pending' ? 'bg-[#FFF8E5] text-[#FFB000]' :
-                    'bg-[#FEECEB] text-[#EE201C]'
-                  }`}>
-                    {user.status}
-                  </span>
-                </td>
-                <td className="py-4 pr-4 text-right">
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <MoreHorizontal className="h-5 w-5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+  const filters = (
+    <>
+      <button className="flex cursor-pointer items-center gap-2 rounded-full bg-[#F6F6F6] px-4 py-2 text-sm font-medium text-gray-600 ">
+        All Users
+        <ChevronDown className="h-4 w-4 text-gray-400" />
+      </button>
+      <button className="flex cursor-pointer items-center gap-2 rounded-full bg-[#F6F6F6] px-4 py-2 text-sm font-medium text-gray-600">
+        Status
+        <ChevronDown className="h-4 w-4 text-gray-400" />
+      </button>
+      <button className="flex cursor-pointer items-center gap-2 rounded-full bg-[#F6F6F6] px-4 py-2 text-sm font-medium text-gray-600">
+        Today
+        <ChevronDown className="h-4 w-4 text-gray-400" />
+      </button>
+    </>
+  );
 
-      <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
-        <span>Page 1 of 10</span>
-        <div className="flex gap-3">
-          <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800]">
-            Previous
-          </button>
-          <button className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800]">
-            Next
-          </button>
-        </div>
-      </div>
-    </div>
+  return (
+    <DataTable
+      title="User Analytics"
+      subtitle="Manage all your users and activities."
+      data={users}
+      columns={columns}
+      filters={filters}
+      onActionClick={(user) => console.log("Action clicked for", user.name)}
+    />
   );
 }
