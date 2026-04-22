@@ -1,13 +1,13 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import FilterIcon from "../logo/filter.svg?react";
-import SortIcon from "../logo/sort.svg?react";
-import { userService, type NewUser } from "../lib/users";
+import FilterIcon from "@/logo/filter.svg?react";
+import SortIcon from "@/logo/sort.svg?react";
+import { type NewUser, userService } from "../../lib/users";
 
-export const Route = createFileRoute("/users")({
+export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
 });
 
@@ -28,7 +28,11 @@ function UsersPage() {
 		mobileNumber: "",
 	});
 
-	const { data: usersData, isLoading, error } = useQuery({
+	const {
+		data: usersData,
+		isLoading,
+		error,
+	} = useQuery({
 		queryKey: ["users", page, limit, sort, activeTab, search],
 		queryFn: async () => {
 			const result = await userService.listUsers({
@@ -98,8 +102,18 @@ function UsersPage() {
 						onClick={() => setShowAddModal(true)}
 						className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-accent px-4 py-2 font-medium text-white text-sm hover:bg-accent/90"
 					>
-						<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+						<svg
+							className="h-4 w-4"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M12 4v16m8-8H4"
+							/>
 						</svg>
 						Add new user
 					</button>
@@ -161,9 +175,7 @@ function UsersPage() {
 				{error ? (
 					<div className="flex flex-col items-center justify-center rounded-lg bg-white py-12 shadow-lg">
 						<p className="font-bold text-xl text-gray-900">
-							{error.message
-								.toLowerCase()
-								.includes("not found")
+							{error.message.toLowerCase().includes("not found")
 								? "No users found"
 								: "An error occurred"}
 						</p>
@@ -171,7 +183,9 @@ function UsersPage() {
 							<p className="mt-1 text-gray-600">try again later</p>
 						)}
 						<button
-							onClick={() => queryClient.invalidateQueries({ queryKey: ["users"] })}
+							onClick={() =>
+								queryClient.invalidateQueries({ queryKey: ["users"] })
+							}
 							className="mt-3 rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
 						>
 							Retry
@@ -205,7 +219,10 @@ function UsersPage() {
 							<tbody className="divide-y divide-gray-200 bg-white">
 								{users.length === 0 ? (
 									<tr>
-										<td colSpan={6} className="px-6 py-8 text-center text-gray-900">
+										<td
+											colSpan={6}
+											className="px-6 py-8 text-center text-gray-900"
+										>
 											No users found
 										</td>
 									</tr>
@@ -274,13 +291,33 @@ function UsersPage() {
 			)}
 
 			{showAddModal && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowAddModal(false)}>
-					<div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+					onClick={() => setShowAddModal(false)}
+				>
+					<div
+						className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+						onClick={(e) => e.stopPropagation()}
+					>
 						<div className="mb-4 flex items-center justify-between">
 							<h3 className="font-bold text-xl text-gray-900">Add new user</h3>
-							<button type="button" onClick={() => setShowAddModal(false)} className="text-gray-500 hover:text-gray-900">
-								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+							<button
+								type="button"
+								onClick={() => setShowAddModal(false)}
+								className="text-gray-500 hover:text-gray-900"
+							>
+								<svg
+									className="h-5 w-5"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M6 18L18 6M6 6l12 12"
+									/>
 								</svg>
 							</button>
 						</div>
@@ -298,7 +335,9 @@ function UsersPage() {
 								<input
 									type="text"
 									value={newUser.name}
-									onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+									onChange={(e) =>
+										setNewUser({ ...newUser, name: e.target.value })
+									}
 									required
 									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
 								/>
@@ -310,7 +349,9 @@ function UsersPage() {
 								<input
 									type="email"
 									value={newUser.email}
-									onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+									onChange={(e) =>
+										setNewUser({ ...newUser, email: e.target.value })
+									}
 									required
 									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
 								/>
@@ -322,7 +363,9 @@ function UsersPage() {
 								<input
 									type="text"
 									value={newUser.country || ""}
-									onChange={(e) => setNewUser({ ...newUser, country: e.target.value })}
+									onChange={(e) =>
+										setNewUser({ ...newUser, country: e.target.value })
+									}
 									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
 								/>
 							</div>
@@ -333,7 +376,9 @@ function UsersPage() {
 								<input
 									type="tel"
 									value={newUser.mobileNumber || ""}
-									onChange={(e) => setNewUser({ ...newUser, mobileNumber: e.target.value })}
+									onChange={(e) =>
+										setNewUser({ ...newUser, mobileNumber: e.target.value })
+									}
 									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
 								/>
 							</div>
