@@ -39,20 +39,20 @@ export function UserAnalyticsTable() {
 
       <div className="overflow-auto max-h-[400px]">
         <table className="w-full min-w-[800px] text-left text-sm relative">
-          <thead className="sticky top-0 bg-white z-10 shadow-[0_1px_0_#f3f4f6]">
+          <thead className="sticky top-0 bg-[#F9F9F9] z-10 shadow-[0_1px_0_#f3f4f6]">
             <tr className="border-b border-gray-100 text-gray-500">
-              <th className="pb-4 pl-4 font-medium">User ID</th>
-              <th className="pb-4 px-4 font-medium">Player Name</th>
-              <th className="pb-4 px-4 font-medium">Email address</th>
-              <th className="pb-4 px-4 font-medium">Registration Date</th>
-              <th className="pb-4 px-4 font-medium">Wallet Balance</th>
-              <th className="pb-4 px-4 font-medium">Status</th>
-              <th className="pb-4 pr-4 font-medium"></th>
+              <th className="py-4 pl-4 font-medium">User ID</th>
+              <th className="py-4 px-4 font-medium">Player Name</th>
+              <th className="py-4 px-4 font-medium">Email address</th>
+              <th className="py-4 px-4 font-medium">Registration Date</th>
+              <th className="py-4 px-4 font-medium">Wallet Balance</th>
+              <th className="py-4 px-4 font-medium">Status</th>
+              <th className="py-4 pr-4 font-medium"></th>
             </tr>
           </thead>
           <tbody>
             {users.map((user, idx) => (
-              <tr key={idx} className="border-b border-gray-50 last:border-0 odd:bg-[#F9F9F9]">
+              <tr key={idx} className="border-b border-gray-50 last:border-0 even:bg-[#F9F9F9]">
                 <td className="py-4 pl-4 text-gray-900">{user.id}</td>
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
