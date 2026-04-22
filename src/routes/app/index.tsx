@@ -17,11 +17,11 @@ function DashboardPage() {
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<h1 className="text-3xl font-bold text-gray-900">Overview</h1>
 				<div className="flex flex-wrap items-center gap-3">
-					<button className="flex items-center gap-2 rounded-full bg-[#10C300] px-4 py-2 text-sm font-medium text-white hover:bg-[#0ea800]">
+					<button className="flex cursor-pointer items-center gap-2 rounded-full bg-[#10C300] px-4 py-2 text-sm font-medium text-white hover:bg-[#0ea800]">
 						<Plus className="h-4 w-4" />
 						Add new user
 					</button>
-					<button className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+					<button className="flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
 						Time periods
 						<IoFilterSharp className="h-4 w-4 text-gray-400" />
 					</button>
