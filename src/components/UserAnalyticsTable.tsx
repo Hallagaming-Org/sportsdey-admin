@@ -16,15 +16,15 @@ export function UserAnalyticsTable() {
           <p className="mt-1 text-sm text-gray-500">Manage all your users and activities.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+          <button className="flex items-center gap-2 rounded-full bg-[#F6F6F6] px-4 py-2 text-sm font-medium text-gray-600 ">
             All Users
             <ChevronDown className="h-4 w-4 text-gray-400" />
           </button>
-          <button className="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+          <button className="flex items-center gap-2 rounded-full bg-[#F6F6F6] px-4 py-2 text-sm font-medium text-gray-600">
             Status
             <ChevronDown className="h-4 w-4 text-gray-400" />
           </button>
-          <button className="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+          <button className="flex items-center gap-2 rounded-full bg-[#F6F6F6] px-4 py-2 text-sm font-medium text-gray-600">
             Today
             <ChevronDown className="h-4 w-4 text-gray-400" />
           </button>
