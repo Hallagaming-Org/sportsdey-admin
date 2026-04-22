@@ -134,12 +134,14 @@ function UsersPage() {
 		{ 
 			header: "Status", 
 			accessor: (user) => (
-				<span className={`rounded-full px-2.5 py-1 font-medium text-xs ${
-					user.status === "verified" ? "bg-green-100 text-green-800" :
-					user.status === "pending_verification" ? "bg-yellow-100 text-yellow-800" :
-					"bg-gray-100 text-gray-800"
+				<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+					user.status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
+					user.status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
+					"bg-[#FEECEB] text-[#EE201C]"
 				}`}>
-					{user.status}
+					{user.status === "verified" ? "Verified" : 
+					 user.status === "pending_verification" ? "Pending" : 
+					 "Not Verified"}
 				</span>
 			)
 		}
@@ -237,6 +239,7 @@ function UsersPage() {
 				data={users}
 				isLoading={isLoading}
 				columns={columns}
+				onActionClick={(user) => console.log("Action clicked for", user.name)}
 				emptyMessage="No user found"
 			/>
 
