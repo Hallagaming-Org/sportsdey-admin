@@ -14,6 +14,7 @@ import {
 	Wallet,
 } from "lucide-react";
 import type { Admin } from "../lib/auth";
+	import { FaSun } from "react-icons/fa";
 
 type SidebarProps = {
 	admin?: Admin | null;
@@ -69,7 +70,9 @@ export default function Sidebar({
 					type="button"
 					className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-white/15 bg-white/06 text-white/60 transition-all duration-180 hover:bg-white/12 hover:text-white"
 				>
-					<Settings size={18} />
+					{/* <Settings size={18} /> */}
+				
+<FaSun />
 				</button>
 			</div>
 
