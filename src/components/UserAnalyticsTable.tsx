@@ -3,9 +3,15 @@ import { ChevronDown, MoreHorizontal } from "lucide-react";
 export function UserAnalyticsTable() {
   const users = [
     { id: "012345", name: "George jones", email: "georgejones@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Verified" },
-    { id: "012345", name: "Robert Fox", email: "robertfox@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Pending" },
-    { id: "012345", name: "Savannah Nguyen", email: "savannahnguyen@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Not verified" },
-    { id: "012345", name: "Leslie Alexander", email: "lesliealexander@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Verified" },
+    { id: "012346", name: "Robert Fox", email: "robertfox@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Pending" },
+    { id: "012347", name: "Savannah Nguyen", email: "savannahnguyen@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Not verified" },
+    { id: "012348", name: "Leslie Alexander", email: "lesliealexander@gmail.com", date: "Aug 8, 2025", balance: "₦3,000,000", status: "Verified" },
+    { id: "012349", name: "Jenny Wilson", email: "jennywilson@gmail.com", date: "Aug 9, 2025", balance: "₦1,500,000", status: "Verified" },
+    { id: "012350", name: "Courtney Henry", email: "courtneyhenry@gmail.com", date: "Aug 9, 2025", balance: "₦2,200,000", status: "Pending" },
+    { id: "012351", name: "Eleanor Pena", email: "eleanorpena@gmail.com", date: "Aug 10, 2025", balance: "₦500,000", status: "Verified" },
+    { id: "012352", name: "Arlene McCoy", email: "arlenemccoy@gmail.com", date: "Aug 10, 2025", balance: "₦800,000", status: "Not verified" },
+    { id: "012353", name: "Cody Fisher", email: "codyfisher@gmail.com", date: "Aug 11, 2025", balance: "₦4,100,000", status: "Verified" },
+    { id: "012354", name: "Bessie Cooper", email: "bessiecooper@gmail.com", date: "Aug 11, 2025", balance: "₦900,000", status: "Pending" },
   ];
 
   return (
@@ -31,9 +37,9 @@ export function UserAnalyticsTable() {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px] text-left text-sm">
-          <thead>
+      <div className="overflow-auto max-h-[400px]">
+        <table className="w-full min-w-[800px] text-left text-sm relative">
+          <thead className="sticky top-0 bg-white z-10 shadow-[0_1px_0_#f3f4f6]">
             <tr className="border-b border-gray-100 text-gray-500">
               <th className="pb-4 pl-4 font-medium">User ID</th>
               <th className="pb-4 px-4 font-medium">Player Name</th>
