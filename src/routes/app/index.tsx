@@ -21,7 +21,7 @@ function DashboardPage() {
 						<Plus className="h-4 w-4" />
 						Add new user
 					</button>
-					<button className="flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+					<button className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
 						Time periods
 						<IoFilterSharp className="h-4 w-4 text-gray-400" />
 					</button>
