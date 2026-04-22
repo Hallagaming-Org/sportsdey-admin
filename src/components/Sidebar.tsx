@@ -54,10 +54,10 @@ export default function Sidebar({
 
 	return (
 		<aside
-			className={`relative z-20 flex h-screen px-6 shrink-0 flex-col bg-black text-white transition-all duration-250 ${collapsed ? "w-[72px]" : "w-[20%]"}`}
+			className={`relative z-20 flex h-screen shrink-0 flex-col bg-black text-white transition-all duration-250 ${collapsed ? "w-[80px]" : "w-[20%]"}`}
 		>
 			<div
-				className={`flex items-center justify-between px-5 py-5 ${collapsed ? "justify-center" : ""}`}
+				className={`flex items-center py-5 ${collapsed ? "justify-center px-0" : "justify-between px-6"}`}
 			>
 				{!collapsed && (
 					<img
@@ -68,17 +68,15 @@ export default function Sidebar({
 				)}
 				<button
 					type="button"
-					className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[#4b4a4a] text-white transition-all duration-180 hover:bg-white/12 hover:text-white"
+					className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[#4b4a4a] text-white transition-all duration-180 hover:bg-white/12 hover:text-white ${collapsed ? "" : ""}`}
 				>
-
-				
-<FaSun />
+					<FaSun />
 				</button>
 			</div>
 
 			<button
 				type="button"
-				className="absolute top-[55px] -right-6 z-25 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-accent text-white transition-all duration-180 hover:bg-accent/90"
+				className="absolute top-[55px] -right-4 z-25 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-accent text-white transition-all duration-180 hover:bg-accent/90"
 				onClick={onToggleCollapse}
 				title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
 			>
