@@ -138,45 +138,44 @@ function WalletPage() {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden">
+    <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-8">
 
-      {/* Wallet Balance Card */}
-      <div className="flex-none rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+      <div className="min-h-[330px] flex-none rounded-2xl border border-gray-100 bg-white p-10 shadow-sm">
         <h2 className="font-bold text-xl text-gray-900">Wallet Balance</h2>
         <p className="text-sm text-gray-400 mt-0.5">
           This can be used for .... &amp; more.
         </p>
 
-        <div className="mt-5 flex items-end gap-4">
+        <div className="mt-8 flex items-end gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-600 mb-1.5">
               Enter Amount (NGN)
             </label>
-            <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 focus-within:border-[#1BAA04] focus-within:ring-1 focus-within:ring-[#1BAA04] transition-all">
+            <div className="w-[512px] flex items-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 transition-all">
               <span className="text-gray-400 mr-2 font-medium">₦</span>
               <input
                 type="text"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="1,234,567,890"
-                className="flex-1 bg-transparent text-gray-900 font-semibold text-lg outline-none placeholder:text-gray-300"
+                className="bg-transparent text-gray-900 font-semibold text-lg outline-none placeholder:text-gray-300"
               />
             </div>
           </div>
-          <button className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[#1BAA04] px-6 py-3.5 font-semibold text-white text-sm hover:bg-[#0ea800] transition-colors shadow-sm">
+          <button className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#1BAA04] px-6 py-3.5 font-semibold text-white text-sm hover:bg-[#0ea800] transition-colors shadow-sm">
             <Plus className="h-4 w-4" />
             Top up Amount
           </button>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-8">
           <p className="text-xs text-gray-400 mb-2">Pre-suggested amount for you</p>
           <div className="flex gap-3">
             {SUGGESTED_AMOUNTS.map((amt) => (
               <button
                 key={amt}
                 onClick={() => setAmount(amt.replace("₦", "").replace(/,/g, ""))}
-                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-xs font-medium text-gray-600 hover:border-[#1BAA04] hover:text-[#1BAA04] transition-colors cursor-pointer"
+                className="rounded-lg border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-600 hover:border-[#1BAA04] hover:text-[#1BAA04] transition-colors cursor-pointer"
               >
                 {amt}
               </button>
