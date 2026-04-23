@@ -25,7 +25,7 @@ interface TicketRecord {
 
 const DUMMY_TICKETS: TicketRecord[] = [
   { id: "012345", playerName: "George James", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
-  { id: "012346", playerName: "Eagle", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Quick Bets", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
+  { id: "012346", playerName: "Savannah Ekikopima Enenche", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Quick Bets", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
   { id: "012347", playerName: "Xcape", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Lost" },
   { id: "012348", playerName: "Bayse", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sports Betting", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
   { id: "012349", playerName: "Lucky Rise", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
@@ -85,7 +85,7 @@ function TicketsPage() {
     {
       header: "Player Name",
       accessor: (t) => (
-        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+        <span className="truncate block max-w-[150px] text-gray-500 text-xs leading-relaxed" title={t.playerName}>
           {t.playerName}
         </span>
       ),
