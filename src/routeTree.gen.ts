@@ -13,6 +13,7 @@ import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppWalletRouteImport } from './routes/app/wallet'
 import { Route as AppUsersRouteImport } from './routes/app/users'
 import { Route as AppGamesRouteImport } from './routes/app/games'
 
@@ -36,6 +37,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWalletRoute = AppWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppUsersRoute = AppUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/app/games': typeof AppGamesRoute
   '/app/users': typeof AppUsersRoute
+  '/app/wallet': typeof AppWalletRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/app/games': typeof AppGamesRoute
   '/app/users': typeof AppUsersRoute
+  '/app/wallet': typeof AppWalletRoute
   '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -69,13 +77,21 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/app/games': typeof AppGamesRoute
   '/app/users': typeof AppUsersRoute
+  '/app/wallet': typeof AppWalletRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/sign-in' | '/app/games' | '/app/users' | '/app/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/sign-in'
+    | '/app/games'
+    | '/app/users'
+    | '/app/wallet'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign-in' | '/app/games' | '/app/users' | '/app'
+  to: '/' | '/sign-in' | '/app/games' | '/app/users' | '/app/wallet' | '/app'
   id:
     | '__root__'
     | '/'
@@ -83,6 +99,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/app/games'
     | '/app/users'
+    | '/app/wallet'
     | '/app/'
   fileRoutesById: FileRoutesById
 }
@@ -122,6 +139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/wallet': {
+      id: '/app/wallet'
+      path: '/wallet'
+      fullPath: '/app/wallet'
+      preLoaderRoute: typeof AppWalletRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/users': {
       id: '/app/users'
       path: '/users'
@@ -142,12 +166,14 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppGamesRoute: typeof AppGamesRoute
   AppUsersRoute: typeof AppUsersRoute
+  AppWalletRoute: typeof AppWalletRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppGamesRoute: AppGamesRoute,
   AppUsersRoute: AppUsersRoute,
+  AppWalletRoute: AppWalletRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
