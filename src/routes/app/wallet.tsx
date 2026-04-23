@@ -170,7 +170,7 @@ function WalletPage() {
                 value={amount}
                 onChange={handleAmountChange}
                 placeholder="1,234,567,890"
-                className="bg-transparent text-gray-900 font-semibold text-lg outline-none placeholder:text-gray-300"
+                className="flex-1 bg-transparent text-gray-900 font-semibold text-lg outline-none placeholder:text-gray-300"
               />
             </div>
           </div>
