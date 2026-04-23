@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import SortIcon from "@/logo/sort.svg?react";
@@ -42,6 +42,7 @@ const INITIAL_GAMES: Game[] = [
 function GamesPage() {
   const [games, setGames] = useState<Game[]>(INITIAL_GAMES);
   	const [sort, setSort] = useState<"asc" | "desc">("asc");
+    const navigate = useNavigate();
 
   const handleToggle = (id: string) => {
     setGames((prev) =>
@@ -56,7 +57,7 @@ function GamesPage() {
         <div>
           <h2 className="font-bold text-2xl text-gray-900">All Games</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            Dashboard &rsaquo; Games management
+            <span className="font-medium cursor-pointer text-black hover:underline hover:transition-all hover:duration-300" onClick={() => navigate({ to: "/app" })}>Dashboard</span> &rsaquo; Games management
           </p>
         </div>
         <div className="flex items-center gap-3">
