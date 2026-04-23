@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
 import { IoFilter } from "react-icons/io5";
+  import { FaFileExport } from "react-icons/fa6";
 
 export const Route = createFileRoute("/app/transactions")({
   component: WalletPage,
@@ -47,7 +48,7 @@ const DUMMY_TRANSACTIONS: Transaction[] = [
   { id: "012366", dateTime: "Aug 17, 2025\n02:00 pm", type: "Withdrawal", paymentMethod: "Paystack", amount: "5.5", balanceAfter: "₦1,089,300", status: "Failed" },
 ];
 
-const SUGGESTED_AMOUNTS = ["₦1,000,000", "₦2,000,000", "₦3,000,000", "₦4,000,000"];
+// const SUGGESTED_AMOUNTS = ["₦1,000,000", "₦2,000,000", "₦3,000,000", "₦4,000,000"];
 
 const STATUS_STYLES: Record<TransactionStatus, string> = {
   Won: "bg-[#E8F8E5] text-[#10C300]",
@@ -150,69 +151,24 @@ function WalletPage() {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-8">
-
-      <div className="min-h-[330px] flex-none rounded-2xl border border-gray-100 bg-white p-10 shadow-sm">
-        <h2 className="font-bold text-xl text-gray-900">Wallet Balance</h2>
-        <p className="text-sm text-gray-400 mt-0.5">
-          This can be used for .... &amp; more.
-        </p>
-
-        <div className="mt-8 flex items-end gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">
-              Enter Amount (NGN)
-            </label>
-            <div className="w-[512px] flex items-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 transition-all">
-              <span className="text-gray-400 mr-2 font-medium">₦</span>
-              <input
-                type="text"
-                value={amount}
-                onChange={handleAmountChange}
-                placeholder="1,234,567,890"
-                className="flex-1 bg-transparent text-gray-900 font-semibold text-lg outline-none placeholder:text-gray-300"
-              />
-            </div>
-          </div>
-          <button 
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#1BAA04] px-6 py-3.5 font-semibold text-white text-sm hover:bg-[#0ea800] transition-colors shadow-sm"
-            onClick={() => console.log("Sending to backend:", amount.replace(/,/g, ""))}
-          >
-            <Plus className="h-4 w-4" />
-            Top up Amount
-          </button>
-        </div>
-
-        <div className="mt-8">
-          <p className="text-xs text-gray-400 mb-2">Pre-suggested amount for you</p>
-          <div className="flex gap-3">
-            {SUGGESTED_AMOUNTS.map((amt) => (
-              <button
-                key={amt}
-                onClick={() => setAmount(formatAmount(amt))}
-                className="rounded-lg border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-600 hover:border-[#1BAA04] hover:text-[#1BAA04] transition-colors cursor-pointer"
-              >
-                {amt}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Transactions Section */}
+    <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-6">
       <div className="flex-1 min-h-0 flex flex-col gap-4">
-        {/* Section header */}
         <div className="flex-none flex items-center justify-between">
           <div>
             <h3 className="font-bold text-xl text-[#03002B]">Transactions</h3>
             <p className="text-sm text-[#001A26]">Manage all betting history</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-[#053209] bg-[#F4F8F3] px-3 py-1.5 text-sm font-medium text-[#053209] hover:bg-gray-50 cursor-pointer">
+            <button className="inline-flex items-center h-11 gap-1.5 rounded-full border border-[#053209] bg-[#F4F8F3] px-3 py-1.5 text-sm font-medium text-[#053209] hover:bg-gray-50 cursor-pointer">
               T-type <ChevronDown className="h-3.5 w-3.5 text-[#364052]" />
             </button>
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-[#053209] bg-[#F4F8F3] px-3 py-1.5 text-sm font-medium text-[#053209] hover:bg-gray-50 cursor-pointer">
+            <button className="inline-flex items-center h-11 gap-1.5 rounded-full border border-[#053209] bg-[#F4F8F3] px-3 py-1.5 text-sm font-medium text-[#053209] hover:bg-gray-50 cursor-pointer">
               Status <ChevronDown className="h-3.5 w-3.5 text-[#364052]" />
+            </button>
+            <button className="inline-flex items-center h-11 gap-1.5 rounded-full bg-[#1BAA04] px-3 py-1.5 text-sm font-medium text-white cursor-pointer">
+              Export File as
+            
+<FaFileExport className="h-3.5 w-3.5 text-white" />
             </button>
           </div>
         </div>
@@ -246,7 +202,7 @@ function WalletPage() {
               />
               <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
             </div>
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
               Time periods
               <IoFilter className="h-3.5 w-3.5" />
             </button>
