@@ -20,7 +20,7 @@ function GameCard({
     >
       {/* Card */}
       <div
-        className="relative w-[190px] h-[220px] rounded-2xl overflow-hidden"
+        className="relative w-[90%] h-[220px] rounded-2xl overflow-hidden"
         style={{ opacity: game.enabled ? 1 : 0.5 }}
       >
         {/* Background gradient */}
@@ -59,7 +59,7 @@ function GameCard({
             e.stopPropagation();
             onToggle(game.id);
           }}
-          className={`flex items-center gap-2 rounded-full px-5 py-2 font-semibold text-sm border transition-colors shadow-sm ${
+          className={`flex justify-center items-center gap-2 rounded-full w-[157px] h-10 font-semibold text-sm border transition-colors shadow-sm ${
             game.enabled
               ? "border-[#053209] bg-[#F4F8F3] text-[#053209] cursor-pointer"
               : "border-[#053209] bg-[#053209] text-white cursor-pointer"
