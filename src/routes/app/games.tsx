@@ -53,7 +53,7 @@ function GamesPage() {
   return (
     <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden">
       {/* Sticky Header */}
-      <div className="flex-none flex items-center justify-between">
+      <div className="flex-none flex items-center justify-between px-8">
         <div>
           <h2 className="font-bold text-2xl text-gray-900">All Games</h2>
           <p className="text-sm text-gray-500 mt-0.5">
