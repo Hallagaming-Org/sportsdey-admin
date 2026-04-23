@@ -7,6 +7,7 @@ import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { type NewUser, type User, userService } from "../../lib/users";
 import { DataTable, type Column } from "#/components/DataTable";
+import { IoFilter } from "react-icons/io5";
 
 export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
@@ -106,13 +107,13 @@ function UsersPage() {
 		{ 
 			header: "Player Name", 
 			accessor: (user) => (
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-3 min-w-0">
 					<img 
 						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
 						alt="avatar" 
-						className="h-8 w-8 rounded-full bg-gray-100 object-cover" 
+						className="h-8 w-8 rounded-full bg-gray-100 object-cover flex-shrink-0" 
 					/>
-					<span className="font-medium text-gray-900">{user.name}</span>
+					<span className="font-medium text-gray-900 truncate" title={user.name}>{user.name}</span>
 				</div>
 			)
 		},
@@ -193,7 +194,7 @@ function UsersPage() {
 				<div className="flex gap-8 border-b border-gray-300">
 					{[
 						{ key: "all", label: "All Users" },
-						{ key: "recent", label: "Registered recently" },
+						{ key: "recent", label: "Recently registered" },
 						{ key: "pending", label: "Pending verification" },
 					].map((tab) => (
 						<button
@@ -216,7 +217,7 @@ function UsersPage() {
 
 				{!error && (
 					<form
-						className="relative"
+						className="relative space-x-3"
 						onSubmit={(e) => {
 							e.preventDefault();
 							setPage(1);
@@ -228,8 +229,12 @@ function UsersPage() {
 							placeholder="Search"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
+							className="w-64 rounded-full border border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
 						/>
+						<button className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
+									  Time periods
+									  <IoFilter className="h-3.5 w-3.5" />
+									</button>
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</form>
 				)}
