@@ -33,7 +33,7 @@ type NavItem = {
 const menuItems: NavItem[] = [
 	{ icon: Home, label: "Dashboard", to: "/app" },
 	{ icon: Users, label: "User management", to: "/app/users" },
-	{ icon: Wallet, label: "Wallet & Payments" },
+	{ icon: Wallet, label: "Wallet & Payments", to: "/app/wallet" },
 	{ icon: Gamepad2, label: "Game management", to: "/app/games" },
 	{ icon: Ticket, label: "Ticket history" },
 	{ icon: Settings, label: "CMS Controls" },
