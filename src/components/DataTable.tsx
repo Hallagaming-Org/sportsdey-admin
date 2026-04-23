@@ -35,9 +35,11 @@ export function DataTable<T>({
   emptyMessage = "No user found",
   pagination,
 }: DataTableProps<T>) {
+  const isFullHeight = maxHeight === "100%";
+
   return (
     <div
-      className="relative overflow-hidden bg-white"
+      className={`relative overflow-hidden bg-white ${isFullHeight ? "flex flex-col h-full" : ""}`}
       style={{
         borderRight: "2px solid #e2e8f0",
         borderBottom: "2px solid #e2e8f0",
@@ -45,8 +47,8 @@ export function DataTable<T>({
       }}
     >
       <div
-        className="overflow-auto custom-scrollbar"
-        style={maxHeight ? { maxHeight } : {}}
+        className={`overflow-auto custom-scrollbar ${isFullHeight ? "flex-1 min-h-0" : ""}`}
+        style={!isFullHeight && maxHeight ? { maxHeight } : {}}
       >
         <table className="w-full min-w-[800px] text-left text-sm relative border-collapse">
           <thead className="sticky top-0 z-10 shadow-[0_1px_0_#f3f4f6]">
