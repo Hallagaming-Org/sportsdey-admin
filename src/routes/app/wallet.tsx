@@ -71,6 +71,18 @@ function WalletPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
+  const formatAmount = (val: string) => {
+    const num = val.replace(/\D/g, "");
+    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatAmount(e.target.value);
+    setAmount(formatted);
+  };
+
+  // When sending to backend, use: amount.replace(/,/g, "")
+
   const filteredTransactions = DUMMY_TRANSACTIONS.filter((t) => {
     if (activeTab === "deposits") return t.type === "Deposit";
     if (activeTab === "withdrawals") return t.type === "Withdrawal";
@@ -156,13 +168,16 @@ function WalletPage() {
               <input
                 type="text"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={handleAmountChange}
                 placeholder="1,234,567,890"
                 className="bg-transparent text-gray-900 font-semibold text-lg outline-none placeholder:text-gray-300"
               />
             </div>
           </div>
-          <button className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#1BAA04] px-6 py-3.5 font-semibold text-white text-sm hover:bg-[#0ea800] transition-colors shadow-sm">
+          <button 
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#1BAA04] px-6 py-3.5 font-semibold text-white text-sm hover:bg-[#0ea800] transition-colors shadow-sm"
+            onClick={() => console.log("Sending to backend:", amount.replace(/,/g, ""))}
+          >
             <Plus className="h-4 w-4" />
             Top up Amount
           </button>
@@ -174,7 +189,7 @@ function WalletPage() {
             {SUGGESTED_AMOUNTS.map((amt) => (
               <button
                 key={amt}
-                onClick={() => setAmount(amt.replace("₦", "").replace(/,/g, ""))}
+                onClick={() => setAmount(formatAmount(amt))}
                 className="rounded-lg border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-600 hover:border-[#1BAA04] hover:text-[#1BAA04] transition-colors cursor-pointer"
               >
                 {amt}
