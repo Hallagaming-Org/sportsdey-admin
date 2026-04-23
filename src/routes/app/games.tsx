@@ -57,7 +57,7 @@ function GamesPage() {
         <div>
           <h2 className="font-bold text-2xl text-gray-900">All Games</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            <span className="font-medium cursor-pointer text-black hover:underline hover:transition-all hover:duration-300" onClick={() => navigate({ to: "/app" })}>Dashboard</span> &rsaquo; Games management
+            <span className="font-medium cursor-pointer text-[#001A26] hover:underline hover:transition-all hover:duration-300" onClick={() => navigate({ to: "/app" })}>Dashboard</span> &rsaquo; Games management
           </p>
         </div>
         <div className="flex items-center gap-3">
