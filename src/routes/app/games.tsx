@@ -67,7 +67,7 @@ function GamesPage() {
                       <SortIcon className="h-3 w-3" />
                       Sort
                     </button>
-          <button className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#1BAA04] px-4 py-2 font-medium text-white text-sm hover:bg-[#0ea800] shadow-sm transition-colors">
+          <button className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#1BAA04] px-4 py-2 font-medium text-white text-sm hover:bg-[#4fe741] shadow-sm transition-colors">
             <Plus className="h-4 w-4" />
             Add new game
           </button>
@@ -87,7 +87,6 @@ function GamesPage() {
         </span>
       </div> */}
 
-      {/* Games Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {games.map((game) => (
           <GameCard key={game.id} game={game} onToggle={handleToggle} />
