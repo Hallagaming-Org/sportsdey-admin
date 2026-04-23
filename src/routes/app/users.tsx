@@ -193,7 +193,7 @@ function UsersPage() {
 				<div className="flex gap-8 border-b border-gray-300">
 					{[
 						{ key: "all", label: "All Users" },
-						{ key: "recent", label: "Registered recently" },
+						{ key: "recent", label: "Recently registered" },
 						{ key: "pending", label: "Pending verification" },
 					].map((tab) => (
 						<button
