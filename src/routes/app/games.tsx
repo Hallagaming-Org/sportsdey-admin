@@ -50,9 +50,9 @@ function GamesPage() {
   };
 
   return (
-    <div className="space-y-6 px-12">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+    <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden">
+      {/* Sticky Header */}
+      <div className="flex-none flex items-center justify-between">
         <div>
           <h2 className="font-bold text-2xl text-gray-900">All Games</h2>
           <p className="text-sm text-gray-500 mt-0.5">
@@ -61,36 +61,26 @@ function GamesPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
-                      onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
-                      className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
-                    >
-                      <SortIcon className="h-3 w-3" />
-                      Sort
-                    </button>
-          <button className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#1BAA04] px-4 py-2 font-medium text-white text-sm hover:bg-[#4fe741] shadow-sm transition-colors">
+            onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
+          >
+            <SortIcon className="h-3 w-3" />
+            Sort
+          </button>
+          <button className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#1BAA04] px-4 py-2 font-medium text-white text-sm hover:bg-[#0ea800] shadow-sm transition-colors">
             <Plus className="h-4 w-4" />
             Add new game
           </button>
         </div>
       </div>
-      {/* <div className="flex gap-4 text-sm text-gray-500">
-        <span>
-          <strong className="text-gray-900">{games.length}</strong> total games
-        </span>
-        <span>·</span>
-        <span>
-          <strong className="text-green-600">{games.filter((g) => g.enabled).length}</strong> active
-        </span>
-        <span>·</span>
-        <span>
-          <strong className="text-red-500">{games.filter((g) => !g.enabled).length}</strong> disabled
-        </span>
-      </div> */}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {games.map((game) => (
-          <GameCard key={game.id} game={game} onToggle={handleToggle} />
-        ))}
+      {/* Scrollable Games Grid */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar pb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8">
+          {games.map((game) => (
+            <GameCard key={game.id} game={game} onToggle={handleToggle} />
+          ))}
+        </div>
       </div>
     </div>
   );
