@@ -57,7 +57,10 @@ function GamesPage() {
         <div>
           <h2 className="font-bold text-2xl text-gray-900">All Games</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            <span className="font-medium cursor-pointer text-[#001A26] hover:underline hover:transition-all hover:duration-300" onClick={() => navigate({ to: "/app" })}>Dashboard</span> &rsaquo; Games management
+            <span 
+              className="relative font-medium cursor-pointer text-[#001A26] after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-[#001A26] after:transition-all after:duration-500 hover:after:w-full"
+              onClick={() => navigate({ to: "/app" })}
+            >Dashboard</span> &rsaquo; Games management
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -77,7 +80,7 @@ function GamesPage() {
 
       {/* Scrollable Games Grid */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pb-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
           {games.map((game) => (
             <GameCard key={game.id} game={game} onToggle={handleToggle} />
           ))}
