@@ -107,13 +107,13 @@ function UsersPage() {
 		{ 
 			header: "Player Name", 
 			accessor: (user) => (
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-3 min-w-0">
 					<img 
 						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
 						alt="avatar" 
-						className="h-8 w-8 rounded-full bg-gray-100 object-cover" 
+						className="h-8 w-8 rounded-full bg-gray-100 object-cover flex-shrink-0" 
 					/>
-					<span className="font-medium text-gray-900">{user.name}</span>
+					<span className="font-medium text-gray-900 truncate" title={user.name}>{user.name}</span>
 				</div>
 			)
 		},
