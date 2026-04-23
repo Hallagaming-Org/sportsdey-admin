@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, Search, ChevronDown, Clock } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
+import { IoFilter } from "react-icons/io5";
 
 export const Route = createFileRoute("/app/wallet")({
   component: WalletPage,
@@ -189,22 +190,22 @@ function WalletPage() {
         {/* Section header */}
         <div className="flex-none flex items-center justify-between">
           <div>
-            <h3 className="font-bold text-xl text-gray-900">Transactions</h3>
-            <p className="text-sm text-gray-400">Manage all betting history</p>
+            <h3 className="font-bold text-xl text-[#03002B]">Transactions</h3>
+            <p className="text-sm text-[#001A26]">Manage all betting history</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
-              T-type <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+            <button className="inline-flex items-center gap-1.5 rounded-full border border-[#053209] bg-[#F4F8F3] px-3 py-1.5 text-sm font-medium text-[#053209] hover:bg-gray-50 cursor-pointer">
+              T-type <ChevronDown className="h-3.5 w-3.5 text-[#364052]" />
             </button>
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
-              Status <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+            <button className="inline-flex items-center gap-1.5 rounded-full border border-[#053209] bg-[#F4F8F3] px-3 py-1.5 text-sm font-medium text-[#053209] hover:bg-gray-50 cursor-pointer">
+              Status <ChevronDown className="h-3.5 w-3.5 text-[#364052]" />
             </button>
           </div>
         </div>
 
         {/* Tabs + Search */}
         <div className="flex-none flex items-center justify-between gap-4">
-          <div className="flex gap-6 border-b border-gray-200">
+          <div className="flex gap-6 border-b border-[#B0B0B0]">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
@@ -213,7 +214,7 @@ function WalletPage() {
                 className={`pb-3 font-medium text-sm transition-colors cursor-pointer ${
                   activeTab === tab.key
                     ? "border-b-2 border-[#1BAA04] text-[#1BAA04]"
-                    : "text-gray-500 hover:text-gray-800"
+                    : "text-[#B0B0B0] hover:text-[#1BAA04]"
                 }`}
               >
                 {tab.label}
@@ -232,8 +233,8 @@ function WalletPage() {
               <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
             </div>
             <button className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
-              <Clock className="h-3.5 w-3.5" />
               Time periods
+              <IoFilter className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
