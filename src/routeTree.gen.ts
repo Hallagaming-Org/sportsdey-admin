@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppUsersRouteImport } from './routes/app/users'
+import { Route as AppGamesRouteImport } from './routes/app/games'
 
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
@@ -40,17 +41,24 @@ const AppUsersRoute = AppUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGamesRoute = AppGamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/sign-in': typeof SignInRoute
+  '/app/games': typeof AppGamesRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInRoute
+  '/app/games': typeof AppGamesRoute
   '/app/users': typeof AppUsersRoute
   '/app': typeof AppIndexRoute
 }
@@ -59,15 +67,23 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/sign-in': typeof SignInRoute
+  '/app/games': typeof AppGamesRoute
   '/app/users': typeof AppUsersRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/sign-in' | '/app/users' | '/app/'
+  fullPaths: '/' | '/app' | '/sign-in' | '/app/games' | '/app/users' | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign-in' | '/app/users' | '/app'
-  id: '__root__' | '/' | '/app' | '/sign-in' | '/app/users' | '/app/'
+  to: '/' | '/sign-in' | '/app/games' | '/app/users' | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/sign-in'
+    | '/app/games'
+    | '/app/users'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -113,15 +129,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUsersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/games': {
+      id: '/app/games'
+      path: '/games'
+      fullPath: '/app/games'
+      preLoaderRoute: typeof AppGamesRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppGamesRoute: typeof AppGamesRoute
   AppUsersRoute: typeof AppUsersRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppGamesRoute: AppGamesRoute,
   AppUsersRoute: AppUsersRoute,
   AppIndexRoute: AppIndexRoute,
 }
