@@ -35,8 +35,8 @@ const menuItems: NavItem[] = [
 	{ icon: Users, label: "User management", to: "/app/users" },
 	{ icon: Wallet, label: "Transactions", to: "/app/transactions" },
 	{ icon: Gamepad2, label: "Game management", to: "/app/games" },
-	{ icon: Ticket, label: "Ticket history", to: "/app/tickets" },
-	{ icon: Settings, label: "CMS Controls" },
+	{ icon: Ticket, label: "Ticket history" },
+	{ icon: Settings, label: "CMS Controls", to: "/app/cms" },
 	{ icon: Activity, label: "Activity log" },
 ];
 
