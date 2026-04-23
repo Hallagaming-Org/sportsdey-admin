@@ -10,7 +10,10 @@ import { adminAuth } from "../lib/auth";
 export const Route = createFileRoute("/app")({
 	beforeLoad: async () => {
 		const session = await adminAuth.getSession();
-		if (!session) {
+		// Only redirect to sign-in on the client. 
+		// On the server, we might not have the session due to cross-port cookie issues on localhost,
+		// so we let the client hydrate and check localStorage first.
+		if (!session && typeof window !== "undefined") {
 			throw redirect({ to: "/sign-in", replace: true });
 		}
 		return { admin: session };

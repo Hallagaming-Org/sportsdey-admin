@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import {
 	Activity,
 	ChevronLeft,
@@ -14,6 +15,7 @@ import {
 	Wallet,
 } from "lucide-react";
 import type { Admin } from "../lib/auth";
+	import { FaSun, FaMoon } from "react-icons/fa";
 
 type SidebarProps = {
 	admin?: Admin | null;
@@ -31,8 +33,8 @@ type NavItem = {
 const menuItems: NavItem[] = [
 	{ icon: Home, label: "Dashboard", to: "/app" },
 	{ icon: Users, label: "User management", to: "/app/users" },
-	{ icon: Wallet, label: "Wallet & Payments" },
-	{ icon: Gamepad2, label: "Game management" },
+	{ icon: Wallet, label: "Wallet & Payments", to: "/app/wallet" },
+	{ icon: Gamepad2, label: "Game management", to: "/app/games" },
 	{ icon: Ticket, label: "Ticket history" },
 	{ icon: Settings, label: "CMS Controls", to: "/app/cms" },
 	{ icon: Activity, label: "Activity log" },
@@ -52,37 +54,40 @@ export default function Sidebar({
 	const { location } = useRouterState();
 
 	return (
-		<aside
-			className={`relative z-20 flex min-h-screen w-60 shrink-0 flex-col bg-black text-white transition-all duration-250 ${collapsed ? "w-[72px]" : ""}`}
+		<motion.aside
+			initial={false}
+			animate={{ width: collapsed ? 80 : 280 }}
+			transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+			className="relative z-20 flex h-screen shrink-0 flex-col bg-black text-white"
 		>
 			<div
-				className={`flex items-center justify-between px-5 py-5 ${collapsed ? "justify-center" : ""}`}
+				className={`flex items-center py-5 ${collapsed ? "justify-center px-0" : "justify-between px-6"}`}
 			>
 				{!collapsed && (
 					<img
 						src="/sportsdey-logo.png"
 						alt="SportsDey"
-						className="h-8 w-auto object-contain"
+						className="h-auto w-auto object-contain"
 					/>
 				)}
 				<button
 					type="button"
-					className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-white/15 bg-white/06 text-white/60 transition-all duration-180 hover:bg-white/12 hover:text-white"
+					className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-[#4b4a4a] text-white transition-all duration-180 hover:bg-white/12 hover:text-white ${collapsed ? "" : ""}`}
 				>
-					<Settings size={18} />
+					{new Date().getHours() >= 6 && new Date().getHours() < 18 ? <FaSun className="text-white" /> : <FaMoon className="text-white" />}
 				</button>
 			</div>
 
 			<button
 				type="button"
-				className="absolute top-[55px] -right-6 z-25 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-accent text-white transition-all duration-180 hover:bg-accent/90"
+				className="absolute top-[72px] -right-6 z-25 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-accent text-white transition-all duration-180"
 				onClick={onToggleCollapse}
 				title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
 			>
 				{collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
 			</button>
 
-			<div className="flex-1 overflow-y-auto pb-3">
+			<div className="flex-1 overflow-y-auto pb-3 custom-scrollbar">
 				<div
 					className={`flex items-center justify-between px-5 py-2 ${collapsed ? "justify-center" : ""}`}
 				>
@@ -139,18 +144,18 @@ export default function Sidebar({
 				</nav>
 			</div>
 
-			<div className="mt-auto border-white/08 border-t px-4 py-4">
+			<div className="mt-auto mb-10 px-8 space-y-1">
 				<button
 					type="button"
 					onClick={onLogout}
-					className={`flex w-full cursor-pointer items-center gap-2.5 border-none bg-none py-2 text-sm text-white/50 transition-colors duration-180 hover:text-white ${collapsed ? "justify-center" : ""}`}
+					className={`flex w-full cursor-pointer items-center gap-2.5 border-none bg-none py-2 text-sm text-white transition-colors duration-180 hover:text-white ${collapsed ? "justify-center" : ""}`}
 				>
 					<LogOut size={18} />
 					{!collapsed && <span>Log out</span>}
 				</button>
 
 				<div
-					className={`mt-4 flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}
+					className={`border-[#475467] border-t px-4 py-4 flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}
 				>
 					<img
 						src="https://i.pravatar.cc/40"
@@ -177,7 +182,7 @@ export default function Sidebar({
 					)}
 				</div>
 			</div>
-		</aside>
+		</motion.aside>
 	);
 }
 

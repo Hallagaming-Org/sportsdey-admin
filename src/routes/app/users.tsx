@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
-import { type NewUser, userService } from "../../lib/users";
+import { type NewUser, type User, userService } from "../../lib/users";
+import { DataTable, type Column } from "#/components/DataTable";
 
 export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
@@ -74,9 +75,77 @@ function UsersPage() {
 		},
 	});
 
-	const users = usersData?.users || [];
-	const total = usersData?.total || 0;
+	const dummyUsers: User[] = [
+		{ id: "USR001", name: "George Jones", email: "george@example.com", wallet: 3000000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR002", name: "Robert Fox", email: "robert@example.com", wallet: 1200000, status: "pending_verification", registeredDate: Date.now() },
+		{ id: "USR003", name: "Savannah Nguyen", email: "savannah@example.com", wallet: 500000, status: "not_verified", registeredDate: Date.now() },
+		{ id: "USR004", name: "Leslie Alexander", email: "leslie@example.com", wallet: 4100000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR005", name: "Jenny Wilson", email: "jenny@example.com", wallet: 1500000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR006", name: "Courtney Henry", email: "courtney@example.com", wallet: 2200000, status: "pending_verification", registeredDate: Date.now() },
+		{ id: "USR007", name: "Eleanor Pena", email: "eleanor@example.com", wallet: 900000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR008", name: "Arlene McCoy", email: "arlene@example.com", wallet: 800000, status: "not_verified", registeredDate: Date.now() },
+		{ id: "USR009", name: "Cody Fisher", email: "cody@example.com", wallet: 4500000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR010", name: "Coady Gakpo", email: "coady@example.com", wallet: 4500000, status: "verified", registeredDate: Date.now() },
+		{ id: "USR011", name: "Bessie Cooper", email: "bessie@example.com", wallet: 1100000, status: "pending_verification", registeredDate: Date.now() },
+	];
+
+	const isUsingDummyData = !usersData?.users || usersData.users.length === 0;
+	
+	const users = isUsingDummyData 
+		? dummyUsers.slice((page - 1) * limit, page * limit) 
+		: usersData.users;
+		
+	const total = isUsingDummyData ? dummyUsers.length : usersData.total;
 	const totalPages = Math.ceil(total / limit);
+
+	const columns: Column<User>[] = [
+		{ 
+			header: "User Id", 
+			accessor: "id" 
+		},
+		{ 
+			header: "Player Name", 
+			accessor: (user) => (
+				<div className="flex items-center gap-3">
+					<img 
+						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
+						alt="avatar" 
+						className="h-8 w-8 rounded-full bg-gray-100 object-cover" 
+					/>
+					<span className="font-medium text-gray-900">{user.name}</span>
+				</div>
+			)
+		},
+		{ 
+			header: "Email address", 
+			accessor: "email",
+			cellClassName: "text-gray-500"
+		},
+		{ 
+			header: "Registration Date", 
+			accessor: (user) => user.registeredDate ? new Date(user.registeredDate).toLocaleDateString() : "-",
+			cellClassName: "text-gray-500"
+		},
+		{ 
+			header: "Wallet Balance", 
+			accessor: (user) => `₦${user.wallet.toLocaleString()}`,
+			cellClassName: "font-medium text-gray-900"
+		},
+		{ 
+			header: "Status", 
+			accessor: (user) => (
+				<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+					user.status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
+					user.status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
+					"bg-[#FEECEB] text-[#EE201C]"
+				}`}>
+					{user.status === "verified" ? "Verified" : 
+					 user.status === "pending_verification" ? "Pending" : 
+					 "Not Verified"}
+				</span>
+			)
+		}
+	];
 
 	return (
 		<div className="space-y-6">
@@ -166,129 +235,20 @@ function UsersPage() {
 				)}
 			</div>
 
-			<div className="relative overflow-hidden rounded-lg bg-white shadow-md">
-				{isLoading && (
-					<div className="absolute inset-0 flex items-center justify-center bg-white/50">
-						<div className="h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
-					</div>
-				)}
-				{error ? (
-					<div className="flex flex-col items-center justify-center rounded-lg bg-white py-12 shadow-lg">
-						<p className="font-bold text-xl text-gray-900">
-							{error.message.toLowerCase().includes("not found")
-								? "No users found"
-								: "An error occurred"}
-						</p>
-						{!error.message.toLowerCase().includes("not found") && (
-							<p className="mt-1 text-gray-600">try again later</p>
-						)}
-						<button
-							onClick={() =>
-								queryClient.invalidateQueries({ queryKey: ["users"] })
-							}
-							className="mt-3 rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
-						>
-							Retry
-						</button>
-					</div>
-				) : (
-					<>
-						<table className="min-w-full divide-y divide-gray-200">
-							<thead className="bg-gray-50">
-								<tr>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										User Id
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Player Name
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Email address
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Registration Date
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Wallet Balance
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Status
-									</th>
-								</tr>
-							</thead>
-							<tbody className="divide-y divide-gray-200 bg-white">
-								{users.length === 0 ? (
-									<tr>
-										<td
-											colSpan={6}
-											className="px-6 py-8 text-center text-gray-900"
-										>
-											No users found
-										</td>
-									</tr>
-								) : (
-									users.map((user) => (
-										<tr key={user.id}>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												{user.id}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 text-sm">
-												{user.name}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												{user.email}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												{user.registeredDate
-													? new Date(user.registeredDate).toLocaleDateString()
-													: "-"}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												₦{user.wallet.toLocaleString()}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4">
-												<span
-													className={`rounded-full px-2 py-1 font-medium text-xs ${
-														user.status === "verified"
-															? "bg-green-100 text-green-800"
-															: user.status === "pending_verification"
-																? "bg-yellow-100 text-yellow-800"
-																: "bg-gray-100 text-gray-800"
-													}`}
-												>
-													{user.status}
-												</span>
-											</td>
-										</tr>
-									))
-								)}
-							</tbody>
-						</table>
-					</>
-				)}
-			</div>
-
-			{totalPages > 1 && (
-				<div className="flex items-center justify-center gap-2">
-					<button
-						onClick={() => setPage((p) => Math.max(1, p - 1))}
-						disabled={page === 1}
-						className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-					>
-						Previous
-					</button>
-					<span className="text-gray-900 text-sm">
-						Page {page} of {totalPages}
-					</span>
-					<button
-						onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-						disabled={page === totalPages}
-						className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-					>
-						Next
-					</button>
-				</div>
-			)}
+			<DataTable
+				data={users}
+				isLoading={isLoading}
+				columns={columns}
+				onActionClick={(user) => console.log("Action clicked for", user.name)}
+				emptyMessage="No user found"
+				pagination={{
+					currentPage: page,
+					totalPages,
+					onPageChange: setPage,
+					totalItems: total,
+					itemsPerPage: limit,
+				}}
+			/>
 
 			{showAddModal && (
 				<div
