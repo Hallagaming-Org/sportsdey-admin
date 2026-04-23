@@ -67,20 +67,20 @@ const TABS: { key: TabKey; label: string }[] = [
 const ITEMS_PER_PAGE = 10;
 
 function WalletPage() {
-  const [amount, setAmount] = useState("");
+  // const [amount, setAmount] = useState("");
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  const formatAmount = (val: string) => {
-    const num = val.replace(/\D/g, "");
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
+  // const formatAmount = (val: string) => {
+  //   const num = val.replace(/\D/g, "");
+  //   return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // };
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatAmount(e.target.value);
-    setAmount(formatted);
-  };
+  // const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const formatted = formatAmount(e.target.value);
+  //   setAmount(formatted);
+  // };
 
   // When sending to backend, use: amount.replace(/,/g, "")
 
