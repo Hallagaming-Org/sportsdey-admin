@@ -1,6 +1,7 @@
 import type { Game } from "#/routes/app/games";
-import { Ban, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { useState } from "react";
+import { IoAdd } from "react-icons/io5";
 
 function GameCard({
   game,
@@ -60,13 +61,13 @@ function GameCard({
           }}
           className={`flex items-center gap-2 rounded-full px-5 py-2 font-semibold text-sm border transition-colors shadow-sm ${
             game.enabled
-              ? "border-gray-300 bg-white text-gray-700 hover:border-red-400 hover:text-red-600"
-              : "border-green-400 bg-white text-green-600 hover:bg-green-50"
+              ? "border-[#053209] bg-[#F4F8F3] text-[#053209] cursor-pointer"
+              : "border-[#053209] bg-[#053209] text-white cursor-pointer"
           }`}
         >
           {game.enabled ? (
             <>
-              <Ban className="h-3.5 w-3.5" />
+              <IoAdd className="h-5 w-5" />
               Disable game
             </>
           ) : (
