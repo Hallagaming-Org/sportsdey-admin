@@ -14,27 +14,28 @@ type TabKey = "all" | "active" | "won" | "lost";
 
 interface TicketRecord {
   id: string;
-  dateTime: string;
-  game: string;
-  gameEmoji: string;
-  entryFee: string;
+  playerName: string;
+  betCode: string;
+  betAmount: string;
+  gameType: string;
   possibleWin: string;
+  odds: string;
   outcome: TicketOutcome;
 }
 
 const DUMMY_TICKETS: TicketRecord[] = [
-  { id: "012345", dateTime: "Aug 8, 2025\n10:42 pm", game: "Lagos Rush", gameEmoji: "🏎️", entryFee: "₦1,000", possibleWin: "₦10,000", outcome: "Won" },
-  { id: "012346", dateTime: "Aug 8, 2025\n10:42 pm", game: "Eagle", gameEmoji: "🦅", entryFee: "₦1,000", possibleWin: "₦10,000", outcome: "Active" },
-  { id: "012347", dateTime: "Aug 8, 2025\n10:42 pm", game: "Xcape", gameEmoji: "🚀", entryFee: "₦1,000", possibleWin: "₦10,000", outcome: "Lost" },
-  { id: "012348", dateTime: "Aug 8, 2025\n10:42 pm", game: "Bayse", gameEmoji: "🎯", entryFee: "₦1,000", possibleWin: "₦10,000", outcome: "Won" },
-  { id: "012349", dateTime: "Aug 8, 2025\n10:42 pm", game: "Lucky Rise", gameEmoji: "🍀", entryFee: "₦1,000", possibleWin: "₦10,000", outcome: "Active" },
-  { id: "012350", dateTime: "Aug 9, 2025\n11:00 am", game: "Lagos Rush", gameEmoji: "🏎️", entryFee: "₦500", possibleWin: "₦5,000", outcome: "Won" },
-  { id: "012351", dateTime: "Aug 9, 2025\n01:15 pm", game: "Eagle", gameEmoji: "🦅", entryFee: "₦2,000", possibleWin: "₦20,000", outcome: "Lost" },
-  { id: "012352", dateTime: "Aug 10, 2025\n09:30 am", game: "Xcape", gameEmoji: "🚀", entryFee: "₦1,000", possibleWin: "₦10,000", outcome: "Won" },
-  { id: "012353", dateTime: "Aug 10, 2025\n02:45 pm", game: "Bayse", gameEmoji: "🎯", entryFee: "₦3,000", possibleWin: "₦30,000", outcome: "Active" },
-  { id: "012354", dateTime: "Aug 11, 2025\n08:00 am", game: "Lucky Rise", gameEmoji: "🍀", entryFee: "₦1,000", possibleWin: "₦10,000", outcome: "Won" },
-  { id: "012355", dateTime: "Aug 11, 2025\n05:20 pm", game: "Lagos Rush", gameEmoji: "🏎️", entryFee: "₦1,000", possibleWin: "₦10,000", outcome: "Active" },
-  { id: "012356", dateTime: "Aug 12, 2025\n10:10 am", game: "Eagle", gameEmoji: "🦅", entryFee: "₦1,000", possibleWin: "₦10,000", outcome: "Lost" },
+  { id: "012345", playerName: "George James", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
+  { id: "012346", playerName: "Eagle", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Quick Bets", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
+  { id: "012347", playerName: "Xcape", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Lost" },
+  { id: "012348", playerName: "Bayse", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sports Betting", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
+  { id: "012349", playerName: "Lucky Rise", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
+  { id: "012350", playerName: "Lagos Rush", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sports Betting", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
+  { id: "012351", playerName: "Eagle", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sportbook", possibleWin: "₦10,000", odds: "5.5", outcome: "Lost" },
+  { id: "012352", playerName: "Xcape", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sportbook", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
+  { id: "012353", playerName: "Bayse", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
+  { id: "012354", playerName: "Lucky Rise", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sports Betting", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
+  { id: "012355", playerName: "Lagos Rush", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Quick Bets", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
+  { id: "012356", playerName: "Eagle", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sportbook", possibleWin: "₦10,000", odds: "5.5", outcome: "Lost" },
 ];
 
 const OUTCOME_STYLES: Record<TicketOutcome, string> = {
@@ -65,7 +66,7 @@ function TicketsPage() {
     return true;
   }).filter((t) =>
     search
-      ? t.id.includes(search) || t.game.toLowerCase().includes(search.toLowerCase())
+      ? t.id.includes(search) || t.playerName.toLowerCase().includes(search.toLowerCase())
       : true
   );
 
@@ -77,39 +78,60 @@ function TicketsPage() {
 
   const columns: Column<TicketRecord>[] = [
     {
-      header: "Ticket ID",
+      header: "Player ID",
       accessor: "id",
       cellClassName: "font-mono text-gray-700",
     },
     {
-      header: "Date & Time",
+      header: "Player Name",
       accessor: (t) => (
         <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
-          {t.dateTime}
+          {t.playerName}
         </span>
       ),
     },
     {
-      header: "Game",
+      header: "Bet Code",
       accessor: (t) => (
         <div className="flex items-center gap-2">
-          <span className="text-lg">{t.gameEmoji}</span>
-          <span className="font-medium text-gray-800">{t.game}</span>
+          <span className="font-medium text-gray-800">{t.betCode}</span>
         </div>
       ),
     },
     {
-      header: "Entry Fee",
-      accessor: "entryFee",
-      cellClassName: "font-medium text-gray-900",
+      header: "Bet Amount",
+      accessor: (t) => (
+        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+          {t.betAmount}
+        </span>
+      ),
     },
     {
-      header: "Possible Win",
-      accessor: "possibleWin",
-      cellClassName: "font-medium text-gray-900",
+      header: "Game type",
+      accessor: (t) => (
+        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+          {t.gameType}
+        </span>
+      ),
     },
     {
-      header: "Outcome",
+      header: "Odds",
+      accessor: (t) => (
+        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+          {t.odds}
+        </span>
+      ),
+    },
+    {
+      header: "Potential Wins",
+      accessor: (t) => (
+        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+          {t.possibleWin}
+        </span>
+      ),
+    },
+    {
+      header: "Status",
       accessor: (t) => (
         <span
           className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${OUTCOME_STYLES[t.outcome]}`}
