@@ -1,4 +1,4 @@
-import { fetchApi } from "./api";
+import { type ApiErrorDetail, fetchApi } from "./api";
 
 export interface CmsAuthor {
 	name: string;
@@ -8,6 +8,7 @@ export interface CmsAuthor {
 export interface CmsContent {
 	_id: string;
 	title: string;
+	image: string | null;
 	author: CmsAuthor;
 	type: "news" | "videos" | "ads";
 	dateUploaded: string;
@@ -38,6 +39,13 @@ export interface CreateCmsContentResponse {
 		status: "pending" | "verified";
 	};
 	error?: string;
+	statusCode?: number;
+	details?: ApiErrorDetail[] | null;
+}
+
+export interface CmsAuthorOption {
+	_id: string;
+	name: string;
 }
 
 class CmsService {
@@ -75,6 +83,16 @@ class CmsService {
 		return fetchApi<CmsContentsResponse>(`/cms/content/all?${searchParams}`);
 	}
 
+	async listCmsAuthors(): Promise<{
+		success: boolean;
+		data?: CmsAuthorOption[];
+		error?: string;
+		statusCode?: number;
+		details?: ApiErrorDetail[] | null;
+	}> {
+		return fetchApi<CmsAuthorOption[]>("/cms/authors");
+	}
+
 	async createCmsContent(
 		data: CreateCmsContentData,
 	): Promise<CreateCmsContentResponse> {
@@ -97,6 +115,8 @@ class CmsService {
 		return {
 			success: false,
 			error: response.error,
+			statusCode: response.statusCode,
+			details: response.details ?? null,
 		};
 	}
 }

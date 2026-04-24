@@ -25,10 +25,22 @@ interface FetchOptions {
 	headers?: Record<string, string>;
 }
 
+export interface ApiErrorDetail {
+	field: string;
+	message: string;
+	code: string;
+}
+
 async function fetchApi<T>(
 	endpoint: string,
 	options: FetchOptions = {}
-): Promise<{ success: boolean; data?: T; error?: string; statusCode?: number }> {
+): Promise<{
+	success: boolean;
+	data?: T;
+	error?: string;
+	statusCode?: number;
+	details?: ApiErrorDetail[] | null;
+}> {
 	const { method = "GET", body, headers = {} } = options;
 
 	const fetchOptions: RequestInit = {
@@ -77,6 +89,7 @@ async function fetchApi<T>(
 			success: false,
 			error: result.error || `Request failed with status ${response.status}`,
 			statusCode: response.status,
+			details: result.details ?? null,
 		};
 	}
 
