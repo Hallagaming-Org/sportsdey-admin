@@ -1,17 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search } from "lucide-react";
+import { ChevronDown, Search, Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { type Column, DataTable } from "@/components/DataTable";
 import FilterIcon from "@/logo/filter.svg?react";
+import PostIcon from "@/logo/post.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
-import { cmsService } from "../../lib/cms";
+import type { ApiErrorDetail } from "../../lib/api";
+import { type CreateCmsContentData, cmsService } from "../../lib/cms";
 
 export const Route = createFileRoute("/app/cms")({
 	component: CmsPage,
 });
 
 type ContentType = "all" | "news" | "videos" | "ads";
+type CmsFieldName = keyof CreateCmsContentData;
+type CmsMutationError = Error & {
+	statusCode?: number;
+	details?: ApiErrorDetail[] | null;
+};
 
 function CmsPage() {
 	const queryClient = useQueryClient();
@@ -21,6 +29,10 @@ function CmsPage() {
 	const [sortBy, setSortBy] = useState<"title" | "">("");
 	const [activeTab, setActiveTab] = useState<ContentType>("all");
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [selectedFileName, setSelectedFileName] = useState("");
+	const [fieldErrors, setFieldErrors] = useState<
+		Partial<Record<CmsFieldName, string>>
+	>({});
 	const [newContent, setNewContent] = useState<CreateCmsContentData>({
 		title: "",
 		message: "",
@@ -50,23 +62,53 @@ function CmsPage() {
 		},
 	});
 
+	const { data: authors = [], error: authorsError, isLoading: isAuthorsLoading } =
+		useQuery({
+			queryKey: ["cms-authors"],
+			enabled: showAddModal,
+			queryFn: async () => {
+				const result = await cmsService.listCmsAuthors();
+				if (!result.success) {
+					const queryError = new Error(
+						result.error || "Failed to fetch authors",
+					) as CmsMutationError;
+					queryError.statusCode = result.statusCode;
+					queryError.details = result.details ?? null;
+					throw queryError;
+				}
+				return result.data || [];
+			},
+		});
+
 	useEffect(() => {
 		if (error) {
 			toast.error(error.message || "Failed to fetch cms content");
 		}
 	}, [error]);
 
+	useEffect(() => {
+		if (authorsError) {
+			toast.error("An error occurred please try again later");
+		}
+	}, [authorsError]);
+
 	const createContentMutation = useMutation({
 		mutationFn: async (data: CreateCmsContentData) => {
 			const result = await cmsService.createCmsContent(data);
 			if (!result.success) {
-				throw new Error(result.error || "Failed to create cms content");
+				const apiError = new Error(
+					result.error || "Failed to create cms content",
+				) as CmsMutationError;
+				apiError.statusCode = result.statusCode;
+				apiError.details = result.details ?? null;
+				throw apiError;
 			}
 			return result.data;
 		},
 		onSuccess: () => {
 			toast.success("Content created successfully");
 			setShowAddModal(false);
+			setFieldErrors({});
 			setNewContent({
 				title: "",
 				message: "",
@@ -74,14 +116,39 @@ function CmsPage() {
 				authorName: "",
 				bannerImage: undefined,
 			});
+			setSelectedFileName("");
 			queryClient.invalidateQueries({ queryKey: ["cms"] });
 		},
 		onError: (error) => {
-			toast.error(error.message || "Failed to create cms content");
+			const apiError = error as CmsMutationError;
+
+			if (apiError.statusCode === 400) {
+				const nextFieldErrors: Partial<Record<CmsFieldName, string>> = {};
+				for (const detail of apiError.details || []) {
+					if (
+						detail.field === "title" ||
+						detail.field === "message" ||
+						detail.field === "contentType" ||
+						detail.field === "authorName" ||
+						detail.field === "bannerImage"
+					) {
+						nextFieldErrors[detail.field] = detail.message;
+					}
+				}
+				setFieldErrors(nextFieldErrors);
+				toast.error("Please check the highlighted fields");
+				return;
+			}
+
+			toast.error("An error occurred please try again later");
 		},
 	});
 
 	const contents = cmsData?.content || [];
+	const tableData = contents.map((item, index) => ({
+		...item,
+		serialNumber: (page - 1) * limit + index + 1,
+	}));
 	const total = cmsData?.total || 0;
 	const totalPages = Math.ceil(total / limit);
 
@@ -98,356 +165,458 @@ function CmsPage() {
 		}
 	};
 
+	const cmsColumns: Column<(typeof tableData)[number]>[] = [
+		{
+			header: "S/N",
+			accessor: (item) => {
+				const previewImage = item.image || item.author.image;
+				return (
+					<div className="flex items-center gap-3">
+						<span className="min-w-6 font-medium text-gray-900">
+							{item.serialNumber}
+						</span>
+						{previewImage ? (
+							<img
+								src={previewImage}
+								alt={item.title}
+								className="h-12 w-12 rounded-md object-cover"
+							/>
+						) : (
+							<div className="flex h-12 w-12 items-center justify-center rounded-md bg-gray-100 text-gray-400 text-xs">
+								N/A
+							</div>
+						)}
+					</div>
+				);
+			},
+		},
+		{
+			header: "Content title",
+			accessor: "title",
+			cellClassName: "max-w-[200px] truncate font-medium",
+		},
+		{
+			header: "Author Name",
+			accessor: (item) => (
+				<div className="flex items-center gap-3">
+					{item.author.image ? (
+						<img
+							src={item.author.image}
+							alt={item.author.name}
+							className="h-8 w-8 rounded-full object-cover"
+						/>
+					) : (
+						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
+							{item.author.name.charAt(0).toUpperCase()}
+						</div>
+					)}
+					<span>{item.author.name}</span>
+				</div>
+			),
+		},
+		{
+			header: "Type",
+			accessor: (item) => getTypeLabel(item.type),
+		},
+		{
+			header: "Date Uploaded",
+			accessor: (item) => item.dateUploaded || "-",
+		},
+		{
+			header: "Status",
+			accessor: (item) => (
+				<span
+					className={`rounded-full px-2 py-1 font-medium text-xs ${
+						item.status === "verified"
+							? "bg-green-100 text-green-800"
+							: "bg-yellow-100 text-yellow-800"
+					}`}
+				>
+					{item.status}
+				</span>
+			),
+		},
+	];
+
+	const handleFileChange = (file: File | null) => {
+		if (!file) {
+			setSelectedFileName("");
+			setNewContent((prev) => ({ ...prev, bannerImage: undefined }));
+			return;
+		}
+
+		if (!file.type.startsWith("image/")) {
+			toast.error("Only image uploads are supported for CMS content");
+			setSelectedFileName("");
+			setNewContent((prev) => ({ ...prev, bannerImage: undefined }));
+			return;
+		}
+
+		const reader = new FileReader();
+		reader.onload = () => {
+			const encodedImage =
+				typeof reader.result === "string" &&
+				reader.result.startsWith("data:image/")
+					? reader.result
+					: undefined;
+
+			if (!encodedImage) {
+				toast.error("Failed to process image file");
+				setSelectedFileName("");
+				setNewContent((prev) => ({ ...prev, bannerImage: undefined }));
+				return;
+			}
+
+			setNewContent((prev) => ({
+				...prev,
+				bannerImage: encodedImage,
+			}));
+			setFieldErrors((prev) => ({ ...prev, bannerImage: undefined }));
+			setSelectedFileName(file.name);
+		};
+		reader.onerror = () => {
+			toast.error("Failed to read selected file");
+		};
+		reader.readAsDataURL(file);
+	};
+
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
-				<div>
-					<h2 className="font-bold text-2xl text-gray-900">CMS Content</h2>
-					<p className="text-gray-600">Manage all your cms content</p>
-				</div>
-				<div className="flex items-center gap-3">
-					<button
-						onClick={() => setSortBy((s) => (s === "title" ? "" : "title"))}
-						className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
-					>
-						<SortIcon className="h-3 w-3" />
-						Sort
-					</button>
-					<button className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50">
-						<FilterIcon className="h-3 w-3" />
-						Filter
-					</button>
-					<button
-						type="button"
-						onClick={() => setShowAddModal(true)}
-						className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-accent px-4 py-2 font-medium text-white text-sm hover:bg-accent/90"
-					>
-						<svg
-							className="h-4 w-4"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M12 4v16m8-8H4"
-							/>
-						</svg>
-						Add new content
-					</button>
-				</div>
-			</div>
-
-			<div className="flex items-center justify-between gap-4">
-				<div className="flex gap-8 border-b border-gray-300">
-					{[
-						{ key: "all", label: "All" },
-						{ key: "news", label: "News" },
-						{ key: "videos", label: "Videos" },
-						{ key: "ads", label: "Ads" },
-					].map((tab) => (
+			<div className="overflow-x-auto">
+				<div className="min-w-[860px] space-y-6 md:min-w-0">
+					<div className="flex items-center justify-between">
+						<div>
+							<h2 className="font-bold text-2xl text-gray-900">CMS Controls</h2>
+							<p className="text-gray-600">
+								Manage all your contents and creators{" "}
+							</p>
+						</div>
+						<div className="flex items-center gap-3">
+							<button
+								onClick={() => setSortBy((s) => (s === "title" ? "" : "title"))}
+								className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
+							>
+								<SortIcon className="h-3 w-3" />
+								Sort
+							</button>
+							<button className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50">
+								<FilterIcon className="h-3 w-3" />
+								Filter
+							</button>
 						<button
 							type="button"
-							key={tab.key}
 							onClick={() => {
-								setActiveTab(tab.key as ContentType);
-								setPage(1);
+								setFieldErrors({});
+								setShowAddModal(true);
 							}}
-							className={`cursor-pointer pb-3 font-medium text-sm transition-colors ${
-								activeTab === tab.key
-									? "border-b-2 border-accent text-accent"
-									: "text-gray-600 hover:text-gray-900"
-							}`}
+							className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-accent px-4 py-2 font-medium text-white text-sm hover:bg-accent/90"
 						>
-							{tab.label}
-						</button>
-					))}
-				</div>
-
-				{!error && (
-					<form
-						className="relative"
-						onSubmit={(e) => {
-							e.preventDefault();
-							setPage(1);
-							queryClient.invalidateQueries({ queryKey: ["cms"] });
-						}}
-					>
-						<input
-							type="text"
-							placeholder="Search"
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
-							className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
-						/>
-						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
-					</form>
-				)}
-			</div>
-
-			<div className="relative overflow-hidden rounded-lg bg-white shadow-md">
-				{isLoading && (
-					<div className="absolute inset-0 flex items-center justify-center bg-white/50">
-						<div className="h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
+						<PostIcon className="h-4 w-4" />
+						Post new content
+					</button>
+						</div>
 					</div>
-				)}
-				{error ? (
-					<div className="flex flex-col items-center justify-center rounded-lg bg-white py-12 shadow-lg">
-						<p className="font-bold text-xl text-gray-900">
-							{error.message.toLowerCase().includes("not found")
-								? "No cms content found"
-								: "An error occurred"}
-						</p>
-						{!error.message.toLowerCase().includes("not found") && (
-							<p className="mt-1 text-gray-600">try again later</p>
+
+					<div className="flex items-center justify-between gap-4">
+						<div className="flex gap-8 border-b border-gray-300">
+							{[
+								{ key: "all", label: "All" },
+								{ key: "news", label: "News" },
+								{ key: "videos", label: "Videos" },
+								{ key: "ads", label: "Ads" },
+							].map((tab) => (
+								<button
+									type="button"
+									key={tab.key}
+									onClick={() => {
+										setActiveTab(tab.key as ContentType);
+										setPage(1);
+									}}
+									className={`cursor-pointer pb-3 font-medium text-sm transition-colors ${
+										activeTab === tab.key
+											? "border-b-2 border-accent text-accent"
+											: "text-gray-600 hover:text-gray-900"
+									}`}
+								>
+									{tab.label}
+								</button>
+							))}
+						</div>
+
+						{!error && (
+							<form
+								className="relative"
+								onSubmit={(e) => {
+									e.preventDefault();
+									setPage(1);
+									queryClient.invalidateQueries({ queryKey: ["cms"] });
+								}}
+							>
+								<input
+									type="text"
+									placeholder="Search"
+									value={search}
+									onChange={(e) => setSearch(e.target.value)}
+									className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
+								/>
+								<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+							</form>
 						)}
-						<button
-							onClick={() =>
-								queryClient.invalidateQueries({ queryKey: ["cms"] })
-							}
-							className="mt-3 rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
-						>
-							Retry
-						</button>
 					</div>
-				) : (
-					<>
-						<table className="min-w-full divide-y divide-gray-200">
-							<thead className="bg-gray-50">
-								<tr>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Content title
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Author Name
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Type
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Date Uploaded
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Status
-									</th>
-								</tr>
-							</thead>
-							<tbody className="divide-y divide-gray-200 bg-white">
-								{contents.length === 0 ? (
-									<tr>
-										<td
-											colSpan={5}
-											className="px-6 py-8 text-center text-gray-900"
-										>
-											No cms content found
-										</td>
-									</tr>
-								) : (
-									contents.map((content) => (
-										<tr key={content._id}>
-											<td className="px-6 py-4 text-sm">
-												<span className="block max-w-[200px] truncate font-medium text-gray-900">
-													{content.title}
-												</span>
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												<div className="flex items-center gap-3">
-													{content.author.image ? (
-														<img
-															src={content.author.image}
-															alt={content.author.name}
-															className="h-8 w-8 rounded-full object-cover"
-														/>
-													) : (
-														<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
-															{content.author.name.charAt(0).toUpperCase()}
-														</div>
-													)}
-													<span>{content.author.name}</span>
-												</div>
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												{getTypeLabel(content.type)}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												{content.dateUploaded
-													? new Date(
-															content.dateUploaded,
-														).toLocaleDateString()
-													: "-"}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4">
-												<span
-													className={`rounded-full px-2 py-1 font-medium text-xs ${
-														content.status === "verified"
-															? "bg-green-100 text-green-800"
-															: "bg-yellow-100 text-yellow-800"
-													}`}
-												>
-													{content.status}
-												</span>
-											</td>
-										</tr>
-									))
-								)}
-							</tbody>
-						</table>
-					</>
-				)}
-			</div>
 
-			{totalPages > 1 && (
-				<div className="flex items-center justify-center gap-2">
-					<button
-						onClick={() => setPage((p) => Math.max(1, p - 1))}
-						disabled={page === 1}
-						className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-					>
-						Previous
-					</button>
-					<span className="text-gray-900 text-sm">
-						Page {page} of {totalPages}
-					</span>
-					<button
-						onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-						disabled={page === totalPages}
-						className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-					>
-						Next
-					</button>
+					<div className="relative overflow-hidden rounded-lg bg-white shadow-md">
+						{isLoading && (
+							<div className="absolute inset-0 flex items-center justify-center bg-white/50">
+								<div className="h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
+							</div>
+						)}
+						{error ? (
+							<div className="flex flex-col items-center justify-center rounded-lg bg-white py-12 shadow-lg">
+								<p className="font-bold text-xl text-gray-900">
+									{error.message.toLowerCase().includes("not found")
+										? "No cms content found"
+										: "An error occurred"}
+								</p>
+								{!error.message.toLowerCase().includes("not found") && (
+									<p className="mt-1 text-gray-600">try again later</p>
+								)}
+								<button
+									onClick={() =>
+										queryClient.invalidateQueries({ queryKey: ["cms"] })
+									}
+									className="mt-3 rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
+								>
+									Retry
+								</button>
+							</div>
+						) : (
+							<DataTable
+								data={tableData}
+								columns={cmsColumns}
+								isLoading={isLoading}
+								emptyMessage="No cms content found"
+								pagination={{
+									currentPage: page,
+									totalPages,
+									onPageChange: setPage,
+									totalItems: total,
+									itemsPerPage: limit,
+								}}
+							/>
+						)}
+					</div>
 				</div>
-			)}
+			</div>
 
 			{showAddModal && (
 				<div
-					className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3"
 					onClick={() => setShowAddModal(false)}
 				>
 					<div
-						className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+						className="flex h-[80%] max-h-[80%] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-[#f3f3f4] shadow-2xl"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<div className="mb-4 flex items-center justify-between">
-							<h3 className="font-bold text-xl text-gray-900">Add new content</h3>
+						<div className="flex items-center justify-between bg-[#ececee] px-5 py-3 sm:px-8">
+							<h3 className="font-bold text-[#0a0d3c] text-base sm:text-3xl">
+								Upload new Content
+							</h3>
 							<button
 								type="button"
 								onClick={() => setShowAddModal(false)}
-								className="text-gray-500 hover:text-gray-900"
+								className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#0a0d3c] text-[#0a0d3c] transition-colors hover:bg-[#e4e4ea]"
 							>
-								<svg
-									className="h-5 w-5"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M6 18L18 6M6 6l12 12"
-									/>
-								</svg>
+								<X className="h-5 w-5" />
 							</button>
 						</div>
 						<form
 							onSubmit={(e) => {
 								e.preventDefault();
+								setFieldErrors({});
 								createContentMutation.mutate(newContent);
 							}}
-							className="space-y-4"
+							className="flex-1 space-y-4 overflow-y-auto px-5 py-4 sm:px-8 sm:py-4"
 						>
 							<div>
-								<label className="block font-medium text-gray-900 text-sm">
-									Title
+								<label className="mb-1.5 block font-semibold text-[#11123f] text-base sm:text-xl">
+									Content/Story Title
 								</label>
 								<input
 									type="text"
 									value={newContent.title}
-									onChange={(e) =>
-										setNewContent({
-											...newContent,
+									onChange={(e) => {
+										setFieldErrors((prev) => ({ ...prev, title: undefined }));
+										setNewContent((prev) => ({
+											...prev,
 											title: e.target.value,
-										})
-									}
+										}));
+									}}
 									required
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+									placeholder="Enter headline"
+									className="h-11 w-full rounded-xl border border-transparent bg-[#ececee] px-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:border-[#0a0d3c] focus:outline-none sm:h-12 sm:text-base"
 								/>
+								{fieldErrors.title && (
+									<p className="mt-1 text-red-600 text-xs">
+										{fieldErrors.title}
+									</p>
+								)}
 							</div>
-							<div>
-								<label className="block font-medium text-gray-900 text-sm">
-									Message
-								</label>
-								<textarea
-									value={newContent.message}
-									onChange={(e) =>
-										setNewContent({
-											...newContent,
-											message: e.target.value,
-										})
-									}
-									required
-									rows={4}
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-								/>
+
+							<div className="grid gap-5 lg:grid-cols-[1fr_335px]">
+								<div>
+									<label className="mb-1.5 block font-semibold text-[#11123f] text-lg sm:text-2xl">
+										Message
+									</label>
+									<textarea
+										value={newContent.message}
+										onChange={(e) => {
+											setFieldErrors((prev) => ({ ...prev, message: undefined }));
+											setNewContent((prev) => ({
+												...prev,
+												message: e.target.value,
+											}));
+										}}
+										required
+										placeholder="Write message here..."
+										className="h-[180px] w-full resize-none rounded-xl border border-transparent bg-[#ececee] p-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:border-[#0a0d3c] focus:outline-none sm:h-[220px] sm:text-base lg:h-[260px]"
+									/>
+									{fieldErrors.message && (
+										<p className="mt-1 text-red-600 text-xs">
+											{fieldErrors.message}
+										</p>
+									)}
+								</div>
+
+								<div className="flex flex-col gap-4">
+									<div>
+										<label className="mb-1.5 block font-semibold text-[#11123f] text-base sm:text-xl">
+											Author name
+										</label>
+										<div className="relative">
+											<select
+											value={newContent.authorName}
+											onChange={(e) => {
+												setFieldErrors((prev) => ({
+													...prev,
+													authorName: undefined,
+												}));
+												setNewContent((prev) => ({
+													...prev,
+													authorName: e.target.value,
+												}));
+											}}
+												required
+												disabled={isAuthorsLoading || authors.length === 0}
+												className="h-11 w-full appearance-none rounded-xl border border-transparent bg-[#ececee] px-3 pr-9 text-[#56607a] text-sm focus:border-[#0a0d3c] focus:outline-none disabled:opacity-60 sm:h-12 sm:text-base"
+											>
+												<option value="" disabled>
+													{isAuthorsLoading
+														? "Loading authors..."
+														: "Select author"}
+												</option>
+												{authors.map((author) => (
+													<option key={author._id} value={author.name}>
+														{author.name}
+													</option>
+												))}
+											</select>
+											<ChevronDown className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3 h-4 w-4 text-[#6b7286]" />
+										</div>
+										{fieldErrors.authorName && (
+											<p className="mt-1 text-red-600 text-xs">
+												{fieldErrors.authorName}
+											</p>
+										)}
+									</div>
+
+									<div>
+										<label className="mb-1.5 block font-semibold text-[#11123f] text-base sm:text-xl">
+											Content Type/Labels
+										</label>
+										<div className="relative">
+											<select
+												value={newContent.contentType}
+												onChange={(e) => {
+													setFieldErrors((prev) => ({
+														...prev,
+														contentType: undefined,
+													}));
+													setNewContent((prev) => ({
+														...prev,
+														contentType: e.target.value as
+															| "news"
+															| "videos"
+															| "ads",
+													}));
+												}}
+												required
+												className="h-11 w-full appearance-none rounded-xl border border-transparent bg-[#ececee] px-3 pr-9 text-[#56607a] text-sm focus:border-[#0a0d3c] focus:outline-none sm:h-12 sm:text-base"
+											>
+												<option value="news">News</option>
+												<option value="videos">Videos</option>
+												<option value="ads">Ads</option>
+											</select>
+											<ChevronDown className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3 h-4 w-4 text-[#6b7286]" />
+										</div>
+										{fieldErrors.contentType && (
+											<p className="mt-1 text-red-600 text-xs">
+												{fieldErrors.contentType}
+											</p>
+										)}
+									</div>
+
+									<div className="rounded-xl border border-dashed border-[#b9bbc5] bg-[#f5f5f6] p-3">
+										<label
+											htmlFor="cms-banner-upload"
+											className="flex min-h-[84px] cursor-pointer flex-col items-center justify-center rounded-lg border border-transparent text-center transition-colors hover:bg-[#ececee]"
+										>
+											<Upload className="mb-1.5 h-5 w-5 text-[#8a8d97]" />
+											<span className="font-medium text-[#737680] text-sm sm:text-base">
+												{selectedFileName || "Choose an Image"}
+											</span>
+											<span className="text-[#a7a9b2] text-xs sm:text-sm">
+												Upload supports: JPG, PNG.
+											</span>
+										</label>
+										<input
+											id="cms-banner-upload"
+											type="file"
+											accept=".jpg,.jpeg,.png,image/*"
+											className="hidden"
+											onChange={(e) =>
+												handleFileChange(e.target.files?.[0] ?? null)
+											}
+										/>
+										{fieldErrors.bannerImage && (
+											<p className="mt-1 text-red-600 text-xs">
+												{fieldErrors.bannerImage}
+											</p>
+										)}
+									</div>
+
+									<div className="mt-auto pt-1">
+										<button
+											type="submit"
+											disabled={
+												createContentMutation.isPending ||
+												isAuthorsLoading ||
+												authors.length === 0
+											}
+											className="h-11 w-full rounded-full bg-[#1baa04] font-semibold text-sm text-white transition-colors hover:bg-[#149504] disabled:cursor-not-allowed disabled:opacity-60 sm:h-12 sm:text-base"
+										>
+											{createContentMutation.isPending ? "Uploading..." : "Upload"}
+										</button>
+									</div>
+								</div>
 							</div>
-							<div>
-								<label className="block font-medium text-gray-900 text-sm">
-									Content Type
-								</label>
-								<select
-									value={newContent.contentType}
-									onChange={(e) =>
-										setNewContent({
-											...newContent,
-											contentType: e.target.value as
-												| "news"
-												| "videos"
-												| "ads",
-										})
-									}
-									required
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-								>
-									<option value="news">News</option>
-									<option value="videos">Videos</option>
-									<option value="ads">Ads</option>
-								</select>
-							</div>
-							<div>
-								<label className="block font-medium text-gray-900 text-sm">
-									Author Name
-								</label>
-								<input
-									type="text"
-									value={newContent.authorName}
-									onChange={(e) =>
-										setNewContent({
-											...newContent,
-											authorName: e.target.value,
-										})
-									}
-									required
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-								/>
-							</div>
-							<div className="flex justify-end gap-3 pt-2">
+
+							<div className="flex justify-end">
 								<button
 									type="button"
 									onClick={() => setShowAddModal(false)}
-									className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-900 hover:bg-gray-50"
+									className="rounded-md px-2 py-1 text-[#5f6679] text-sm underline hover:text-[#0a0d3c]"
 								>
 									Cancel
-								</button>
-								<button
-									type="submit"
-									disabled={createContentMutation.isPending}
-									className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90 disabled:opacity-50"
-								>
-									{createContentMutation.isPending
-										? "Adding..."
-										: "Add content"}
 								</button>
 							</div>
 						</form>
