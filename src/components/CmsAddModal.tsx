@@ -159,16 +159,12 @@ const MenuBar = ({ editor }: { editor: any }) => {
 			<div className="flex shrink-0 items-center gap-1">
 				<label className="text-sm font-medium">Highlight:</label>
 				<input
-					type="color"
-					onChange={(e) =>
-						editor
-							.chain()
-							.focus()
-							.setHighlight({ color: e.target.value })
-							.run()
-					}
-					value={editor.getAttributes("highlight").color || "#ffff00"}
-					className="h-6 w-6 shrink-0 cursor-pointer border-none bg-transparent p-0"
+  type="color"
+  onChange={(e) =>
+    editor.chain().focus().setHighlight({ color: e.target.value }).run()
+  }
+  value={editor.getAttributes("highlight").color || "#ffffff"}
+  className="h-6 w-6 shrink-0 cursor-pointer border-none bg-transparent p-0"
 				/>
 				<button
 					type="button"
