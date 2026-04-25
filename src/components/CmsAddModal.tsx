@@ -447,7 +447,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 					</div>
 
 					<div className="grid gap-5 lg:grid-cols-[1fr_335px]">
-						<div>
+						<div className="min-w-0">
 							<label className="mb-1.5 block font-medium text-[#11123f] text-lg sm:text-2xl">
 								Message
 							</label>
