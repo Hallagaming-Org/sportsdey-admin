@@ -74,7 +74,7 @@ const FontSize = Extension.create({
 });
 
 const MenuBar = ({ editor }: { editor: any }) => {
-	const [fontSize, setFontSize] = useState("");
+	const [fontSize, setFontSize] = useState("12px");
   const [fontFamily, setFontFamily] = useState("");
 	if (!editor) {
 		return null;
