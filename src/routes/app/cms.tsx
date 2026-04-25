@@ -9,6 +9,7 @@ import PostIcon from "@/logo/post.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import type { ApiErrorDetail } from "../../lib/api";
 import { type CreateCmsContentData, cmsService } from "../../lib/cms";
+import { IoFilter } from "react-icons/io5";
 
 export const Route = createFileRoute("/app/cms")({
 	component: CmsPage,
@@ -345,7 +346,7 @@ function CmsPage() {
 
 						{!error && (
 							<form
-								className="relative"
+								className="relative space-x-4"
 								onSubmit={(e) => {
 									e.preventDefault();
 									setPage(1);
@@ -360,6 +361,10 @@ function CmsPage() {
 									className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
 								/>
 								<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+								<button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
+											  Time periods
+											  <IoFilter className="h-3.5 w-3.5" />
+											</button>
 							</form>
 						)}
 					</div>
