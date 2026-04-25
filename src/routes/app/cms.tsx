@@ -112,14 +112,14 @@ function CmsPage() {
 						<img
 							src={item.author.image}
 							alt={item.author.name}
-							className="h-8 w-8 rounded-full object-cover"
+							className="h-5 w-5 rounded-full object-cover"
 						/>
 					) : (
-						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
+						<div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
 							{item.author.name.charAt(0).toUpperCase()}
 						</div>
 					)}
-					<span>{item.author.name}</span>
+					<span className="text-sm">{item.author.name}</span>
 				</div>
 			),
 		},
