@@ -148,10 +148,9 @@ function CmsPage() {
 	];
 
 	return (
-		<div className="space-y-6">
-			<div className="overflow-x-auto">
-				<div className="min-w-[860px] space-y-6 md:min-w-0">
-					<div className="flex items-center justify-between">
+		<div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-6">
+			<div className="flex-1 min-h-0 flex flex-col gap-4">
+				<div className="flex-none flex items-center justify-between">
 						<div>
 							<h2 className="font-bold text-2xl text-gray-900">CMS Controls</h2>
 							<p className="text-gray-600">
@@ -183,7 +182,7 @@ function CmsPage() {
 						</div>
 					</div>
 
-					<div className="flex items-center justify-between gap-4">
+					<div className="flex-none flex items-center justify-between gap-4">
 						<div className="flex gap-8 border-b border-gray-300">
 							{[
 								{ key: "all", label: "All" },
@@ -234,7 +233,7 @@ function CmsPage() {
 						)}
 					</div>
 
-					<div className="relative overflow-hidden rounded-lg bg-white shadow-md">
+					<div className="flex-1 min-h-0 relative overflow-hidden rounded-lg bg-white shadow-md">
 						{isLoading && (
 							<div className="absolute inset-0 flex items-center justify-center bg-white/50">
 								<div className="h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
@@ -266,6 +265,7 @@ function CmsPage() {
 								isLoading={isLoading}
 								emptyMessage="No cms content found"
 								onActionClick={(item) => console.log("Action for content", item._id)}
+								maxHeight="100%"
 								pagination={{
 									currentPage: page,
 									totalPages,
@@ -277,7 +277,6 @@ function CmsPage() {
 						)}
 					</div>
 				</div>
-			</div>
 
 			<CmsAddModal
 				isOpen={showAddModal}
