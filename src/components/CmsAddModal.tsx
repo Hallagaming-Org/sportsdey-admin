@@ -321,11 +321,11 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 							<label className="mb-1.5 block font-medium text-[#11123f] text-lg sm:text-2xl">
 								Message
 							</label>
-							<div className="flex flex-col h-[479px] w-full rounded-xl border border-transparent bg-[#ececee] focus-within:border-[#0a0d3c] overflow-hidden">
+							<div className="flex flex-col h-[479px] w-full rounded-xl border border-transparent bg-[#F9F9F9] focus:outline-none overflow-hidden">
 								<MenuBar editor={editor} />
 								<EditorContent
 									editor={editor}
-									className="flex-1 overflow-y-auto p-3 text-[#11123f] bg-[#ececee]"
+									className="flex-1 overflow-y-auto p-3 text-[#11123f] bg-[#F9F9F9]"
 								/>
 							</div>
 							{fieldErrors.message && (
