@@ -75,7 +75,7 @@ const FontSize = Extension.create({
 
 const MenuBar = ({ editor }: { editor: any }) => {
 	const [fontSize, setFontSize] = useState("12px");
-  const [fontFamily, setFontFamily] = useState("");
+  const [fontFamily, setFontFamily] = useState("Arial");
 	if (!editor) {
 		return null;
 	}
@@ -124,7 +124,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         value={fontFamily}
         className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
       >
-        <option value="">Default Font</option>
         <option value="Arial">Arial</option>
         <option value="Courier New">Courier New</option>
         <option value="Georgia">Georgia</option>
