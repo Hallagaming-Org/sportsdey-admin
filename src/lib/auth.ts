@@ -18,6 +18,8 @@ export interface Admin {
 	id: string;
 	email: string;
 	name: string;
+	mobileNumber: string | null;
+	image: string | null;
 	role: "super_admin" | "admin";
 	createdAt: string;
 }
@@ -70,9 +72,6 @@ class AdminAuth {
 			}
 
 			const data = await response.json();
-			if (data.success && data.data?.admin) {
-				localStorage.setItem("admin_session", JSON.stringify(data.data.admin));
-			}
 			return data;
 		} catch {
 			return {
@@ -96,36 +95,21 @@ class AdminAuth {
 
 	async getSession(): Promise<Admin | null> {
 		try {
-			// First check local storage for instant loads and to prevent dev refresh issues
-			if (typeof window !== "undefined") {
-				const cached = localStorage.getItem("admin_session");
-				if (cached) {
-					try {
-						return JSON.parse(cached);
-					} catch (e) {}
-				}
-			}
-
 			const response = await fetch(`${this.baseUrl}/admin/me`, {
 				credentials: "include",
 				cache: "no-store",
 			});
 
 			if (!response.ok) {
-				localStorage.removeItem("admin_session");
 				return null;
 			}
 
 			const data = await response.json();
 			if (data.success && data.data) {
-				localStorage.setItem("admin_session", JSON.stringify(data.data));
 				return data.data;
 			}
-			localStorage.removeItem("admin_session");
 			return null;
 		} catch {
-			// On network error, if we had a cache we would have returned it. 
-			// If we reach here, there was no cache and the network failed.
 			return null;
 		}
 	}

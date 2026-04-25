@@ -150,12 +150,12 @@ function UsersPage() {
 
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
 					<h2 className="font-bold text-2xl text-gray-900">All users</h2>
 					<p className="text-gray-600">Manage all your users and activities</p>
 				</div>
-				<div className="flex items-center gap-3">
+				<div className="flex flex-wrap items-center gap-3">
 					<button
 						onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
 						className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
@@ -190,52 +190,56 @@ function UsersPage() {
 				</div>
 			</div>
 
-			<div className="flex items-center justify-between gap-4">
-				<div className="flex gap-8 border-b border-gray-300">
-					{[
-						{ key: "all", label: "All Users" },
-						{ key: "recent", label: "Recently registered" },
-						{ key: "pending", label: "Pending verification" },
-					].map((tab) => (
-						<button
-							type="button"
-							key={tab.key}
-							onClick={() => {
-								setActiveTab(tab.key as Tab);
-								setPage(1);
-							}}
-							className={`cursor-pointer pb-3 font-medium text-sm transition-colors ${
-								activeTab === tab.key
-									? "border-b-2 border-accent text-accent"
-									: "text-gray-600 hover:text-gray-900"
-							}`}
-						>
-							{tab.label}
-						</button>
-					))}
+			<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+				<div className="overflow-x-auto custom-scrollbar lg:overflow-visible">
+					<div className="flex gap-8 border-b border-gray-300 min-w-max px-4 lg:px-0">
+						{[
+							{ key: "all", label: "All Users" },
+							{ key: "recent", label: "Recently registered" },
+							{ key: "pending", label: "Pending verification" },
+						].map((tab) => (
+							<button
+								type="button"
+								key={tab.key}
+								onClick={() => {
+									setActiveTab(tab.key as Tab);
+									setPage(1);
+								}}
+								className={`cursor-pointer pb-3 font-medium text-sm transition-colors ${
+									activeTab === tab.key
+										? "border-b-2 border-accent text-accent"
+										: "text-gray-600 hover:text-gray-900"
+								}`}
+							>
+								{tab.label}
+							</button>
+						))}
+					</div>
 				</div>
 
 				{!error && (
 					<form
-						className="relative space-x-3"
+						className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap"
 						onSubmit={(e) => {
 							e.preventDefault();
 							setPage(1);
 							queryClient.invalidateQueries({ queryKey: ["users"] });
 						}}
 					>
-						<input
-							type="text"
-							placeholder="Search"
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
-							className="w-64 rounded-full border border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
-						/>
-						<button className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
-									  Time periods
-									  <IoFilter className="h-3.5 w-3.5" />
-									</button>
-						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+						<div className="relative w-72 lg:w-80">
+							<input
+								type="text"
+								placeholder="Search"
+								value={search}
+								onChange={(e) => setSearch(e.target.value)}
+								className="w-full rounded-full border border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
+							/>
+							<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+						</div>
+						<button className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer border border-[#D0D5DD] whitespace-nowrap">
+							<span className="hidden lg:block">Time periods</span>
+							<IoFilter className="h-3.5 w-3.5" />
+						</button>
 					</form>
 				)}
 			</div>

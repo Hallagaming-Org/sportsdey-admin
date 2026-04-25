@@ -47,7 +47,7 @@ export function DataTable<T>({
       }}
     >
       <div
-        className={`overflow-auto custom-scrollbar ${isFullHeight ? "flex-1 min-h-0" : ""}`}
+        className={`overflow-x-auto overflow-y-auto custom-scrollbar ${isFullHeight ? "flex-1 min-h-0" : ""}`}
         style={!isFullHeight && maxHeight ? { maxHeight } : {}}
       >
         <table className="w-full min-w-[800px] text-left text-sm relative border-collapse">

@@ -56,7 +56,6 @@ function CmsPage() {
 	const contents = cmsData?.content || [];
 	const tableData = contents.map((item, index) => ({
 		...item,
-		serialNumber: (page - 1) * limit + index + 1,
 	}));
 	const total = cmsData?.total || 0;
 	const totalPages = Math.ceil(total / limit);
