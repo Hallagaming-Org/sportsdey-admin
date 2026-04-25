@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
-import { cmsService, type CreateCmsContentData } from "../../lib/cms";
+import { cmsService, type CreateCmsContentData, type CmsContent } from "../../lib/cms";
 import { IoFilter } from "react-icons/io5";
-import { TableSkeleton } from "../../components/TableSkeleton";
+import { DataTable, type Column } from "../../components/DataTable";
 
 export const Route = createFileRoute("/app/cms")({
 	component: CmsPage,
@@ -101,6 +101,66 @@ function CmsPage() {
 		}
 	};
 
+	const columns: Column<CmsContent>[] = [
+		{
+			header: "Content title",
+			accessor: (content) => (
+				<span className="block max-w-[200px] truncate font-medium text-gray-900">
+					{content.title}
+				</span>
+			),
+			cellClassName: "text-sm",
+		},
+		{
+			header: "Author Name",
+			accessor: (content) => (
+				<div className="flex items-center gap-3">
+					{content.author.image ? (
+						<img
+							src={content.author.image}
+							alt={content.author.name}
+							className="h-8 w-8 rounded-full object-cover"
+						/>
+					) : (
+						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
+							{content.author.name.charAt(0).toUpperCase()}
+						</div>
+					)}
+					<span>{content.author.name}</span>
+				</div>
+			),
+			cellClassName: "whitespace-nowrap text-gray-900 text-sm",
+		},
+		{
+			header: "Type",
+			accessor: (content) => getTypeLabel(content.type),
+			cellClassName: "whitespace-nowrap text-gray-900 text-sm",
+		},
+		{
+			header: "Date Uploaded",
+			accessor: (content) =>
+				content.dateUploaded
+					? new Date(content.dateUploaded).toLocaleDateString()
+					: "-",
+			cellClassName: "whitespace-nowrap text-gray-900 text-sm",
+		},
+		{
+			header: "Status",
+			accessor: (content) => (
+				<span
+					className={`rounded-full px-2 py-1 font-medium text-xs ${
+						content.status === "verified"
+							? "bg-green-100 text-green-800"
+							: "bg-yellow-100 text-yellow-800"
+					}`}
+				>
+					{content.status}
+				</span>
+			),
+			cellClassName: "whitespace-nowrap",
+		},
+	];
+
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
@@ -182,7 +242,7 @@ function CmsPage() {
 				)}
 			</div>
 
-			<div className="relative overflow-hidden rounded-lg bg-white shadow-md">
+			<div className="relative">
 				{error ? (
 					<div className="flex flex-col items-center justify-center rounded-lg bg-white py-12 shadow-lg">
 						<p className="font-bold text-xl text-gray-900">
@@ -203,114 +263,21 @@ function CmsPage() {
 						</button>
 					</div>
 				) : (
-					<>
-						<table className="min-w-full divide-y divide-gray-200">
-							<thead className="bg-gray-50">
-								<tr>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Content title
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Author Name
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Type
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Date Uploaded
-									</th>
-									<th className="px-6 py-3 text-left font-medium text-gray-900 text-xs tracking-wider">
-										Status
-									</th>
-								</tr>
-							</thead>
-							<tbody className="divide-y divide-gray-200 bg-white">
-								{isLoading ? (
-									<TableSkeleton columnsCount={5} />
-								) : contents.length === 0 ? (
-									<tr>
-										<td
-											colSpan={5}
-											className="px-6 py-8 text-center text-gray-900"
-										>
-											No cms content found
-										</td>
-									</tr>
-								) : (
-									contents.map((content) => (
-										<tr key={content._id}>
-											<td className="px-6 py-4 text-sm">
-												<span className="block max-w-[200px] truncate font-medium text-gray-900">
-													{content.title}
-												</span>
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												<div className="flex items-center gap-3">
-													{content.author.image ? (
-														<img
-															src={content.author.image}
-															alt={content.author.name}
-															className="h-8 w-8 rounded-full object-cover"
-														/>
-													) : (
-														<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
-															{content.author.name.charAt(0).toUpperCase()}
-														</div>
-													)}
-													<span>{content.author.name}</span>
-												</div>
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												{getTypeLabel(content.type)}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-gray-900 text-sm">
-												{content.dateUploaded
-													? new Date(
-															content.dateUploaded,
-														).toLocaleDateString()
-													: "-"}
-											</td>
-											<td className="whitespace-nowrap px-6 py-4">
-												<span
-													className={`rounded-full px-2 py-1 font-medium text-xs ${
-														content.status === "verified"
-															? "bg-green-100 text-green-800"
-															: "bg-yellow-100 text-yellow-800"
-													}`}
-												>
-													{content.status}
-												</span>
-											</td>
-										</tr>
-									))
-								)}
-							</tbody>
-						</table>
-					</>
+					<DataTable
+						data={contents}
+						columns={columns}
+						isLoading={isLoading}
+						emptyMessage="No cms content found"
+						pagination={{
+							currentPage: page,
+							totalPages,
+							onPageChange: setPage,
+							totalItems: total,
+							itemsPerPage: limit,
+						}}
+					/>
 				)}
 			</div>
-
-			{totalPages > 1 && (
-				<div className="flex items-center justify-center gap-2">
-					<button
-						onClick={() => setPage((p) => Math.max(1, p - 1))}
-						disabled={page === 1}
-						className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-					>
-						Previous
-					</button>
-					<span className="text-gray-900 text-sm">
-						Page {page} of {totalPages}
-					</span>
-					<button
-						onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-						disabled={page === totalPages}
-						className="rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-					>
-						Next
-					</button>
-				</div>
-			)}
 
 			{showAddModal && (
 				<div
