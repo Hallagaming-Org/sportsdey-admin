@@ -62,23 +62,26 @@ function CmsPage() {
 		},
 	});
 
-	const { data: authors = [], error: authorsError, isLoading: isAuthorsLoading } =
-		useQuery({
-			queryKey: ["cms-authors"],
-			enabled: showAddModal,
-			queryFn: async () => {
-				const result = await cmsService.listCmsAuthors();
-				if (!result.success) {
-					const queryError = new Error(
-						result.error || "Failed to fetch authors",
-					) as CmsMutationError;
-					queryError.statusCode = result.statusCode;
-					queryError.details = result.details ?? null;
-					throw queryError;
-				}
-				return result.data || [];
-			},
-		});
+	const {
+		data: authors = [],
+		error: authorsError,
+		isLoading: isAuthorsLoading,
+	} = useQuery({
+		queryKey: ["cms-authors"],
+		enabled: showAddModal,
+		queryFn: async () => {
+			const result = await cmsService.listCmsAuthors();
+			if (!result.success) {
+				const queryError = new Error(
+					result.error || "Failed to fetch authors",
+				) as CmsMutationError;
+				queryError.statusCode = result.statusCode;
+				queryError.details = result.details ?? null;
+				throw queryError;
+			}
+			return result.data || [];
+		},
+	});
 
 	useEffect(() => {
 		if (error) {
@@ -147,7 +150,6 @@ function CmsPage() {
 	const contents = cmsData?.content || [];
 	const tableData = contents.map((item, index) => ({
 		...item,
-		serialNumber: (page - 1) * limit + index + 1,
 	}));
 	const total = cmsData?.total || 0;
 	const totalPages = Math.ceil(total / limit);
@@ -172,9 +174,6 @@ function CmsPage() {
 				const previewImage = item.image || item.author.image;
 				return (
 					<div className="flex items-center gap-3">
-						<span className="min-w-6 font-medium text-gray-900">
-							{item.serialNumber}
-						</span>
 						{previewImage ? (
 							<img
 								src={previewImage}
@@ -303,17 +302,17 @@ function CmsPage() {
 								<FilterIcon className="h-3 w-3" />
 								Filter
 							</button>
-						<button
-							type="button"
-							onClick={() => {
-								setFieldErrors({});
-								setShowAddModal(true);
-							}}
-							className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-accent px-4 py-2 font-medium text-white text-sm hover:bg-accent/90"
-						>
-						<PostIcon className="h-4 w-4" />
-						Post new content
-					</button>
+							<button
+								type="button"
+								onClick={() => {
+									setFieldErrors({});
+									setShowAddModal(true);
+								}}
+								className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-accent px-4 py-2 font-medium text-white text-sm hover:bg-accent/90"
+							>
+								<PostIcon className="h-4 w-4" />
+								Post new content
+							</button>
 						</div>
 					</div>
 
@@ -470,7 +469,10 @@ function CmsPage() {
 									<textarea
 										value={newContent.message}
 										onChange={(e) => {
-											setFieldErrors((prev) => ({ ...prev, message: undefined }));
+											setFieldErrors((prev) => ({
+												...prev,
+												message: undefined,
+											}));
 											setNewContent((prev) => ({
 												...prev,
 												message: e.target.value,
@@ -494,17 +496,17 @@ function CmsPage() {
 										</label>
 										<div className="relative">
 											<select
-											value={newContent.authorName}
-											onChange={(e) => {
-												setFieldErrors((prev) => ({
-													...prev,
-													authorName: undefined,
-												}));
-												setNewContent((prev) => ({
-													...prev,
-													authorName: e.target.value,
-												}));
-											}}
+												value={newContent.authorName}
+												onChange={(e) => {
+													setFieldErrors((prev) => ({
+														...prev,
+														authorName: undefined,
+													}));
+													setNewContent((prev) => ({
+														...prev,
+														authorName: e.target.value,
+													}));
+												}}
 												required
 												disabled={isAuthorsLoading || authors.length === 0}
 												className="h-11 w-full appearance-none rounded-xl border border-transparent bg-[#ececee] px-3 pr-9 text-[#56607a] text-sm focus:border-[#0a0d3c] focus:outline-none disabled:opacity-60 sm:h-12 sm:text-base"
@@ -604,7 +606,9 @@ function CmsPage() {
 											}
 											className="h-11 w-full rounded-full bg-[#1baa04] font-semibold text-sm text-white transition-colors hover:bg-[#149504] disabled:cursor-not-allowed disabled:opacity-60 sm:h-12 sm:text-base"
 										>
-											{createContentMutation.isPending ? "Uploading..." : "Upload"}
+											{createContentMutation.isPending
+												? "Uploading..."
+												: "Upload"}
 										</button>
 									</div>
 								</div>
