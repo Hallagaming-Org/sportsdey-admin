@@ -8,6 +8,7 @@ import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { cmsService, type CreateCmsContentData } from "../../lib/cms";
 import { IoFilter } from "react-icons/io5";
+import { TableSkeleton } from "../../components/TableSkeleton";
 
 export const Route = createFileRoute("/app/cms")({
 	component: CmsPage,
@@ -182,11 +183,6 @@ function CmsPage() {
 			</div>
 
 			<div className="relative overflow-hidden rounded-lg bg-white shadow-md">
-				{isLoading && (
-					<div className="absolute inset-0 flex items-center justify-center bg-white/50">
-						<div className="h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
-					</div>
-				)}
 				{error ? (
 					<div className="flex flex-col items-center justify-center rounded-lg bg-white py-12 shadow-lg">
 						<p className="font-bold text-xl text-gray-900">
@@ -229,7 +225,9 @@ function CmsPage() {
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-gray-200 bg-white">
-								{contents.length === 0 ? (
+								{isLoading ? (
+									<TableSkeleton columnsCount={5} />
+								) : contents.length === 0 ? (
 									<tr>
 										<td
 											colSpan={5}
