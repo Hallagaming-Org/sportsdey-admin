@@ -265,6 +265,7 @@ function CmsPage() {
 								columns={cmsColumns}
 								isLoading={isLoading}
 								emptyMessage="No cms content found"
+								onActionClick={(item) => console.log("Action for content", item._id)}
 								pagination={{
 									currentPage: page,
 									totalPages,
