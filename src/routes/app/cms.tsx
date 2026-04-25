@@ -295,12 +295,12 @@ function CmsPage() {
 						<div className="flex items-center gap-3">
 							<button
 								onClick={() => setSortBy((s) => (s === "title" ? "" : "title"))}
-								className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
+								className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
 							>
 								<SortIcon className="h-3 w-3" />
 								Sort
 							</button>
-							<button className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50">
+							<button className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50">
 								<FilterIcon className="h-3 w-3" />
 								Filter
 							</button>
