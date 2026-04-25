@@ -81,7 +81,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
 	}
 
 	return (
-		<div className="flex w-full items-center gap-2 overflow-x-auto border-b border-gray-200 bg-white p-2 text-[#11123f] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+		<div className="flex w-full items-center gap-2 overflow-x-auto border-b border-gray-200 bg-white p-2 text-[#11123f] custom-scrollbar">
 			<button
 				type="button"
 				onClick={() => editor.chain().focus().toggleBold().run()}
@@ -545,7 +545,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 								<MenuBar editor={editor} />
 								<EditorContent
 									editor={editor}
-									className="flex-1 overflow-y-auto p-3 text-[#11123f] bg-[#F9F9F9]"
+									className="flex-1 overflow-y-auto custom-scrollbar p-3 text-[#11123f] bg-[#F9F9F9]"
 								/>
 							</div>
 							{fieldErrors.message && (
