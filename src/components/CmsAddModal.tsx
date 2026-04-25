@@ -7,12 +7,69 @@ import type { ApiErrorDetail } from "../lib/api";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Extension } from "@tiptap/core";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
+import { Highlight } from "@tiptap/extension-highlight";
+import { FontFamily } from "@tiptap/extension-font-family";
 
 type CmsFieldName = keyof CreateCmsContentData;
 type CmsMutationError = Error & {
 	statusCode?: number;
 	details?: ApiErrorDetail[] | null;
 };
+
+declare module "@tiptap/core" {
+	interface Commands<ReturnType> {
+		fontSize: {
+			setFontSize: (size: string) => ReturnType;
+			unsetFontSize: () => ReturnType;
+		};
+	}
+}
+
+const FontSize = Extension.create({
+	name: "fontSize",
+	addOptions() {
+		return { types: ["textStyle"] };
+	},
+	addGlobalAttributes() {
+		return [
+			{
+				types: this.options.types,
+				attributes: {
+					fontSize: {
+						default: null,
+						parseHTML: (element) => element.style.fontSize.replace(/['"]+/g, ""),
+						renderHTML: (attributes) => {
+							if (!attributes.fontSize) {
+								return {};
+							}
+							return { style: `font-size: ${attributes.fontSize}` };
+						},
+					},
+				},
+			},
+		];
+	},
+	addCommands() {
+		return {
+			setFontSize:
+				(fontSize) =>
+				({ chain }) => {
+					return chain().setMark("textStyle", { fontSize }).run();
+				},
+			unsetFontSize:
+				() =>
+				({ chain }) => {
+					return chain()
+						.setMark("textStyle", { fontSize: null })
+						.removeEmptyTextStyle()
+						.run();
+				},
+		};
+	},
+});
 
 const MenuBar = ({ editor }: { editor: any }) => {
 	if (!editor) {
@@ -39,24 +96,88 @@ const MenuBar = ({ editor }: { editor: any }) => {
 			>
 				<i className="font-serif">I</i>
 			</button>
-			<button
-				type="button"
-				onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-				className={`rounded px-2 py-1 text-sm font-bold hover:bg-gray-200 ${
-					editor.isActive("heading", { level: 2 }) ? "bg-gray-200" : ""
-				}`}
+			<div className="mx-1 h-6 w-px bg-gray-300"></div>
+
+			<select
+				onChange={(e) => {
+					if (e.target.value) {
+						editor.chain().focus().setFontFamily(e.target.value).run();
+					} else {
+						editor.chain().focus().unsetFontFamily().run();
+					}
+				}}
+				value={editor.getAttributes("textStyle").fontFamily || ""}
+				className="rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
 			>
-				H2
-			</button>
-			<button
-				type="button"
-				onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-				className={`rounded px-2 py-1 text-sm font-bold hover:bg-gray-200 ${
-					editor.isActive("heading", { level: 3 }) ? "bg-gray-200" : ""
-				}`}
+				<option value="">Default Font</option>
+				<option value="Arial">Arial</option>
+				<option value="Courier New">Courier New</option>
+				<option value="Georgia">Georgia</option>
+				<option value="Times New Roman">Times New Roman</option>
+				<option value="Verdana">Verdana</option>
+			</select>
+
+			<select
+				onChange={(e) => {
+					if (e.target.value) {
+						editor.chain().focus().setFontSize(e.target.value).run();
+					} else {
+						editor.chain().focus().unsetFontSize().run();
+					}
+				}}
+				value={editor.getAttributes("textStyle").fontSize || ""}
+				className="rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
 			>
-				H3
-			</button>
+				<option value="">Default Size</option>
+				<option value="12px">12px</option>
+				<option value="14px">14px</option>
+				<option value="16px">16px</option>
+				<option value="18px">18px</option>
+				<option value="20px">20px</option>
+				<option value="24px">24px</option>
+				<option value="30px">30px</option>
+			</select>
+
+			<div className="mx-1 h-6 w-px bg-gray-300"></div>
+
+			<div className="flex items-center gap-1">
+				<label className="text-sm font-medium">Text:</label>
+				<input
+					type="color"
+					onInput={(e) =>
+						editor.chain().focus().setColor(e.currentTarget.value).run()
+					}
+					value={editor.getAttributes("textStyle").color || "#000000"}
+					className="h-6 w-6 cursor-pointer border-none bg-transparent"
+				/>
+			</div>
+
+			<div className="flex items-center gap-1">
+				<label className="text-sm font-medium">Highlight:</label>
+				<input
+					type="color"
+					onInput={(e) =>
+						editor
+							.chain()
+							.focus()
+							.setHighlight({ color: e.currentTarget.value })
+							.run()
+					}
+					value={editor.getAttributes("highlight").color || "#ffffff"}
+					className="h-6 w-6 cursor-pointer border-none bg-transparent"
+				/>
+				<button
+					type="button"
+					onClick={() => editor.chain().focus().unsetHighlight().run()}
+					className="rounded px-1 py-1 text-xs hover:bg-gray-200"
+					title="Clear Highlight"
+				>
+					<X className="h-3 w-3" />
+				</button>
+			</div>
+
+			<div className="mx-1 h-6 w-px bg-gray-300"></div>
+
 			<button
 				type="button"
 				onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -97,6 +218,11 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 			Placeholder.configure({
 				placeholder: "Write message here...",
 			}),
+			TextStyle,
+			Color,
+			Highlight.configure({ multicolor: true }),
+			FontFamily,
+			FontSize,
 		],
 		content: newContent.message,
 		onUpdate: ({ editor }) => {
