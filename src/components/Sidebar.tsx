@@ -42,7 +42,7 @@ const menuItems: NavItem[] = [
 
 const otherItems: NavItem[] = [
 	{ icon: FileText, label: "KYC & Document Uploads" },
-	{ icon: Settings, label: "General setting" },
+	{ icon: Settings, label: "General setting", to: "/app/settings" },
 ];
 
 export default function Sidebar({
@@ -133,14 +133,22 @@ export default function Sidebar({
 				<nav
 					className={`flex flex-col gap-0.5 px-3 ${collapsed ? "px-2" : ""}`}
 				>
-					{otherItems.map((item) => (
-						<SidebarItem
-							key={item.label}
-							icon={item.icon}
-							label={item.label}
-							collapsed={collapsed}
-						/>
-					))}
+					{otherItems.map((item) => {
+						const isActive = item.to
+							? location.pathname === item.to || location.pathname.startsWith(item.to)
+							: false;
+
+						return (
+							<SidebarItem
+								key={item.label}
+								icon={item.icon}
+								label={item.label}
+								to={item.to}
+								active={isActive}
+								collapsed={collapsed}
+							/>
+						);
+					})}
 				</nav>
 			</div>
 
@@ -154,31 +162,49 @@ export default function Sidebar({
 					{!collapsed && <span>Log out</span>}
 				</button>
 
-				<div
+<div
 					className={`border-[#475467] border-t px-4 py-4 flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}
 				>
-					<img
-						src="https://i.pravatar.cc/40"
-						alt="Admin avatar"
-						className="h-10 w-10 shrink-0 rounded-full object-cover"
-					/>
-					{!collapsed && (
-						<div className="min-w-0 flex-1">
-							<p className="m-0 overflow-hidden text-ellipsis whitespace-nowrap font-semibold text-[13px] text-white">
-								{admin?.name || "Olivia Rhye"}
-							</p>
-							<p className="m-0 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-white/45">
-								{admin?.email || "olivia@untitledui.com"}
-							</p>
-						</div>
-					)}
-					{!collapsed && (
-						<button
-							type="button"
-							className="flex shrink-0 cursor-pointer items-center justify-center border-none bg-none p-1 text-white/40 transition-colors duration-180 hover:text-white"
-						>
-							<LogOut size={16} />
-						</button>
+					{admin ? (
+						<>
+							<img
+								src={admin.image || "https://i.pravatar.cc/40"}
+								alt="Admin avatar"
+								className="h-10 w-10 shrink-0 rounded-full object-cover"
+							/>
+							{!collapsed && (
+								<div className="min-w-0 flex-1">
+									<p className="m-0 overflow-hidden text-ellipsis whitespace-nowrap font-semibold text-[13px] text-white">
+										{admin.name}
+									</p>
+									<p className="m-0 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-white/45">
+										{admin.email}
+									</p>
+								</div>
+							)}
+							{!collapsed && (
+								<button
+									type="button"
+									className="flex shrink-0 cursor-pointer items-center justify-center border-none bg-none p-1 text-white/40 transition-colors duration-180 hover:text-white"
+								>
+									<LogOut size={16} />
+								</button>
+							)}
+						</>
+					) : (
+						<>
+							{!collapsed ? (
+								<>
+									<div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-white/20" />
+									<div className="min-w-0 flex-1">
+										<div className="m-0 h-3 w-24 animate-pulse overflow-hidden rounded bg-white/20 text-ellipsis whitespace-nowrap font-semibold text-[13px] text-white" />
+										<div className="m-0 mt-1.5 h-2 w-32 animate-pulse overflow-hidden rounded bg-white/20 text-ellipsis whitespace-nowrap text-[11px] text-white/45" />
+									</div>
+								</>
+							) : (
+								<div className="h-10 w-10 animate-pulse rounded-full bg-white/20" />
+							)}
+						</>
 					)}
 				</div>
 			</div>

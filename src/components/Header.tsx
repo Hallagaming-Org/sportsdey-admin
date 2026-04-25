@@ -5,7 +5,7 @@ type HeaderProps = {
 	admin?: Admin | null;
 };
 
-export default function Header({ admin: _admin }: HeaderProps) {
+export default function Header({ admin }: HeaderProps) {
 	return (
 		<header className="flex h-16 shrink-0 items-center gap-6 bg-black px-6 text-white">
 			<div className="flex flex-1 justify-center">
@@ -28,12 +28,21 @@ export default function Header({ admin: _admin }: HeaderProps) {
 				</button>
 
 				<div className="flex cursor-pointer items-center gap-1.5">
-					<img
-						src="https://i.pravatar.cc/40"
-						alt="Admin avatar"
-						className="h-9 w-9 rounded-full object-cover"
-					/>
-					<ChevronDown size={14} className="text-white/60" />
+					{admin ? (
+						<>
+							<img
+								src={admin.image || "https://i.pravatar.cc/40"}
+								alt="Admin avatar"
+								className="h-9 w-9 rounded-full object-cover"
+							/>
+							<ChevronDown size={14} className="text-white/60" />
+						</>
+					) : (
+						<div className="flex items-center gap-1.5">
+							<div className="h-9 w-9 animate-pulse rounded-full bg-white/20" />
+							<ChevronDown size={14} className="text-white/20" />
+						</div>
+					)}
 				</div>
 			</div>
 		</header>
