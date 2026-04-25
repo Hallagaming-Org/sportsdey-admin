@@ -72,6 +72,8 @@ const FontSize = Extension.create({
 });
 
 const MenuBar = ({ editor }: { editor: any }) => {
+	const [fontSize, setFontSize] = useState("");
+  const [fontFamily, setFontFamily] = useState("");
 	if (!editor) {
 		return null;
 	}
@@ -100,44 +102,45 @@ const MenuBar = ({ editor }: { editor: any }) => {
 			<div className="mx-1 h-6 w-px shrink-0 bg-gray-300"></div>
 
 			<select
-				onChange={(e) => {
-					if (e.target.value) {
-						editor.chain().focus().setFontFamily(e.target.value).run();
-					} else {
-						editor.chain().focus().unsetFontFamily().run();
-					}
-				}}
-				value={editor.getAttributes("textStyle").fontFamily?.replace(/['"]+/g, '') || ""}
-				className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
-			>
-				<option value="">Default Font</option>
-				<option value="Arial">Arial</option>
-				<option value="Courier New">Courier New</option>
-				<option value="Georgia">Georgia</option>
-				<option value="Times New Roman">Times New Roman</option>
-				<option value="Verdana">Verdana</option>
-			</select>
-
+        onChange={(e) => {
+          setFontFamily(e.target.value);
+          if (e.target.value) {
+            editor.chain().focus().setFontFamily(e.target.value).run();
+          } else {
+            editor.chain().focus().unsetFontFamily().run();
+          }
+        }}
+        value={fontFamily}
+        className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
+      >
+        <option value="">Default Font</option>
+        <option value="Arial">Arial</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Verdana">Verdana</option>
+      </select>
 			<select
-				onChange={(e) => {
-					if (e.target.value) {
-						editor.chain().focus().setFontSize(e.target.value).run();
-					} else {
-						editor.chain().focus().unsetFontSize().run();
-					}
-				}}
-				value={editor.getAttributes("textStyle").fontSize?.replace(/['"]+/g, '') || ""}
-				className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
-			>
-				<option value="">Default Size</option>
-				<option value="12px">12px</option>
-				<option value="14px">14px</option>
-				<option value="16px">16px</option>
-				<option value="18px">18px</option>
-				<option value="20px">20px</option>
-				<option value="24px">24px</option>
-				<option value="30px">30px</option>
-			</select>
+        onChange={(e) => {
+          setFontSize(e.target.value);
+          if (e.target.value) {
+            editor.chain().focus().setFontSize(e.target.value).run();
+          } else {
+            editor.chain().focus().unsetFontSize().run();
+          }
+        }}
+        value={fontSize}
+        className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
+      >
+        <option value="">Default Size</option>
+        <option value="12px">12px</option>
+        <option value="14px">14px</option>
+        <option value="16px">16px</option>
+        <option value="18px">18px</option>
+        <option value="20px">20px</option>
+        <option value="24px">24px</option>
+        <option value="30px">30px</option>
+      </select>
 
 			<div className="mx-1 h-6 w-px shrink-0 bg-gray-300"></div>
 
