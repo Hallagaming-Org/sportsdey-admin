@@ -77,11 +77,11 @@ const MenuBar = ({ editor }: { editor: any }) => {
 	}
 
 	return (
-		<div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white p-2 text-[#11123f]">
+		<div className="flex w-full items-center gap-2 overflow-x-auto border-b border-gray-200 bg-white p-2 text-[#11123f] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
 			<button
 				type="button"
 				onClick={() => editor.chain().focus().toggleBold().run()}
-				className={`rounded px-2 py-1 hover:bg-gray-200 ${
+				className={`shrink-0 rounded px-2 py-1 hover:bg-gray-200 ${
 					editor.isActive("bold") ? "bg-gray-200" : ""
 				}`}
 			>
@@ -90,13 +90,14 @@ const MenuBar = ({ editor }: { editor: any }) => {
 			<button
 				type="button"
 				onClick={() => editor.chain().focus().toggleItalic().run()}
-				className={`rounded px-2 py-1 hover:bg-gray-200 ${
+				className={`shrink-0 rounded px-2 py-1 hover:bg-gray-200 ${
 					editor.isActive("italic") ? "bg-gray-200" : ""
 				}`}
 			>
 				<i className="font-serif">I</i>
 			</button>
-			<div className="mx-1 h-6 w-px bg-gray-300"></div>
+
+			<div className="mx-1 h-6 w-px shrink-0 bg-gray-300"></div>
 
 			<select
 				onChange={(e) => {
@@ -106,8 +107,8 @@ const MenuBar = ({ editor }: { editor: any }) => {
 						editor.chain().focus().unsetFontFamily().run();
 					}
 				}}
-				value={editor.getAttributes("textStyle").fontFamily || ""}
-				className="rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
+				value={editor.getAttributes("textStyle").fontFamily?.replace(/['"]+/g, '') || ""}
+				className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
 			>
 				<option value="">Default Font</option>
 				<option value="Arial">Arial</option>
@@ -125,8 +126,8 @@ const MenuBar = ({ editor }: { editor: any }) => {
 						editor.chain().focus().unsetFontSize().run();
 					}
 				}}
-				value={editor.getAttributes("textStyle").fontSize || ""}
-				className="rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
+				value={editor.getAttributes("textStyle").fontSize?.replace(/['"]+/g, '') || ""}
+				className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
 			>
 				<option value="">Default Size</option>
 				<option value="12px">12px</option>
@@ -138,50 +139,50 @@ const MenuBar = ({ editor }: { editor: any }) => {
 				<option value="30px">30px</option>
 			</select>
 
-			<div className="mx-1 h-6 w-px bg-gray-300"></div>
+			<div className="mx-1 h-6 w-px shrink-0 bg-gray-300"></div>
 
-			<div className="flex items-center gap-1">
+			<div className="flex shrink-0 items-center gap-1">
 				<label className="text-sm font-medium">Text:</label>
 				<input
 					type="color"
-					onInput={(e) =>
-						editor.chain().focus().setColor(e.currentTarget.value).run()
+					onChange={(e) =>
+						editor.chain().focus().setColor(e.target.value).run()
 					}
 					value={editor.getAttributes("textStyle").color || "#000000"}
-					className="h-6 w-6 cursor-pointer border-none bg-transparent"
+					className="h-6 w-6 shrink-0 cursor-pointer border-none bg-transparent p-0"
 				/>
 			</div>
 
-			<div className="flex items-center gap-1">
+			<div className="flex shrink-0 items-center gap-1">
 				<label className="text-sm font-medium">Highlight:</label>
 				<input
 					type="color"
-					onInput={(e) =>
+					onChange={(e) =>
 						editor
 							.chain()
 							.focus()
-							.setHighlight({ color: e.currentTarget.value })
+							.setHighlight({ color: e.target.value })
 							.run()
 					}
-					value={editor.getAttributes("highlight").color || "#ffffff"}
-					className="h-6 w-6 cursor-pointer border-none bg-transparent"
+					value={editor.getAttributes("highlight").color || "#ffff00"}
+					className="h-6 w-6 shrink-0 cursor-pointer border-none bg-transparent p-0"
 				/>
 				<button
 					type="button"
 					onClick={() => editor.chain().focus().unsetHighlight().run()}
-					className="rounded px-1 py-1 text-xs hover:bg-gray-200"
+					className="shrink-0 rounded px-1 py-1 text-xs hover:bg-gray-200"
 					title="Clear Highlight"
 				>
 					<X className="h-3 w-3" />
 				</button>
 			</div>
 
-			<div className="mx-1 h-6 w-px bg-gray-300"></div>
+			<div className="mx-1 h-6 w-px shrink-0 bg-gray-300"></div>
 
 			<button
 				type="button"
 				onClick={() => editor.chain().focus().toggleBulletList().run()}
-				className={`rounded px-2 py-1 text-sm hover:bg-gray-200 ${
+				className={`shrink-0 rounded px-2 py-1 text-sm hover:bg-gray-200 ${
 					editor.isActive("bulletList") ? "bg-gray-200" : ""
 				}`}
 			>
