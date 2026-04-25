@@ -4,11 +4,70 @@ import { ChevronDown, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { type CreateCmsContentData, cmsService } from "../lib/cms";
 import type { ApiErrorDetail } from "../lib/api";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
 
 type CmsFieldName = keyof CreateCmsContentData;
 type CmsMutationError = Error & {
 	statusCode?: number;
 	details?: ApiErrorDetail[] | null;
+};
+
+const MenuBar = ({ editor }: { editor: any }) => {
+	if (!editor) {
+		return null;
+	}
+
+	return (
+		<div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white p-2 text-[#11123f]">
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().toggleBold().run()}
+				className={`rounded px-2 py-1 hover:bg-gray-200 ${
+					editor.isActive("bold") ? "bg-gray-200" : ""
+				}`}
+			>
+				<b>B</b>
+			</button>
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().toggleItalic().run()}
+				className={`rounded px-2 py-1 hover:bg-gray-200 ${
+					editor.isActive("italic") ? "bg-gray-200" : ""
+				}`}
+			>
+				<i className="font-serif">I</i>
+			</button>
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+				className={`rounded px-2 py-1 text-sm font-bold hover:bg-gray-200 ${
+					editor.isActive("heading", { level: 2 }) ? "bg-gray-200" : ""
+				}`}
+			>
+				H2
+			</button>
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+				className={`rounded px-2 py-1 text-sm font-bold hover:bg-gray-200 ${
+					editor.isActive("heading", { level: 3 }) ? "bg-gray-200" : ""
+				}`}
+			>
+				H3
+			</button>
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().toggleBulletList().run()}
+				className={`rounded px-2 py-1 text-sm hover:bg-gray-200 ${
+					editor.isActive("bulletList") ? "bg-gray-200" : ""
+				}`}
+			>
+				List
+			</button>
+		</div>
+	);
 };
 
 interface CmsAddModalProps {
@@ -29,6 +88,59 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 		authorName: "",
 		bannerImage: undefined,
 	});
+
+	const [isDragging, setIsDragging] = useState(false);
+
+	const editor = useEditor({
+		extensions: [
+			StarterKit,
+			Placeholder.configure({
+				placeholder: "Write message here...",
+			}),
+		],
+		content: newContent.message,
+		onUpdate: ({ editor }) => {
+			setFieldErrors((prev) => ({ ...prev, message: undefined }));
+			setNewContent((prev) => ({
+				...prev,
+				message: editor.getHTML(),
+			}));
+		},
+		editorProps: {
+			attributes: {
+				class:
+					"prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[200px]",
+			},
+		},
+	});
+
+	useEffect(() => {
+		if (isOpen && editor && editor.getHTML() !== newContent.message) {
+			editor.commands.setContent(newContent.message, { emitUpdate: false });
+		}
+	}, [isOpen, editor, newContent.message]);
+
+	const handleDragOver = (e: React.DragEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsDragging(true);
+	};
+
+	const handleDragLeave = (e: React.DragEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsDragging(false);
+	};
+
+	const handleDrop = (e: React.DragEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setIsDragging(false);
+		const files = e.dataTransfer.files;
+		if (files && files.length > 0) {
+			handleFileChange(files[0]);
+		}
+	};
 
 	const { data: authors = [], error: authorsError, isLoading: isAuthorsLoading } =
 		useQuery({
@@ -209,19 +321,13 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 							<label className="mb-1.5 block font-medium text-[#11123f] text-lg sm:text-2xl">
 								Message
 							</label>
-							<textarea
-								value={newContent.message}
-								onChange={(e) => {
-									setFieldErrors((prev) => ({ ...prev, message: undefined }));
-									setNewContent((prev) => ({
-										...prev,
-										message: e.target.value,
-									}));
-								}}
-								required
-								placeholder="Write message here..."
-								className="h-[479px] w-full resize-none rounded-xl border border-transparent bg-[#ececee] p-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:outline-none"
-							/>
+							<div className="flex flex-col h-[479px] w-full rounded-xl border border-transparent bg-[#ececee] focus-within:border-[#0a0d3c] overflow-hidden">
+								<MenuBar editor={editor} />
+								<EditorContent
+									editor={editor}
+									className="flex-1 overflow-y-auto p-3 text-[#11123f] bg-[#ececee]"
+								/>
+							</div>
 							{fieldErrors.message && (
 								<p className="mt-1 text-red-600 text-xs">
 									{fieldErrors.message}
@@ -310,11 +416,18 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 							<div className="rounded-xl border border-dashed border-[#b9bbc5] bg-[#f5f5f6] p-3">
 								<label
 									htmlFor="cms-banner-upload"
-									className="flex min-h-[84px] cursor-pointer flex-col items-center justify-center rounded-lg border border-transparent text-center transition-colors hover:bg-[#ececee]"
+									onDragOver={handleDragOver}
+									onDragLeave={handleDragLeave}
+									onDrop={handleDrop}
+									className={`flex min-h-[84px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 text-center transition-all ${
+										isDragging
+											? "border-[#1baa04] bg-[#eaffea] scale-[1.02]"
+											: "border-transparent hover:bg-[#ececee]"
+									}`}
 								>
-									<Upload className="mb-1.5 h-5 w-5 text-[#8a8d97]" />
-									<span className="font-medium text-[#737680] text-sm sm:text-base">
-										{selectedFileName || "Choose an Image"}
+									<Upload className={`mb-1.5 h-5 w-5 ${isDragging ? "text-[#1baa04]" : "text-[#8a8d97]"}`} />
+									<span className={`font-medium text-sm sm:text-base ${isDragging ? "text-[#1baa04]" : "text-[#737680]"}`}>
+										{selectedFileName || (isDragging ? "Drop image here" : "Choose an Image or drag & drop")}
 									</span>
 									<span className="text-[#a7a9b2] text-xs sm:text-sm">
 										Upload supports: JPG, PNG.
