@@ -143,7 +143,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         value={fontSize}
         className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none"
       >
-        <option value="">Default Size</option>
         <option value="12px">12px</option>
         <option value="14px">14px</option>
         <option value="16px">16px</option>
