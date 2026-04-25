@@ -173,9 +173,9 @@ function CmsPage() {
 				const previewImage = item.image || item.author.image;
 				return (
 					<div className="flex items-center gap-3">
-						<span className="min-w-6 font-medium text-gray-900">
+						{/* <span className="min-w-6 font-medium text-gray-900">
 							{item.serialNumber}
-						</span>
+						</span> */}
 						{previewImage ? (
 							<img
 								src={previewImage}
