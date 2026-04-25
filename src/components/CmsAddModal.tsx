@@ -395,7 +395,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 			onClick={onClose}
 		>
 			<div
-				className="flex h-[80%] max-h-[80%] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-[#f3f3f4] shadow-2xl"
+				className="flex h-[80%] max-h-[80%] w-full max-w-5xl flex-col overflow-y-auto overflow-x-hidden rounded-2xl bg-[#f3f3f4] shadow-2xl" 
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex items-center justify-between bg-[#ececee] px-5 py-3 sm:px-8">
