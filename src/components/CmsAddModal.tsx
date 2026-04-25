@@ -166,7 +166,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 					<button
 						type="button"
 						onClick={onClose}
-						className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#0a0d3c] text-[#0a0d3c] transition-colors hover:bg-[#e4e4ea]"
+						className="flex h-9 w-9 items-center cursor-pointer justify-center rounded-full border-2 border-[#03002B] text-[#0a0d3c] transition-colors hover:bg-[#e4e4ea]"
 					>
 						<X className="h-5 w-5" />
 					</button>
@@ -195,7 +195,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 							}}
 							required
 							placeholder="Enter headline"
-							className="h-11 w-full rounded-xl border border-transparent bg-[#ececee] px-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:border-[#0a0d3c] focus:outline-none sm:h-12 sm:text-base"
+							className="h-11 w-full rounded-xl border border-transparent bg-[#ececee] px-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:outline-none sm:h-12 sm:text-base"
 						/>
 						{fieldErrors.title && (
 							<p className="mt-1 text-red-600 text-xs">
@@ -206,7 +206,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 
 					<div className="grid gap-5 lg:grid-cols-[1fr_335px]">
 						<div>
-							<label className="mb-1.5 block font-semibold text-[#11123f] text-lg sm:text-2xl">
+							<label className="mb-1.5 block font-medium text-[#11123f] text-lg sm:text-2xl">
 								Message
 							</label>
 							<textarea
@@ -220,7 +220,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 								}}
 								required
 								placeholder="Write message here..."
-								className="h-[180px] w-full resize-none rounded-xl border border-transparent bg-[#ececee] p-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:border-[#0a0d3c] focus:outline-none sm:h-[220px] sm:text-base lg:h-[260px]"
+								className="h-[479px] w-full resize-none rounded-xl border border-transparent bg-[#ececee] p-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:border-[#0a0d3c] focus:outline-none"
 							/>
 							{fieldErrors.message && (
 								<p className="mt-1 text-red-600 text-xs">
@@ -231,7 +231,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 
 						<div className="flex flex-col gap-4">
 							<div>
-								<label className="mb-1.5 block font-semibold text-[#11123f] text-base sm:text-xl">
+								<label className="mb-1.5 block font-medium text-[#11123f] text-base sm:text-xl">
 									Author name
 								</label>
 								<div className="relative">
@@ -272,7 +272,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 							</div>
 
 							<div>
-								<label className="mb-1.5 block font-semibold text-[#11123f] text-base sm:text-xl">
+								<label className="mb-1.5 block font-medium text-[#11123f] text-base sm:text-xl">
 									Content Type/Labels
 								</label>
 								<div className="relative">
@@ -352,7 +352,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 						</div>
 					</div>
 
-					<div className="flex justify-end">
+					{/* <div className="flex justify-end">
 						<button
 							type="button"
 							onClick={onClose}
@@ -360,7 +360,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 						>
 							Cancel
 						</button>
-					</div>
+					</div> */}
 				</form>
 			</div>
 		</div>
