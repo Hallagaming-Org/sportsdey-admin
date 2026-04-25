@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, Upload, X } from "lucide-react";
+import { ChevronDown, Upload, X, AlignLeft, AlignCenter, AlignRight, AlignJustify, ListOrdered, Type } from "lucide-react";
 import { toast } from "sonner";
 import { type CreateCmsContentData, cmsService } from "../lib/cms";
 import type { ApiErrorDetail } from "../lib/api";
@@ -12,6 +12,8 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Highlight } from "@tiptap/extension-highlight";
 import { FontFamily } from "@tiptap/extension-font-family";
+import { Underline } from "@tiptap/extension-underline";
+import { TextAlign } from "@tiptap/extension-text-align";
 
 type CmsFieldName = keyof CreateCmsContentData;
 type CmsMutationError = Error & {
@@ -98,6 +100,15 @@ const MenuBar = ({ editor }: { editor: any }) => {
 			>
 				<i className="font-serif">I</i>
 			</button>
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().toggleUnderline().run()}
+				className={`shrink-0 rounded px-2 py-1 hover:bg-gray-200 ${
+					editor.isActive("underline") ? "bg-gray-200" : ""
+				}`}
+			>
+				<u className="font-serif">U</u>
+			</button>
 
 			<div className="mx-1 h-6 w-px shrink-0 bg-gray-300"></div>
 
@@ -144,28 +155,46 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
 			<div className="mx-1 h-6 w-px shrink-0 bg-gray-300"></div>
 
-			<div className="flex shrink-0 items-center gap-1">
-				<label className="text-sm font-medium">Text:</label>
+			<div className="relative flex shrink-0 h-8 w-8 cursor-pointer items-center justify-center rounded hover:bg-gray-200" title="Text Color">
+				<div className="pointer-events-none flex flex-col items-center justify-center">
+					<span
+						className="font-serif text-sm font-bold leading-none"
+						style={{ color: editor.getAttributes("textStyle").color || "#000000" }}
+					>
+						A
+					</span>
+					<div
+						className="mt-[2px] h-[3px] w-4 rounded-full border border-gray-100"
+						style={{ backgroundColor: editor.getAttributes("textStyle").color || "#000000" }}
+					></div>
+				</div>
 				<input
 					type="color"
-					onChange={(e) =>
-						editor.chain().focus().setColor(e.target.value).run()
-					}
+					onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
 					value={editor.getAttributes("textStyle").color || "#000000"}
-					className="h-6 w-6 shrink-0 cursor-pointer border-none bg-transparent p-0"
+					className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
 				/>
 			</div>
 
 			<div className="flex shrink-0 items-center gap-1">
-				<label className="text-sm font-medium">Highlight:</label>
-				<input
-  type="color"
-  onChange={(e) =>
-    editor.chain().focus().setHighlight({ color: e.target.value }).run()
-  }
-  value={editor.getAttributes("highlight").color || "#ffffff"}
-  className="h-6 w-6 shrink-0 cursor-pointer border-none bg-transparent p-0"
-				/>
+				<div className="relative flex shrink-0 h-8 w-8 cursor-pointer items-center justify-center rounded hover:bg-gray-200" title="Highlight Color">
+					<div className="pointer-events-none flex items-center justify-center">
+						<span
+							className="font-serif text-sm font-bold leading-none px-0.5 rounded"
+							style={{ backgroundColor: editor.getAttributes("highlight").color || "#ffff00" }}
+						>
+							ab
+						</span>
+					</div>
+					<input
+						type="color"
+						onChange={(e) =>
+							editor.chain().focus().setHighlight({ color: e.target.value }).run()
+						}
+						value={editor.getAttributes("highlight").color || "#ffff00"}
+						className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+					/>
+				</div>
 				<button
 					type="button"
 					onClick={() => editor.chain().focus().unsetHighlight().run()}
@@ -184,8 +213,73 @@ const MenuBar = ({ editor }: { editor: any }) => {
 				className={`shrink-0 rounded px-2 py-1 text-sm hover:bg-gray-200 ${
 					editor.isActive("bulletList") ? "bg-gray-200" : ""
 				}`}
+				title="Bullet List"
 			>
-				List
+				• List
+			</button>
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().toggleOrderedList().run()}
+				className={`shrink-0 rounded p-1 hover:bg-gray-200 ${
+					editor.isActive("orderedList") ? "bg-gray-200" : ""
+				}`}
+				title="Numbered List"
+			>
+				<ListOrdered className="h-4 w-4" />
+			</button>
+
+			<div className="mx-1 h-6 w-px shrink-0 bg-gray-300"></div>
+
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().setParagraph().run()}
+				className={`shrink-0 rounded p-1 hover:bg-gray-200 ${
+					editor.isActive("paragraph") ? "bg-gray-200" : ""
+				}`}
+				title="Paragraph"
+			>
+				<Type className="h-4 w-4" />
+			</button>
+
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().setTextAlign("left").run()}
+				className={`shrink-0 rounded p-1 hover:bg-gray-200 ${
+					editor.isActive({ textAlign: "left" }) ? "bg-gray-200" : ""
+				}`}
+				title="Align Left"
+			>
+				<AlignLeft className="h-4 w-4" />
+			</button>
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().setTextAlign("center").run()}
+				className={`shrink-0 rounded p-1 hover:bg-gray-200 ${
+					editor.isActive({ textAlign: "center" }) ? "bg-gray-200" : ""
+				}`}
+				title="Align Center"
+			>
+				<AlignCenter className="h-4 w-4" />
+			</button>
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().setTextAlign("right").run()}
+				className={`shrink-0 rounded p-1 hover:bg-gray-200 ${
+					editor.isActive({ textAlign: "right" }) ? "bg-gray-200" : ""
+				}`}
+				title="Align Right"
+			>
+				<AlignRight className="h-4 w-4" />
+			</button>
+			<button
+				type="button"
+				onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+				className={`shrink-0 rounded p-1 hover:bg-gray-200 ${
+					editor.isActive({ textAlign: "justify" }) ? "bg-gray-200" : ""
+				}`}
+				title="Justify"
+			>
+				<AlignJustify className="h-4 w-4" />
 			</button>
 		</div>
 	);
@@ -223,6 +317,8 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 			Highlight.configure({ multicolor: true }),
 			FontFamily,
 			FontSize,
+			Underline,
+			TextAlign.configure({ types: ["heading", "paragraph"] }),
 		],
 		content: newContent.message,
 		onUpdate: ({ editor }) => {
