@@ -328,9 +328,8 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 		},
 		editorProps: {
 			attributes: {
-				class:
-					"prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[200px]",
-			},
+    class: "prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[200px] prose-ul:list-disc prose-ol:list-decimal prose-li:my-0",
+  },
 		},
 	});
 
