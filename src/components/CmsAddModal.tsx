@@ -220,7 +220,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 								}}
 								required
 								placeholder="Write message here..."
-								className="h-[479px] w-full resize-none rounded-xl border border-transparent bg-[#ececee] p-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:border-[#0a0d3c] focus:outline-none"
+								className="h-[479px] w-full resize-none rounded-xl border border-transparent bg-[#ececee] p-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:outline-none"
 							/>
 							{fieldErrors.message && (
 								<p className="mt-1 text-red-600 text-xs">
