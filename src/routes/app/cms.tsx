@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { IoMdCloud } from "react-icons/io";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
-import { cmsService } from "../../lib/cms";
+import { cmsService, type CreateCmsContentData } from "../../lib/cms";
+import { IoFilter } from "react-icons/io5";
 
 export const Route = createFileRoute("/app/cms")({
 	component: CmsPage,
@@ -122,20 +124,8 @@ function CmsPage() {
 						onClick={() => setShowAddModal(true)}
 						className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-accent px-4 py-2 font-medium text-white text-sm hover:bg-accent/90"
 					>
-						<svg
-							className="h-4 w-4"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M12 4v16m8-8H4"
-							/>
-						</svg>
-						Add new content
+						<IoMdCloud className="w-4 h-4"/>
+						Post new content
 					</button>
 				</div>
 			</div>
@@ -168,7 +158,7 @@ function CmsPage() {
 
 				{!error && (
 					<form
-						className="relative"
+						className="relative space-x-3"
 						onSubmit={(e) => {
 							e.preventDefault();
 							setPage(1);
@@ -183,6 +173,10 @@ function CmsPage() {
 							className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
 						/>
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+						 <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
+									  Time periods
+									  <IoFilter className="h-3.5 w-3.5" />
+									</button>
 					</form>
 				)}
 			</div>
