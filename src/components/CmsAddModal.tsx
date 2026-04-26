@@ -264,7 +264,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 							}}
 							required
 							placeholder="Enter headline"
-							className="h-11 w-full rounded-xl border border-transparent bg-[#ececee] px-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:outline-none sm:h-12 sm:text-base placeholder:text-sm"
+							className="h-11 w-full rounded-xl border border-transparent bg-[#ececee] px-3 text-[#11123f] text-sm placeholder:text-[#999da5] focus:outline-none sm:h-12 sm:text-base placeholder:text-sm"
 						/>
 						{fieldErrors.title && (
 							<p className="mt-1 text-red-600 text-xs">
