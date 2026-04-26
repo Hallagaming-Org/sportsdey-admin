@@ -12,6 +12,26 @@ interface UserProfileModalProps {
 }
 
 export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: UserProfileModalProps) {
+	const buttonItems = [
+		{ 
+			label: "Send a notice", 
+			icon: <MessageCircle className="w-4 h-4" />, 
+			onClick: () => onSendNotice(user),
+			className: "bg-[#E0E8F980] text-gray-700"
+		},
+		{ 
+			label: "Contact User", 
+			icon: <FaWhatsapp className="w-4 h-4" />, 
+			onClick: () => {},
+			className: "bg-[#10C300] text-white hover:bg-[#0ea800] shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]"
+		},
+		{ 
+			label: "Suspended", 
+			icon: <PauseCircle className="w-4 h-4" />, 
+			onClick: () => onSuspend?.(user),
+			className: "bg-[#FEECEB] border-[#FEECEB] text-[#EE201C] hover:bg-red-100"
+		}
+	]
 	return (
 		<div
 			className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
@@ -47,11 +67,17 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 					)}
 
 					<div className="flex flex-col items-center justify-center pt-2">
-						<img 
-							src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
-							alt="avatar" 
-							className="h-24 w-24 rounded-full bg-gray-100 object-cover shadow-sm mb-3" 
-						/>
+						{user.image || user.photo ? (
+							<img 
+								src={user.image || user.photo} 
+								alt="avatar" 
+								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3" 
+							/>
+						) : (
+							<div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center shadow-sm mb-3">
+								<CgProfile className="h-12 w-12 text-gray-400" />
+							</div>
+						)}
 						<h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
 						<p className="text-[#10C300] font-medium text-sm flex items-center gap-1.5 mt-1">
 							<span className="w-2 h-2 rounded-full bg-[#10C300]"></span>
@@ -62,24 +88,16 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 						</p>
 
 						<div className="flex items-center gap-3 mt-6">
-							<button 
-								onClick={() => onSendNotice(user)}
-								className="inline-flex items-center bg-[#E0E8F980] gap-2 px-4 py-2 rounded-full text-sm font-medium text-gray-700 transition-colors cursor-pointer"
-							>
-								<MessageCircle className="w-4 h-4" />
-								Send a notice
-							</button>
-							<button className="inline-flex items-center gap-2 px-4 py-2 bg-[#10C300] rounded-full text-sm font-medium text-white hover:bg-[#0ea800] transition-colors cursor-pointer shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]">
-								<FaWhatsapp className="w-4 h-4" />
-								Contact User
-							</button>
-							<button 
-								onClick={() => onSuspend?.(user)}
-								className="inline-flex items-center gap-2 px-4 py-2 border border-[#FEECEB] bg-[#FEECEB] rounded-full text-sm font-medium text-[#EE201C] hover:bg-red-100 transition-colors cursor-pointer"
-							>
-								<PauseCircle className="w-4 h-4" />
-								Suspended
-							</button>
+							{buttonItems.map((btn, idx) => (
+								<button 
+									key={idx}
+									onClick={btn.onClick}
+									className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer border ${btn.className}`}
+								>
+									{btn.icon}
+									{btn.label}
+								</button>
+							))}
 						</div>
 					</div>
 
