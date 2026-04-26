@@ -18,7 +18,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 			onClick={onClose}
 		>
 			<div
-				className="w-full max-w-[600px] rounded-[20px] bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+				className="w-full max-w-[760px] rounded-[20px] bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex items-center justify-between p-6 border-b border-gray-100">
