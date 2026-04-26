@@ -146,7 +146,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 							</div>
 						</div>
 
-						<div className="h-[320px] bg-white border border-[#E5E7EB] rounded-2xl p-5">
+						<div className="h-[320px] bg-white rounded-2xl p-5">
 							<h4 className="font-bold text-gray-900 mb-4">User's Wallet</h4>
 							<div className="space-y-4 text-sm">
 								<div>
