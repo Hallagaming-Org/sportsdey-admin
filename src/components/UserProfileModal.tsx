@@ -1,8 +1,8 @@
 import { X, AlertTriangle, MessageCircle } from "lucide-react";
-import { FaWhatsapp } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { PauseCircle } from "lucide-react";
 import type { User } from "../lib/users";
+import { LuMessageSquareDot } from "react-icons/lu";
 
 interface UserProfileModalProps {
 	user: User;
@@ -21,7 +21,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 		},
 		{ 
 			label: "Contact User", 
-			icon: <FaWhatsapp className="w-4 h-4" />, 
+			icon: <LuMessageSquareDot className="w-4 h-4" />, 
 			onClick: () => {},
 			className: "bg-[#10C300] text-white hover:bg-[#0ea800] shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]"
 		},
