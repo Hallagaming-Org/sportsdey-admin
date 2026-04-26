@@ -168,7 +168,7 @@ export default function Sidebar({
 					{admin ? (
 						<>
 							<img
-								src={admin.image || "https://i.pravatar.cc/40"}
+								src={admin?.image || "https://i.pravatar.cc/40?img=5"}
 								alt="Admin avatar"
 								className="h-10 w-10 shrink-0 rounded-full object-cover"
 							/>

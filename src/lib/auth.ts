@@ -159,6 +159,27 @@ class AdminAuth {
 			throw new Error(data.error || "Failed to delete admin");
 		}
 	}
+
+	async changePassword(newPassword: string, confirmPassword: string): Promise<{ success: boolean; error?: string }> {
+		try {
+			const response = await fetch(`${this.baseUrl}/admin/auth/change-password`, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ newPassword, confirmPassword }),
+				credentials: "include",
+			});
+
+			const data = await response.json();
+			return data;
+		} catch {
+			return {
+				success: false,
+				error: "Unable to connect. Please check your connection.",
+			};
+		}
+	}
 }
 
 export const adminAuth = new AdminAuth();
