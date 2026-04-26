@@ -78,12 +78,12 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 								<CgProfile className="h-12 w-12 text-gray-400" />
 							</div>
 						)}
-						<h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
-						<p className="text-[#10C300] font-medium text-sm flex items-center gap-1.5 mt-1">
+						<h2 className="text-base font-bold text-gray-900">{user.name}</h2>
+						<p className="text-[#10C300] font-medium text-xs flex items-center gap-1.5 mt-1">
 							<span className="w-2 h-2 rounded-full bg-[#10C300]"></span>
 							Online
 						</p>
-						<p className="text-gray-500 text-sm mt-1">
+						<p className="text-gray-500 text-xs mt-.5">
 							Joined on {user.registeredDate ? new Date(user.registeredDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}
 						</p>
 
@@ -102,7 +102,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 					</div>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div className="bg-white border h-[320px] border-gray-100 rounded-2xl p-5">
+						<div className="bg-white h-[320px] rounded-2xl p-5">
 							<h4 className="font-bold text-gray-900 mb-4">Personal Details</h4>
 							<div className="space-y-4 text-sm">
 								<div className="flex justify-between items-start">
