@@ -22,9 +22,9 @@ export function SendNoticeModal({ user, onClose, onSubmit }: SendNoticeModalProp
 					<button
 						type="button"
 						onClick={onClose}
-						className="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors cursor-pointer border border-gray-200"
+						className="p-2 rounded-full transition-colors cursor-pointer border border-[#03002B]"
 					>
-						<X className="h-4 w-4" />
+						<X className="h-4 w-4 text-[#03002B]" />
 					</button>
 				</div>
 				<form
