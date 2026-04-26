@@ -249,7 +249,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 					className="flex-1 space-y-4 overflow-y-auto px-5 py-4 sm:px-8 sm:py-4"
 				>
 					<div>
-						<label className="mb-1.5 block font-semibold text-[#11123f] text-base sm:text-xl">
+						<label className="mb-1.5 block font-semibold text-[#11123f] text-base">
 							Content/Story Title
 						</label>
 						<input
