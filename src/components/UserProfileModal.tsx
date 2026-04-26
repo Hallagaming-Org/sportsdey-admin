@@ -105,19 +105,19 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 							<h4 className="font-bold text-gray-900 mb-4">Personal Details</h4>
 							<div className="space-y-4 text-sm">
 								<div className="flex justify-between items-start">
-									<span className="text-gray-500">Full Name:</span>
-									<span className="font-normal text-gray-900 text-right">{user.name}</span>
+									<span className="text-gray-500 text-xs">Full Name:</span>
+									<span className="font-normal text-gray-900 text-xs text-right">{user.name}</span>
 								</div>
 								<div className="flex justify-between items-start">
-									<span className="text-gray-500">Email Address:</span>
-									<span className="font-normal text-gray-900 text-right underline underline-offset-2">{user.email}</span>
+									<span className="text-gray-500 text-xs">Email Address:</span>
+									<span className="font-normal text-gray-900 text-xs right underline underline-offset-2">{user.email}</span>
 								</div>
 								<div className="flex justify-between items-start">
-									<span className="text-gray-500">Mobile number:</span>
-									<span className="font-normal text-gray-900 text-right">1234567890</span>
+									<span className="text-gray-500 text-xs">Mobile number:</span>
+									<span className="font-normal text-gray-900 text-xs text-right">1234567890</span>
 								</div>
 								<div className="flex justify-between items-center">
-									<span className="text-gray-500">Status:</span>
+									<span className="text-gray-500 text-xs">Status:</span>
 									<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
 										user.status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
 										user.status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
@@ -129,16 +129,16 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 									</span>
 								</div>
 								<div className="flex justify-between items-start">
-									<span className="text-gray-500">Date of Birth:</span>
-									<span className="font-normal text-gray-900 text-right">15th of February, 2009</span>
+									<span className="text-gray-500 text-xs">Date of Birth:</span>
+									<span className="font-normal text-gray-900 text-xs text-right">15th of February, 2009</span>
 								</div>
 								<div className="flex justify-between items-start">
-									<span className="text-gray-500">Country:</span>
-									<span className="font-normal text-gray-900 text-right">Nigeria</span>
+									<span className="text-gray-500 text-xs">Country:</span>
+									<span className="font-normal text-gray-900 text-xs text-right">Nigeria</span>
 								</div>
 								<div className="flex justify-between items-start">
-									<span className="text-gray-500">Registration date:</span>
-									<span className="font-normal text-gray-900 text-right">
+									<span className="text-gray-500 text-xs">Registration date:</span>
+									<span className="font-normal text-gray-900 text-xs text-right">
 										{user.registeredDate ? new Date(user.registeredDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}
 									</span>
 								</div>
