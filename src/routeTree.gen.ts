@@ -16,14 +16,7 @@ import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppUsersRouteImport } from './routes/app/users'
 import { Route as AppTransactionsRouteImport } from './routes/app/transactions'
 import { Route as AppTicketsRouteImport } from './routes/app/tickets'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
-import { Route as AppSettingsRouteImport } from './routes/app/settings'
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
 import { Route as AppGamesRouteImport } from './routes/app/games'
 import { Route as AppCmsRouteImport } from './routes/app/cms'
 
@@ -62,20 +55,11 @@ const AppTicketsRoute = AppTicketsRouteImport.update({
   path: '/tickets',
   getParentRoute: () => AppRoute,
 } as any)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
-<<<<<<< HEAD
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
 const AppGamesRoute = AppGamesRouteImport.update({
   id: '/games',
   path: '/games',
@@ -93,14 +77,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/app/cms': typeof AppCmsRoute
   '/app/games': typeof AppGamesRoute
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
   '/app/settings': typeof AppSettingsRoute
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
-  '/app/settings': typeof AppSettingsRoute
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
   '/app/tickets': typeof AppTicketsRoute
   '/app/transactions': typeof AppTransactionsRoute
   '/app/users': typeof AppUsersRoute
@@ -111,14 +88,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/app/cms': typeof AppCmsRoute
   '/app/games': typeof AppGamesRoute
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
   '/app/settings': typeof AppSettingsRoute
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
-  '/app/settings': typeof AppSettingsRoute
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
   '/app/tickets': typeof AppTicketsRoute
   '/app/transactions': typeof AppTransactionsRoute
   '/app/users': typeof AppUsersRoute
@@ -131,14 +101,7 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/app/cms': typeof AppCmsRoute
   '/app/games': typeof AppGamesRoute
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
   '/app/settings': typeof AppSettingsRoute
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
-  '/app/settings': typeof AppSettingsRoute
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
   '/app/tickets': typeof AppTicketsRoute
   '/app/transactions': typeof AppTransactionsRoute
   '/app/users': typeof AppUsersRoute
@@ -152,14 +115,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/app/cms'
     | '/app/games'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     | '/app/settings'
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
-    | '/app/settings'
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
     | '/app/tickets'
     | '/app/transactions'
     | '/app/users'
@@ -170,14 +126,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/app/cms'
     | '/app/games'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     | '/app/settings'
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
-    | '/app/settings'
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
     | '/app/tickets'
     | '/app/transactions'
     | '/app/users'
@@ -189,14 +138,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/app/cms'
     | '/app/games'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     | '/app/settings'
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
-    | '/app/settings'
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
     | '/app/tickets'
     | '/app/transactions'
     | '/app/users'
@@ -260,11 +202,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTicketsRouteImport
       parentRoute: typeof AppRoute
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
     '/app/settings': {
       id: '/app/settings'
       path: '/settings'
@@ -272,10 +209,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
-<<<<<<< HEAD
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
     '/app/games': {
       id: '/app/games'
       path: '/games'
@@ -296,14 +229,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppCmsRoute: typeof AppCmsRoute
   AppGamesRoute: typeof AppGamesRoute
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
   AppSettingsRoute: typeof AppSettingsRoute
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
-  AppSettingsRoute: typeof AppSettingsRoute
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
   AppTicketsRoute: typeof AppTicketsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppUsersRoute: typeof AppUsersRoute
@@ -313,14 +239,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppCmsRoute: AppCmsRoute,
   AppGamesRoute: AppGamesRoute,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
   AppSettingsRoute: AppSettingsRoute,
->>>>>>> 9ca7a91db85f24085721f9b2bd587e464d2c75a1
-=======
-  AppSettingsRoute: AppSettingsRoute,
->>>>>>> 2fc62b66db86f3eafb793d2a48936e8a98a3dfad
   AppTicketsRoute: AppTicketsRoute,
   AppTransactionsRoute: AppTransactionsRoute,
   AppUsersRoute: AppUsersRoute,
