@@ -133,11 +133,17 @@ export const MenuBar = ({ editor }: { editor: any }) => {
         value={fontSize}
         className="shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm focus:outline-none cursor-pointer"
       >
+        <option value="8px">8px</option>
+        <option value="9px">9px</option>
+        <option value="10px">10px</option>
+        <option value="11px">11px</option>
         <option value="12px">12px</option>
+        <option value="13px">13px</option>
         <option value="14px">14px</option>
+        <option value="15px">15px</option>
         <option value="16px">16px</option>
+        <option value="17px">17px</option>
         <option value="18px">18px</option>
-        <option value="20px">20px</option>
         <option value="24px">24px</option>
         <option value="30px">30px</option>
       </select>
