@@ -92,7 +92,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 								<button 
 									key={idx}
 									onClick={btn.onClick}
-									className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer border ${btn.className}`}
+									className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${btn.className}`}
 								>
 									{btn.icon}
 									{btn.label}
