@@ -53,7 +53,7 @@ export function SendNoticeModal({ user, onClose, onSubmit }: SendNoticeModalProp
 								<option value="user">select user type</option>
 								<option value="all">All Users</option>
 							</select>
-							<ChevronDown className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687083] cursor-pointer" />
+							<ChevronDown className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687083]" />
 						</div>
 					</div>
 					<div>
