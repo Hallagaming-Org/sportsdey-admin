@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search } from "lucide-react";
+import { Search, Eye, PauseCircle, X, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FilterIcon from "@/logo/filter.svg?react";
@@ -8,6 +8,10 @@ import SortIcon from "@/logo/sort.svg?react";
 import { type NewUser, type User, userService } from "../../lib/users";
 import { DataTable, type Column } from "#/components/DataTable";
 import { IoFilter } from "react-icons/io5";
+import { LuMessageSquareDot } from "react-icons/lu";
+import { ActionDropdown } from "../../components/ActionDropdown";
+import { UserProfileModal } from "../../components/UserProfileModal";
+import { SendNoticeModal } from "../../components/SendNoticeModal";
 
 export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
@@ -29,6 +33,17 @@ function UsersPage() {
 		country: "",
 		mobileNumber: "",
 	});
+
+	const [actionDropdown, setActionDropdown] = useState<{ user: User; top: number; right: number } | null>(null);
+	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
+	const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
+
+	// Close dropdown when clicking outside
+	useEffect(() => {
+		const handleClickOutside = () => setActionDropdown(null);
+		document.addEventListener("click", handleClickOutside);
+		return () => document.removeEventListener("click", handleClickOutside);
+	}, []);
 
 	const {
 		data: usersData,
@@ -107,13 +122,16 @@ function UsersPage() {
 		{ 
 			header: "Player Name", 
 			accessor: (user) => (
-				<div className="flex items-center gap-3 min-w-0">
+				<div 
+					className="flex items-center gap-3 min-w-0 cursor-pointer"
+					onClick={() => setSelectedProfileUser(user)}
+				>
 					<img 
 						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
 						alt="avatar" 
-						className="h-8 w-8 rounded-full bg-gray-100 object-cover flex-shrink-0" 
+						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0" 
 					/>
-					<span className="font-medium text-gray-900 truncate" title={user.name}>{user.name}</span>
+					<span className="font-medium text-sm text-gray-900 hover:text-primary transition-colors truncate" title={user.name}>{user.name}</span>
 				</div>
 			)
 		},
@@ -149,8 +167,8 @@ function UsersPage() {
 	];
 
 	return (
-		<div className="space-y-6">
-			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+		<div className="flex h-[calc(100vh-120px)]  flex-1 flex-col space-y-6 overflow-hidden">
+			<div className="flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-center">
 				<div>
 					<h2 className="font-bold text-2xl text-gray-900">All users</h2>
 					<p className="text-gray-600">Manage all your users and activities</p>
@@ -190,7 +208,7 @@ function UsersPage() {
 				</div>
 			</div>
 
-			<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+			<div className="flex shrink-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
 				<div className="overflow-x-auto custom-scrollbar lg:overflow-visible">
 					<div className="flex gap-8 border-b border-gray-300 min-w-max px-4 lg:px-0">
 						{[
@@ -236,7 +254,7 @@ function UsersPage() {
 							/>
 							<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 						</div>
-						<button className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer border border-[#D0D5DD] whitespace-nowrap">
+						<button className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap">
 							<span className="hidden lg:block">Time periods</span>
 							<IoFilter className="h-3.5 w-3.5" />
 						</button>
@@ -248,7 +266,17 @@ function UsersPage() {
 				data={users}
 				isLoading={isLoading}
 				columns={columns}
-				onActionClick={(user) => console.log("Action clicked for", user.name)}
+				maxHeight="100%"
+				onActionClick={(user, e) => {
+					e.stopPropagation();
+					e.nativeEvent.stopImmediatePropagation();
+					const rect = e.currentTarget.getBoundingClientRect();
+					setActionDropdown({
+						user,
+						top: rect.bottom + window.scrollY,
+						right: window.innerWidth - rect.right,
+					});
+				}}
 				emptyMessage="No user found"
 				pagination={{
 					currentPage: page,
@@ -370,6 +398,60 @@ function UsersPage() {
 						</form>
 					</div>
 				</div>
+			)}
+
+			{actionDropdown && (
+				<ActionDropdown
+					top={actionDropdown.top}
+					right={actionDropdown.right}
+					onClose={() => setActionDropdown(null)}
+					items={[
+						{
+							icon: <Eye className="w-4 h-4" />,
+							label: "View profile",
+							onClick: () => setSelectedProfileUser(actionDropdown.user),
+						},
+						{
+							icon: <LuMessageSquareDot className="w-4 h-4" />,
+							label: "Send a notification",
+							onClick: () => setNoticeModalUser(actionDropdown.user),
+						},
+						{
+							icon: <PauseCircle className="w-4 h-4" />,
+							label: "Suspend/Reactivate",
+							onClick: () => {
+								// Handle suspend logic
+							},
+						},
+					]}
+				/>
+			)}
+
+			{/* Profile Modal */}
+			{selectedProfileUser && (
+				<UserProfileModal
+					user={selectedProfileUser}
+					onClose={() => setSelectedProfileUser(null)}
+					onSendNotice={(user) => {
+						setNoticeModalUser(user);
+						setSelectedProfileUser(null);
+					}}
+					onSuspend={() => {
+						// Handle suspend logic
+					}}
+				/>
+			)}
+
+			{/* Send Notice Modal */}
+			{noticeModalUser && (
+				<SendNoticeModal
+					user={noticeModalUser}
+					onClose={() => setNoticeModalUser(null)}
+					onSubmit={(data) => {
+						console.log("Sending notice:", data);
+						toast.success(`Notice sent to ${noticeModalUser.name}`);
+					}}
+				/>
 			)}
 		</div>
 	);

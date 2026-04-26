@@ -14,7 +14,7 @@ interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
   maxHeight?: string;
-  onActionClick?: (item: T) => void;
+  onActionClick?: (item: T, e: React.MouseEvent<HTMLButtonElement>) => void;
   isLoading?: boolean;
   emptyMessage?: string;
   pagination?: {
@@ -98,10 +98,10 @@ export function DataTable<T>({
                     </td>
                   ))}
                   {onActionClick && (
-                    <td className="py-4 pr-4 text-right">
+                    <td className="py-4 pr-4 text-right relative">
                       <button
-                        onClick={() => onActionClick(item)}
-                        className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        onClick={(e) => onActionClick(item, e)}
+                        className="text-gray-400 hover:text-gray-600 cursor-pointer p-1 rounded-md"
                       >
                         <MoreHorizontal className="h-5 w-5" />
                       </button>
