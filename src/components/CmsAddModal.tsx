@@ -335,7 +335,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 							</div>
 
 							<div>
-								<label className="mb-1.5 block font-medium text-[#11123f] text-base sm:text-xl">
+								<label className="mb-1.5 block font-medium text-[#11123f] text-base">
 									Content Type/Labels
 								</label>
 								<div className="relative">
