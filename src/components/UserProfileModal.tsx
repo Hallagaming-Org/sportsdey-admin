@@ -53,7 +53,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 						onClick={onClose}
 						className="bg-[#03002B] p-2 rounded-full transition-colors cursor-pointer"
 					>
-						<X className="h-5 w-5 text-white" />
+						<X className="h-4 w-4 text-white" />
 					</button>
 				</div>
 				
