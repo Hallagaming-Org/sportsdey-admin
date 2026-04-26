@@ -355,7 +355,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 											}));
 										}}
 										required
-										className="h-11 w-full appearance-none rounded-xl border border-transparent bg-[#ececee] px-3 pr-9 text-[#56607a] text-sm focus:border-[#0a0d3c] focus:outline-none sm:h-12 sm:text-base"
+										className="h-11 w-full appearance-none rounded-xl border border-transparent bg-[#ececee] px-3 pr-9 text-[#56607a] text-sm focus:outline-none sm:h-12"
 									>
 										<option value="news">News</option>
 										<option value="videos">Videos</option>
