@@ -51,9 +51,9 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 					<button
 						type="button"
 						onClick={onClose}
-						className="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors cursor-pointer"
+						className="bg-[#03002B] p-2 rounded-full transition-colors cursor-pointer"
 					>
-						<X className="h-5 w-5" />
+						<X className="h-5 w-5 text-white" />
 					</button>
 				</div>
 				
