@@ -10,6 +10,7 @@ import { DataTable, type Column } from "#/components/DataTable";
 import { IoFilter } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { LuMessageSquareDot } from "react-icons/lu";
+import { CgProfile } from "react-icons/cg";
 
 export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
@@ -453,7 +454,7 @@ function UsersPage() {
 						<div className="flex items-center justify-between p-6 border-b border-gray-100">
 							<div className="flex items-center gap-2">
 								<div className="p-2 bg-[#E8F8E5] rounded-full text-[#10C300]">
-									<Eye className="w-5 h-5" />
+									<CgProfile className="w-5 h-5" />
 								</div>
 								<h3 className="font-bold text-xl text-gray-900">User's Profile</h3>
 							</div>
