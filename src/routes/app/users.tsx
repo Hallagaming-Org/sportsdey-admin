@@ -149,8 +149,8 @@ function UsersPage() {
 	];
 
 	return (
-		<div className="space-y-6">
-			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+		<div className="flex h-full flex-col space-y-6 overflow-hidden">
+			<div className="flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-center">
 				<div>
 					<h2 className="font-bold text-2xl text-gray-900">All users</h2>
 					<p className="text-gray-600">Manage all your users and activities</p>
@@ -190,7 +190,7 @@ function UsersPage() {
 				</div>
 			</div>
 
-			<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+			<div className="flex shrink-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
 				<div className="overflow-x-auto custom-scrollbar lg:overflow-visible">
 					<div className="flex gap-8 border-b border-gray-300 min-w-max px-4 lg:px-0">
 						{[
@@ -248,6 +248,7 @@ function UsersPage() {
 				data={users}
 				isLoading={isLoading}
 				columns={columns}
+				maxHeight="100%"
 				onActionClick={(user) => console.log("Action clicked for", user.name)}
 				emptyMessage="No user found"
 				pagination={{
