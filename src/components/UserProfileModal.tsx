@@ -27,9 +27,9 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 		},
 		{ 
 			label: "Suspended", 
-			icon: <PauseCircle className="w-4 h-4" />, 
+			icon: <PauseCircle className="w-4 h-4 text-[#B00020]" />, 
 			onClick: () => onSuspend?.(user),
-			className: "bg-[#FEECEB] border-[#FEECEB] text-[#EE201C] hover:bg-red-100"
+			className: "bg-[#FEECEB] border-[#FEECEB] text-[#B00020]"
 		}
 	]
 	return (
