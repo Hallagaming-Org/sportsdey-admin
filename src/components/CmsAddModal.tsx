@@ -275,7 +275,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 
 					<div className="grid gap-5 lg:grid-cols-[1fr_335px]">
 						<div className="min-w-0">
-							<label className="mb-1.5 block font-medium text-[#11123f] text-lg sm:text-2xl">
+							<label className="mb-1.5 block font-medium text-[#11123f] text-base">
 								Message
 							</label>
 							<div className="flex flex-col h-[479px] w-full rounded-xl border border-transparent bg-[#F9F9F9] focus:outline-none overflow-hidden">
