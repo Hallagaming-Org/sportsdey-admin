@@ -15,9 +15,9 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 	const buttonItems = [
 		{ 
 			label: "Send a notice", 
-			icon: <MessageCircle className="w-4 h-4" />, 
+			icon: <MessageCircle className="w-4 h-4 text-[#667085" />, 
 			onClick: () => onSendNotice(user),
-			className: "bg-[#E0E8F980] text-gray-700"
+			className: "bg-[#E0E8F980] text-[#667085]"
 		},
 		{ 
 			label: "Contact User", 
