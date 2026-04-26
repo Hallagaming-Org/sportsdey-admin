@@ -77,10 +77,10 @@ export function SendNoticeModal({ user, onClose, onSubmit }: SendNoticeModalProp
 							required
 						/>
 					</div>
-					<div className="pt-2">
+					<div className="flex justify-center pt-2">
 						<button
 							type="submit"
-							className="w-full rounded-full bg-[#10C300] px-4 py-3.5 font-bold text-white hover:bg-[#0ea800] transition-colors shadow-[0_4px_14px_0_rgba(16,195,0,0.39)] cursor-pointer"
+							className="w-[240px] rounded-full bg-[#10C300] px-4 py-3.5 font-medium text-white hover:bg-[#0ea800] transition-colors shadow-[0_4px_14px_0_rgba(16,195,0,0.39)] cursor-pointer"
 						>
 							Upload
 						</button>
