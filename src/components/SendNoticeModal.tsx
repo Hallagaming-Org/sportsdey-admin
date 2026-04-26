@@ -47,7 +47,7 @@ export function SendNoticeModal({ user, onClose, onSubmit }: SendNoticeModalProp
 						<div className="relative">
 							<select
 								name="sendTo"
-								className="w-full cursor-pointer appearance-none rounded-xl bg-[#F9F9F9] px-4 py-3 text-gray-500 focus:outline-none transition-colors pr-10"
+								className="w-full cursor-pointer appearance-none rounded-xl bg-[#F9F9F9] px-4 py-3 text-[#687083] focus:outline-none transition-colors pr-10"
 								defaultValue="user"
 							>
 								<option value="user">select user type</option>
