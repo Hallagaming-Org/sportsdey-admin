@@ -149,7 +149,7 @@ function UsersPage() {
 	];
 
 	return (
-		<div className="flex flex-1 flex-col space-y-6 overflow-hidden">
+		<div className="flex h-[calc(100vh-120px)]  flex-1 flex-col space-y-6 overflow-hidden">
 			<div className="flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-center">
 				<div>
 					<h2 className="font-bold text-2xl text-gray-900">All users</h2>
