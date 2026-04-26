@@ -135,7 +135,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 									<span className="block text-gray-500 mb-1">Current Balance</span>
 									<span className="text-2xl font-bold text-gray-900">₦ {user.wallet.toLocaleString()}</span>
 								</div>
-								<div className="flex justify-between items-start pt-2 border-t border-gray-200">
+								<div className="flex justify-between items-start pt-2">
 									<span className="text-gray-500">Last Top-up:</span>
 									<span className="font-medium text-gray-900 text-right">2nd of August, 2025</span>
 								</div>
