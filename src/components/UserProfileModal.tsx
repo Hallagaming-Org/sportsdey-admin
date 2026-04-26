@@ -58,9 +58,8 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 				</div>
 				
 				<div className="overflow-y-auto custom-scrollbar p-6 space-y-6 flex-1">
-					{/* Mock Suspend Warning */}
 					{user.status === 'not_verified' && (
-						<div className="flex items-center gap-2 text-[#EE201C] bg-[#FEECEB] px-4 py-3 rounded-lg text-sm">
+						<div className="w-max justify-center flex items-center gap-2 px-3 py-1 text-[#B00020] bg-[#FEECEB] rounded-full text-sm">
 							<AlertTriangle className="w-4 h-4" />
 							<p>This account has been suspended due to violation of the system rules and regulations.</p>
 						</div>
