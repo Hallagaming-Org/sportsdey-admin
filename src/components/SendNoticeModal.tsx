@@ -60,8 +60,8 @@ export function SendNoticeModal({ user, onClose, onSubmit }: SendNoticeModalProp
 						<input
 							name="authorName"
 							type="text"
-							placeholder="FullName"
-							className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-gray-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary transition-colors placeholder:text-gray-400"
+							placeholder="Fullname"
+							className="w-full rounded-xl bg-[#F9F9F9] px-4 py-3 text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400 placeholder:text-xs"
 							required
 						/>
 					</div>
@@ -73,7 +73,7 @@ export function SendNoticeModal({ user, onClose, onSubmit }: SendNoticeModalProp
 							name="message"
 							placeholder="Type your message here..."
 							rows={4}
-							className="w-full rounded-xl bg-[#F9F9F9] px-4 py-3 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors resize-none placeholder:text-gray-400 placeholder:text-xs"
+							className="w-full rounded-xl bg-[#F9F9F9] px-4 py-3 text-gray-900 focus:outline-none transition-colors resize-none placeholder:text-gray-400 placeholder:text-xs"
 							required
 						/>
 					</div>
