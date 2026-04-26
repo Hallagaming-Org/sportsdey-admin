@@ -64,7 +64,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 						<div className="flex items-center gap-3 mt-6">
 							<button 
 								onClick={() => onSendNotice(user)}
-								className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+								className="inline-flex items-center bg-[#E0E8F980] gap-2 px-4 py-2 rounded-full text-sm font-medium text-gray-700 transition-colors cursor-pointer"
 							>
 								<MessageCircle className="w-4 h-4" />
 								Send a notice
