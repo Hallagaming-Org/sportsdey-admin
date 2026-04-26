@@ -11,6 +11,7 @@ import { IoFilter } from "react-icons/io5";
 import { LuMessageSquareDot } from "react-icons/lu";
 import { ActionDropdown } from "../../components/ActionDropdown";
 import { UserProfileModal } from "../../components/UserProfileModal";
+import { SendNoticeModal } from "../../components/SendNoticeModal";
 
 export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
@@ -443,75 +444,14 @@ function UsersPage() {
 
 			{/* Send Notice Modal */}
 			{noticeModalUser && (
-				<div
-					className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-					onClick={() => setNoticeModalUser(null)}
-				>
-					<div
-						className="w-full max-w-md rounded-2xl bg-white shadow-2xl p-6"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<div className="mb-6 flex items-center justify-between">
-							<h3 className="font-bold text-2xl text-gray-900 tracking-tight">Send a Notice</h3>
-							<button
-								type="button"
-								onClick={() => setNoticeModalUser(null)}
-								className="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors cursor-pointer border border-gray-200"
-							>
-								<X className="h-4 w-4" />
-							</button>
-						</div>
-						<form
-							onSubmit={(e) => {
-								e.preventDefault();
-								// Submit logic
-								setNoticeModalUser(null);
-							}}
-							className="space-y-5"
-						>
-							<div>
-								<label className="block font-medium text-gray-900 mb-1.5 text-sm">
-									Send to
-								</label>
-								<select
-									className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-gray-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary appearance-none transition-colors"
-									defaultValue="user"
-								>
-									<option value="user">Specific User ({noticeModalUser.name})</option>
-									<option value="all">All Users</option>
-								</select>
-							</div>
-							<div>
-								<label className="block font-medium text-gray-900 mb-1.5 text-sm">
-									Author name
-								</label>
-								<input
-									type="text"
-									placeholder="FullName"
-									className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-gray-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary transition-colors placeholder:text-gray-400"
-								/>
-							</div>
-							<div>
-								<label className="block font-medium text-gray-900 mb-1.5 text-sm">
-									Message
-								</label>
-								<textarea
-									placeholder="Type your message here..."
-									rows={4}
-									className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-gray-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary transition-colors resize-none placeholder:text-gray-400"
-								/>
-							</div>
-							<div className="pt-2">
-								<button
-									type="submit"
-									className="w-full rounded-full bg-[#10C300] px-4 py-3.5 font-bold text-white hover:bg-[#0ea800] transition-colors shadow-[0_4px_14px_0_rgba(16,195,0,0.39)] cursor-pointer"
-								>
-									Upload
-								</button>
-							</div>
-						</form>
-					</div>
-				</div>
+				<SendNoticeModal
+					user={noticeModalUser}
+					onClose={() => setNoticeModalUser(null)}
+					onSubmit={(data) => {
+						console.log("Sending notice:", data);
+						toast.success(`Notice sent to ${noticeModalUser.name}`);
+					}}
+				/>
 			)}
 		</div>
 	);
