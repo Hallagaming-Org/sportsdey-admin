@@ -294,7 +294,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 
 						<div className="flex flex-col gap-4">
 							<div>
-								<label className="mb-1.5 block font-medium text-[#11123f] text-base sm:text-xl">
+								<label className="mb-1.5 block font-medium text-[#11123f] text-base">
 									Author name
 								</label>
 								<div className="relative">
