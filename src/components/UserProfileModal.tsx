@@ -47,11 +47,11 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 					)}
 
 					<div className="flex flex-col items-center justify-center pt-2">
-						{/* <img 
+						<img 
 							src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
 							alt="avatar" 
 							className="h-24 w-24 rounded-full bg-gray-100 object-cover shadow-sm mb-3" 
-						/> */}
+						/>
 						<h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
 						<p className="text-[#10C300] font-medium text-sm flex items-center gap-1.5 mt-1">
 							<span className="w-2 h-2 rounded-full bg-[#10C300]"></span>
