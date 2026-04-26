@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import type { User } from "../lib/users";
 
 interface SendNoticeModalProps {
@@ -44,14 +44,17 @@ export function SendNoticeModal({ user, onClose, onSubmit }: SendNoticeModalProp
 						<label className="block font-medium text-gray-900 mb-1.5 text-sm">
 							Send to
 						</label>
-						<select
-							name="sendTo"
-							className="w-full rounded-xl bg-[#F9F9F9] px-4 py-3 text-gray-500 focus:outline-none transition-colors"
-							defaultValue="user"
-						>
-							<option value="user">select user type</option>
-							<option value="all">All Users</option>
-						</select>
+						<div className="relative">
+							<select
+								name="sendTo"
+								className="w-full appearance-none rounded-xl bg-[#F9F9F9] px-4 py-3 text-gray-500 focus:outline-none transition-colors pr-10"
+								defaultValue="user"
+							>
+								<option value="user">select user type</option>
+								<option value="all">All Users</option>
+							</select>
+							<ChevronDown className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+						</div>
 					</div>
 					<div>
 						<label className="block font-medium text-gray-900 mb-1.5 text-sm">
