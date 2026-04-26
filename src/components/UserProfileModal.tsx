@@ -21,7 +21,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 				className="w-full max-w-[760px] rounded-[20px] bg-[#F2F4F7] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
 				onClick={(e) => e.stopPropagation()}
 			>
-				<div className="flex items-center justify-between p-6 border-b border-gray-100">
+				<div className="flex bg-white items-center justify-between p-6 border-b border-gray-100">
 					<div className="flex items-center gap-2">
 						<div className="p-2 bg-[#E8F8E5] rounded-full text-[#10C300]">
 							<CgProfile className="w-5 h-5" />
