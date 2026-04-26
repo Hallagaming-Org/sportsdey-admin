@@ -57,9 +57,9 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 					</button>
 				</div>
 				
-				<div className="overflow-y-auto custom-scrollbar p-2 space-y-6 flex-1">
+				<div className="overflow-y-auto custom-scrollbar p-8 space-y-6 flex-1">
 					{user.status === 'not_verified' && (
-						<div className="w-max mx-auto flex items-center gap-2 px-3 py-2 text-[#B00020] bg-[#FEECEB] rounded-full text-sm">
+						<div className="w-max mx-auto flex -mt-4 items-center gap-2 px-3 py-2 text-[#B00020] bg-[#FEECEB] rounded-full text-sm">
 							<AlertTriangle className="w-4 h-4" />
 							<p>This account has been suspended due to violation of the system rules and regulations.</p>
 						</div>
