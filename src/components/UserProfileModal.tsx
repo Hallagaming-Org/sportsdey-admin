@@ -18,7 +18,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 			onClick={onClose}
 		>
 			<div
-				className="w-full max-w-[760px] rounded-[20px] bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+				className="w-full max-w-[760px] rounded-[20px] bg-[#F2F4F7] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex items-center justify-between p-6 border-b border-gray-100">
@@ -128,7 +128,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 							</div>
 						</div>
 
-						<div className="bg-gray-50/50 border border-gray-100 rounded-2xl p-5 h-fit">
+						<div className="h-[320px] bg-white border border-[#E5E7EB] rounded-2xl p-5">
 							<h4 className="font-bold text-gray-900 mb-4">User's Wallet</h4>
 							<div className="space-y-4 text-sm">
 								<div>
