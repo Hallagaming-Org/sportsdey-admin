@@ -24,6 +24,16 @@ export interface Admin {
 	createdAt: string;
 }
 
+export interface Device {
+	id: string;
+	deviceName: string;
+	ipAddress: string | null;
+	browser: string;
+	lastActiveAt: string;
+	createdAt: string;
+	isCurrentDevice: boolean;
+}
+
 export interface SignInResponse {
 	success: boolean;
 	data?: {
@@ -35,6 +45,13 @@ export interface SignInResponse {
 export interface AdminListResponse {
 	success: boolean;
 	data: Admin[];
+}
+
+export interface DevicesResponse {
+	success: boolean;
+	data: {
+		devices: Device[];
+	};
 }
 
 class AdminAuth {
@@ -178,6 +195,33 @@ class AdminAuth {
 				success: false,
 				error: "Unable to connect. Please check your connection.",
 			};
+		}
+	}
+
+	async listDevices(): Promise<Device[]> {
+		const response = await fetch(`${this.baseUrl}/admin/auth/devices`, {
+			credentials: "include",
+		});
+
+		const data = await response.json();
+		if (data.success && data.data) {
+			return data.data.devices;
+		}
+		throw new Error(data.error || "Failed to fetch devices");
+	}
+
+	async logoutDevice(sessionId: string): Promise<void> {
+		const response = await fetch(
+			`${this.baseUrl}/admin/auth/devices/${sessionId}`,
+			{
+				method: "DELETE",
+				credentials: "include",
+			},
+		);
+
+		const data = await response.json();
+		if (!data.success) {
+			throw new Error(data.error || "Failed to log out device");
 		}
 	}
 }

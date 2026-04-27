@@ -41,7 +41,7 @@ const menuItems: NavItem[] = [
 ];
 
 const otherItems: NavItem[] = [
-	{ icon: FileText, label: "KYC & Document Uploads" },
+	{ icon: FileText, label: "KYC & Document Uploads", to: "/app/kyc" },
 	{ icon: Settings, label: "General setting", to: "/app/settings" },
 ];
 
