@@ -54,7 +54,7 @@ function CmsPage() {
 	}, [error]);
 
 	const contents = cmsData?.content || [];
-	const tableData = contents.map((item, index) => ({
+	const tableData = contents.map((item) => ({
 		...item,
 	}));
 	const total = cmsData?.total || 0;

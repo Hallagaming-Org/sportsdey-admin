@@ -249,7 +249,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 					className="flex-1 space-y-4 overflow-y-auto px-5 py-4 sm:px-8 sm:py-4"
 				>
 					<div>
-						<label className="mb-1.5 block font-semibold text-[#11123f] text-base sm:text-xl">
+						<label className="mb-1.5 block font-semibold text-[#11123f] text-base">
 							Content/Story Title
 						</label>
 						<input
@@ -264,7 +264,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 							}}
 							required
 							placeholder="Enter headline"
-							className="h-11 w-full rounded-xl border border-transparent bg-[#ececee] px-3 text-[#11123f] text-sm placeholder:text-[#657084] focus:outline-none sm:h-12 sm:text-base"
+							className="h-11 w-full rounded-xl border border-transparent bg-[#ececee] px-3 text-[#11123f] text-sm placeholder:text-[#999da5] focus:outline-none sm:h-12 sm:text-base placeholder:text-sm"
 						/>
 						{fieldErrors.title && (
 							<p className="mt-1 text-red-600 text-xs">
@@ -275,7 +275,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 
 					<div className="grid gap-5 lg:grid-cols-[1fr_335px]">
 						<div className="min-w-0">
-							<label className="mb-1.5 block font-medium text-[#11123f] text-lg sm:text-2xl">
+							<label className="mb-1.5 block font-medium text-[#11123f] text-base">
 								Message
 							</label>
 							<div className="flex flex-col h-[479px] w-full rounded-xl border border-transparent bg-[#F9F9F9] focus:outline-none overflow-hidden">
@@ -294,7 +294,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 
 						<div className="flex flex-col gap-4">
 							<div>
-								<label className="mb-1.5 block font-medium text-[#11123f] text-base sm:text-xl">
+								<label className="mb-1.5 block font-medium text-[#11123f] text-base">
 									Author name
 								</label>
 								<div className="relative">
@@ -312,7 +312,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 									}}
 										required
 										disabled={isAuthorsLoading || authors.length === 0}
-										className="h-11 w-full appearance-none rounded-xl border border-transparent bg-[#ececee] px-3 pr-9 text-[#56607a] text-sm focus:border-[#0a0d3c] focus:outline-none disabled:opacity-60 sm:h-12 sm:text-base"
+										className="h-11 w-full appearance-none rounded-xl border border-transparent bg-[#ececee] px-3 pr-9 text-[#56607a] text-sm focus:outline-none disabled:opacity-60 sm:h-12"
 									>
 										<option value="" disabled>
 											{isAuthorsLoading
@@ -335,7 +335,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 							</div>
 
 							<div>
-								<label className="mb-1.5 block font-medium text-[#11123f] text-base sm:text-xl">
+								<label className="mb-1.5 block font-medium text-[#11123f] text-base">
 									Content Type/Labels
 								</label>
 								<div className="relative">
@@ -355,7 +355,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 											}));
 										}}
 										required
-										className="h-11 w-full appearance-none rounded-xl border border-transparent bg-[#ececee] px-3 pr-9 text-[#56607a] text-sm focus:border-[#0a0d3c] focus:outline-none sm:h-12 sm:text-base"
+										className="h-11 w-full appearance-none rounded-xl border border-transparent bg-[#ececee] px-3 pr-9 text-[#56607a] text-sm focus:outline-none sm:h-12"
 									>
 										<option value="news">News</option>
 										<option value="videos">Videos</option>

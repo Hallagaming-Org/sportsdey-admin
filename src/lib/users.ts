@@ -7,6 +7,8 @@ export interface User {
 	wallet: number;
 	status: string;
 	registeredDate: number;
+	image?: string;
+	photo?: string;
 }
 
 export interface UsersResponse {
