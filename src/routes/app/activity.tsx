@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Search, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { IoFilter } from "react-icons/io5";
