@@ -39,7 +39,7 @@ const menuItems: NavItem[] = [
 	{ icon: Ticket, label: "Ticket history", to: "/app/tickets" },
 	{ icon: Settings, label: "CMS Controls", to: "/app/cms" },
 	
-	{ icon: Activity, label: "Activity log" },
+	{ icon: Activity, label: "Activity log", to: "/app/activity" },
 	{ icon: AdminPanelIcon as LucideIcon, label: "Admin Panel/Other Admins", to: "/app/admins" },
 ];
 
