@@ -38,8 +38,9 @@ const menuItems: NavItem[] = [
 	{ icon: Gamepad2, label: "Game management", to: "/app/games" },
 	{ icon: Ticket, label: "Ticket history", to: "/app/tickets" },
 	{ icon: Settings, label: "CMS Controls", to: "/app/cms" },
-	{ icon: AdminPanelIcon as LucideIcon, label: "Admin Panel/Other Admins", to: "/app/admins" },
+	
 	{ icon: Activity, label: "Activity log" },
+	{ icon: AdminPanelIcon as LucideIcon, label: "Admin Panel/Other Admins", to: "/app/admins" },
 ];
 
 const otherItems: NavItem[] = [
