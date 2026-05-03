@@ -97,8 +97,8 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 								onClick={() => setActiveTab("details")}
 								className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-5 py-2 font-medium text-sm transition-colors ${
 									activeTab === "details" 
-										? "bg-[#10C300] text-white" 
-										: "bg-[#E8F8E5] text-[#10C300] hover:bg-[#d7f0d3]"
+										? "bg-[#1BAA04] text-white" 
+										: "bg-[#E8F8E5] text-[#1BAA04] hover:bg-[#d7f0d3]"
 								}`}
 							>
 								View admin details
