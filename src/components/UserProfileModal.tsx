@@ -26,7 +26,7 @@ export function UserProfileModal({ user, onClose, onSendNotice, onSuspend }: Use
 			className: "bg-[#10C300] text-white hover:bg-[#0ea800] shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]"
 		},
 		{ 
-			label: "Suspended", 
+			label: user.status.toLowerCase() === 'suspended' ? "Reactivate" : "Suspend", 
 			icon: <PauseCircle className="w-4 h-4 text-[#B00020]" />, 
 			onClick: () => onSuspend?.(user),
 			className: "bg-[#FEECEB] border-[#FEECEB] text-[#B00020]"
