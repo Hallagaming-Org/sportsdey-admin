@@ -4,7 +4,7 @@ import { Search, ChevronDown } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
 import { IoFilter } from "react-icons/io5";
   import { FaFileExport } from "react-icons/fa6";
-
+import { TimePeriodFilter } from "@/components/TimePeriodFilter";
 export const Route = createFileRoute("/app/transactions")({
   component: WalletPage,
 });
@@ -202,10 +202,10 @@ function WalletPage() {
               />
               <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
             </div>
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
-              Time periods
-              <IoFilter className="h-3.5 w-3.5" />
-            </button>
+            <TimePeriodFilter 
+              buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
+              onFilterChange={(period, customRange) => console.log(period, customRange)} 
+            />
           </div>
         </div>
 
