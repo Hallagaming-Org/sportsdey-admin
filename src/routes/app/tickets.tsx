@@ -16,7 +16,7 @@ export const Route = createFileRoute("/app/tickets")({
 });
 
 type TicketOutcome = "Won" | "Active" | "Lost";
-type TabKey = "all" | "active" | "won" | "lost";
+type TabKey = "all" | "casino" | "sportsbook" | "prediction";
 
 interface TicketRecord {
   id: string;
@@ -31,7 +31,7 @@ interface TicketRecord {
 
 const DUMMY_TICKETS: TicketRecord[] = [
   { id: "012345", playerName: "George James", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
-  { id: "012346", playerName: "Savannah Ekikopima Enenche", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Quick Bets", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
+  { id: "012346", playerName: "Savannah Ekikopima Enenche", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Prediction Market", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
   { id: "012347", playerName: "Xcape", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Lost" },
   { id: "012348", playerName: "Bayse", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sports Betting", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
   { id: "012349", playerName: "Lucky Rise", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
@@ -40,7 +40,7 @@ const DUMMY_TICKETS: TicketRecord[] = [
   { id: "012352", playerName: "Xcape", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sportbook", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
   { id: "012353", playerName: "Bayse", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
   { id: "012354", playerName: "Lucky Rise", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sports Betting", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
-  { id: "012355", playerName: "Lagos Rush", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Quick Bets", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
+  { id: "012355", playerName: "Lagos Rush", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Prediction Market", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
   { id: "012356", playerName: "Eagle", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sportbook", possibleWin: "₦10,000", odds: "5.5", outcome: "Lost" },
 ];
 
@@ -52,9 +52,9 @@ const OUTCOME_STYLES: Record<TicketOutcome, string> = {
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "all", label: "All Tickets" },
-  { key: "active", label: "Active" },
-  { key: "won", label: "Won" },
-  { key: "lost", label: "Lost" },
+  { key: "casino", label: "Casino" },
+  { key: "sportsbook", label: "Sportsbook" },
+  { key: "prediction", label: "Prediction Market" },
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -77,9 +77,9 @@ function TicketsPage() {
   }, []);
 
   const filteredTickets = DUMMY_TICKETS.filter((t) => {
-    if (activeTab === "active") return t.outcome === "Active";
-    if (activeTab === "won") return t.outcome === "Won";
-    if (activeTab === "lost") return t.outcome === "Lost";
+    if (activeTab === "casino") return t.gameType.toLowerCase() === "casino";
+    if (activeTab === "sportsbook") return t.gameType.toLowerCase() === "sportbook" || t.gameType.toLowerCase() === "sports betting";
+    if (activeTab === "prediction") return t.gameType.toLowerCase() === "prediction market";
     return true;
   }).filter((t) =>
     search
