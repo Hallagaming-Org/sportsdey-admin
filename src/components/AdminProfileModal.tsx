@@ -170,14 +170,14 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 							</div>
 
 							<div className="mt-8 space-y-3">
-								<button className="w-full bg-[#C8DDC5] hover:bg-[#d7f0d3] text-[#10C300] font-bold py-3 rounded-full transition-colors">
+								<button className="w-full bg-[#C8DDC5] hover:bg-[#d7f0d3] text-[#0D4F03] font-medium py-3 rounded-full transition-colors">
 									Save changes
 								</button>
 								<div className="flex gap-3">
-									<button className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#03002B] font-bold py-3 rounded-xl transition-colors">
+									<button className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#03002B] font-medium py-3 rounded-full transition-colors">
 										Force Log out
 									</button>
-									<button className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#03002B] font-bold py-3 rounded-xl transition-colors">
+									<button className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#03002B] font-medium py-3 rounded-full transition-colors">
 										Delete admin
 									</button>
 								</div>
