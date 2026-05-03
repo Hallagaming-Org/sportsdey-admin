@@ -413,7 +413,7 @@ function UsersPage() {
 							onClick: () => setSelectedProfileUser(actionDropdown.user),
 						},
 						{
-							icon: <NotificationIcon />,
+							icon: <NotificationIcon height={"14"} width={"14"} />,
 							label: "Send a notification",
 							onClick: () => setNoticeModalUser(actionDropdown.user),
 						},
