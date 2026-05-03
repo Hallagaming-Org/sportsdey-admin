@@ -1,10 +1,9 @@
-import React from "react";
 
 export function TicketsTrendPie() {
 	const data = [
-		{ name: "Casino", value: 60, color: "#B026FF", amount: "NGN 325,805.68K" },
-		{ name: "Sportsbook", value: 25, color: "#0066FF", amount: "NGN 325,805.68K" },
-		{ name: "Prediction Market", value: 15, color: "#FFD700", amount: "NGN 325,805.68K" }
+		{ name: "Casino", value: 60, color: "#AA048C", amount: "NGN 325,805.68K" },
+		{ name: "Sportsbook", value: 25, color: "#0766FE", amount: "NGN 325,805.68K" },
+		{ name: "Prediction Market", value: 15, color: "#FFDE83", amount: "NGN 325,805.68K" }
 	];
 
 	// SVG circle math
