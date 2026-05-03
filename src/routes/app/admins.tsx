@@ -9,7 +9,7 @@ import NotificationIcon from "#/assets/NotificationIcon";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import type { User } from "#/lib/users";
-
+import { TimePeriodFilter } from "@/components/TimePeriodFilter";
 export const Route = createFileRoute("/app/admins")({
 	component: AdminsPage,
 });
@@ -203,10 +203,10 @@ function AdminsPage() {
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
 					
-					<button className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap">
-						<span className="hidden lg:block">Time periods</span>
-						<IoFilter className="h-3.5 w-3.5" />
-					</button>
+					<TimePeriodFilter 
+						buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
+						onFilterChange={(period, customRange) => console.log(period, customRange)} 
+					/>
 				</form>
 			</div>
 
