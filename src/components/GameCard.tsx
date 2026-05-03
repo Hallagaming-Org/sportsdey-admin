@@ -18,12 +18,10 @@ function GameCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Card */}
       <div
         className="relative w-[90%] h-[220px] rounded-2xl overflow-hidden"
         style={{ opacity: game.enabled ? 1 : 0.5 }}
       >
-        {/* Image filling the card */}
         <img 
           src={game.image} 
           alt={game.name} 
@@ -33,14 +31,11 @@ function GameCard({
         {/* Dark gradient overlay for text readability */}
         <div className="absolute inset-0 bg-linear-to-t from-black/40 via-black/20 to-black/30" />
 
-        {/* Disabled badge */}
         {!game.enabled && (
           <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-sm rounded-full px-2.5 py-0.5">
             <span className="text-white/90 font-semibold text-xs">Disabled</span>
           </div>
         )}
-
-        {/* Centered Text Content */}
         <div className="relative z-5 flex flex-col items-center justify-center h-full p-4">
           <h3 className="text-white mt-20 font-extrabold text-xl uppercase tracking-wide drop-shadow-lg text-center">
             {game.name}
