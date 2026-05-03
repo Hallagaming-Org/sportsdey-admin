@@ -42,7 +42,7 @@ function GameCard({
 
         {/* Centered Text Content */}
         <div className="relative z-5 flex flex-col items-center justify-center h-full p-4">
-          <h3 className="text-white font-extrabold text-2xl uppercase tracking-wide drop-shadow-lg text-center">
+          <h3 className="text-white font-extrabold text-xl uppercase tracking-wide drop-shadow-lg text-center">
             {game.name}
           </h3>
           <p className="text-white/80 text-sm mt-1 text-center font-medium drop-shadow-md">
