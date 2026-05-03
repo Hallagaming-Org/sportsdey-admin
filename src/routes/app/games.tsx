@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import SortIcon from "@/logo/sort.svg?react";
 import GameCard from "#/components/GameCard";
 import { fetchApi } from "#/lib/api";
@@ -57,6 +58,7 @@ const GAME_METADATA: Record<string, { tagline: string, type: string, color: stri
 function GamesPage() {
   const [sort, setSort] = useState<"asc" | "desc">("asc");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: apiGames = [], isLoading } = useQuery({
     queryKey: ["games"],
@@ -70,14 +72,14 @@ function GamesPage() {
   console.log({apiGames})
 
   const games: Game[] = apiGames
-    .filter((g) => g.enabled) // Only show enabled games
+    // .filter((g) => g.enabled)
     .map((g) => {
       const meta = GAME_METADATA[g.code] || {
         tagline: "Sportsdey game",
         type: "Arcade game",
         color: "from-gray-500 to-gray-700",
         accentColor: "#6B7280",
-        image: ImgPlinko, // Fallback image
+        image: ImgPlinko,
       };
       return {
         id: g.id,
@@ -96,9 +98,26 @@ function GamesPage() {
     return b.name.localeCompare(a.name);
   });
 
+  const toggleMutation = useMutation({
+    mutationFn: async ({ id, isCurrentlyEnabled }: { id: string; isCurrentlyEnabled: boolean }) => {
+      const action = isCurrentlyEnabled ? "disable" : "enable";
+      const res = await fetchApi(`/games/${id}/${action}`, { method: "POST" });
+      if (!res.success) throw new Error(res.error || `Failed to ${action} game`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      toast.success("Game status updated successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
   const handleToggle = (id: string) => {
-    // Optional: implement api call to toggle game enabled status
-    console.log("Toggle game status", id);
+    const game = apiGames.find(g => g.id === id);
+    if (!game) return;
+    toggleMutation.mutate({ id, isCurrentlyEnabled: game.enabled });
   };
 
   return (
