@@ -455,6 +455,7 @@ function UsersPage() {
 			{(noticeModalUser || showGlobalNoticeModal) && (
 				<SendNoticeModal
 					user={noticeModalUser}
+					availableUsers={isUsingDummyData ? dummyUsers : usersData?.users || []}
 					onClose={() => {
 						setNoticeModalUser(null);
 						setShowGlobalNoticeModal(false);
