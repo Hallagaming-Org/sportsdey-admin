@@ -129,45 +129,81 @@ function ActivityTrendChart() {
 }
 
 function TicketsTrendPie() {
+	const data = [
+		{ name: "Casino", value: 60, color: "#B026FF", amount: "NGN 325,805.68K" },
+		{ name: "Sportsbook", value: 25, color: "#0066FF", amount: "NGN 325,805.68K" },
+		{ name: "Prediction Market", value: 15, color: "#FFD700", amount: "NGN 325,805.68K" }
+	];
+
+	// SVG circle math
+	const radius = 16;
+	const circumference = 2 * Math.PI * radius; // 100.5309649...
+	let cumulativePercent = 0;
+
 	return (
 		<div className="flex h-full flex-col rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
 			<h3 className="font-bold text-lg text-gray-900 mb-6">Tickets Trend</h3>
 			<div className="flex items-center gap-8 justify-between mt-2">
 				<div className="relative h-36 w-36 shrink-0 rounded-full overflow-hidden">
 					<svg viewBox="0 0 32 32" className="h-full w-full -rotate-90">
-						<circle r="16" cx="16" cy="16" fill="transparent" stroke="#B026FF" strokeWidth="32" strokeDasharray="60 100" />
-						<circle r="16" cx="16" cy="16" fill="transparent" stroke="#0066FF" strokeWidth="32" strokeDasharray="25 100" strokeDashoffset="-60" />
-						<circle r="16" cx="16" cy="16" fill="transparent" stroke="#FFD700" strokeWidth="32" strokeDasharray="15 100" strokeDashoffset="-85" />
+						{data.map((slice, idx) => {
+							const strokeDasharray = `${(slice.value / 100) * circumference} ${circumference}`;
+							const strokeDashoffset = -(cumulativePercent / 100) * circumference;
+							cumulativePercent += slice.value;
+							return (
+								<circle 
+									key={idx}
+									r={radius} 
+									cx="16" 
+									cy="16" 
+									fill="transparent" 
+									stroke={slice.color} 
+									strokeWidth="32" 
+									strokeDasharray={strokeDasharray} 
+									strokeDashoffset={strokeDashoffset} 
+								/>
+							);
+						})}
 					</svg>
-					{/* Text overlays using absolute positioning */}
+					{/* Text overlays using calculated midpoint positions */}
 					<div className="absolute inset-0 flex items-center justify-center">
-						<span className="absolute text-white font-bold text-xs" style={{ top: "35%", left: "20%" }}>60%</span>
-						<span className="absolute text-white font-bold text-[10px]" style={{ top: "65%", left: "65%" }}>15%</span>
-						<span className="absolute text-white font-bold text-xs" style={{ top: "25%", left: "60%" }}>25%</span>
+						{data.map((slice, idx) => {
+							// Recalculate cumulative to find midpoint
+							const previousCumulative = data.slice(0, idx).reduce((acc, curr) => acc + curr.value, 0);
+							const midPointPercent = (previousCumulative + slice.value / 2) / 100;
+							
+							// Calculate X and Y on the circle. -rotate-90 means 0 is at Top (12 o'clock).
+							// Angle goes clockwise.
+							const x = Math.sin(2 * Math.PI * midPointPercent);
+							const y = -Math.cos(2 * Math.PI * midPointPercent);
+							
+							// Distance from center (0 to 50%)
+							const textRadius = 26; 
+							const left = 50 + x * textRadius;
+							const top = 50 + y * textRadius;
+
+							return (
+								<span 
+									key={idx} 
+									className="absolute text-white font-bold text-xs" 
+									style={{ top: `${top}%`, left: `${left}%`, transform: 'translate(-50%, -50%)' }}
+								>
+									{slice.value}%
+								</span>
+							);
+						})}
 					</div>
 				</div>
 				<div className="flex flex-col gap-4 text-xs font-medium w-full">
-					<div className="flex items-center justify-between border-b border-gray-100 pb-3">
-						<div className="flex items-center gap-2 text-gray-600">
-							<div className="w-1 h-3 rounded-full bg-[#FFD700]"></div>
-							All Tickets
+					{data.map((slice, idx) => (
+						<div key={idx} className={`flex items-center justify-between ${idx !== data.length - 1 ? "border-b border-gray-100 pb-3" : ""}`}>
+							<div className="flex items-center gap-2 text-gray-600">
+								<div className="w-1 h-3 rounded-full" style={{ backgroundColor: slice.color }}></div>
+								{slice.name}
+							</div>
+							<span style={{ color: slice.color }} className="font-bold">{slice.value}%</span>
 						</div>
-						<span className="text-[#0066FF] font-bold">15%</span>
-					</div>
-					<div className="flex items-center justify-between border-b border-gray-100 pb-3">
-						<div className="flex items-center gap-2 text-gray-600">
-							<div className="w-1 h-3 rounded-full bg-[#0066FF]"></div>
-							Won Tickets
-						</div>
-						<span className="text-[#0066FF] font-bold">25%</span>
-					</div>
-					<div className="flex items-center justify-between border-b border-gray-100 pb-3">
-						<div className="flex items-center gap-2 text-gray-600">
-							<div className="w-1 h-3 rounded-full bg-[#B026FF]"></div>
-							Lost Tickets
-						</div>
-						<span className="text-[#B026FF] font-bold">60%</span>
-					</div>
+					))}
 				</div>
 			</div>
 		</div>
