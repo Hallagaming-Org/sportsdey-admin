@@ -4,6 +4,7 @@ import { StatCard } from "@/components/StatCard";
 import { ActivityChart } from "@/components/ActivityChart";
 import { TopBets } from "@/components/TopBets";
 import { UserAnalyticsTable } from "@/components/UserAnalyticsTable";
+import { TimePeriodFilter } from "@/components/TimePeriodFilter";
 import { FaPeopleGroup } from "react-icons/fa6";
 import { IoFilterSharp } from "react-icons/io5";
 
@@ -22,10 +23,10 @@ function DashboardPage() {
 						<Plus className="h-4 w-4" />
 						Add new user
 					</button>
-					<button className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
-						Time periods
-						<IoFilterSharp className="h-4 w-4 text-gray-400" />
-					</button>
+					<TimePeriodFilter 
+						buttonClassName="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+						onFilterChange={(period, customRange) => console.log(period, customRange)} 
+					/>
 				</div>
 			</div>
 
