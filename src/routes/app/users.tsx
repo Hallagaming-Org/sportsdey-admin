@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, Eye, PauseCircle, X, MessageCircle } from "lucide-react";
+import { Search, Eye, PauseCircle} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FilterIcon from "@/logo/filter.svg?react";
@@ -8,7 +8,6 @@ import SortIcon from "@/logo/sort.svg?react";
 import { type NewUser, type User, userService } from "../../lib/users";
 import { DataTable, type Column } from "#/components/DataTable";
 import { IoFilter } from "react-icons/io5";
-import { LuMessageSquareDot } from "react-icons/lu";
 import { ActionDropdown } from "../../components/ActionDropdown";
 import { UserProfileModal } from "../../components/UserProfileModal";
 import { SendNoticeModal } from "../../components/SendNoticeModal";
@@ -38,6 +37,7 @@ function UsersPage() {
 	const [actionDropdown, setActionDropdown] = useState<{ user: User; top: number; right: number } | null>(null);
 	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
 	const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
+	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 
 	// Close dropdown when clicking outside
 	useEffect(() => {
@@ -175,7 +175,10 @@ function UsersPage() {
 					<p className="text-gray-600">Manage all your users and activities</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
-					<button className="cursor-pointer flex items-center justify-center rounded-full text-[#053209] bg-[#F1F1F1] gap-x-3 w-[159px] h-11">
+					<button 
+						onClick={() => setShowGlobalNoticeModal(true)}
+						className="cursor-pointer flex items-center justify-center rounded-full text-[#053209] bg-[#F1F1F1] gap-x-3 w-[159px] h-11"
+					>
 						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
 						<span className="text-base">Send a Notice</span>
 					</button>
@@ -449,13 +452,16 @@ function UsersPage() {
 			)}
 
 			{/* Send Notice Modal */}
-			{noticeModalUser && (
+			{(noticeModalUser || showGlobalNoticeModal) && (
 				<SendNoticeModal
 					user={noticeModalUser}
-					onClose={() => setNoticeModalUser(null)}
+					onClose={() => {
+						setNoticeModalUser(null);
+						setShowGlobalNoticeModal(false);
+					}}
 					onSubmit={(data) => {
 						console.log("Sending notice:", data);
-						toast.success(`Notice sent to ${noticeModalUser.name}`);
+						toast.success(noticeModalUser ? `Notice sent to ${noticeModalUser.name}` : "Notice sent successfully");
 					}}
 				/>
 			)}
