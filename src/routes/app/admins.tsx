@@ -6,6 +6,7 @@ import { DataTable, type Column } from "#/components/DataTable";
 import { IoFilter } from "react-icons/io5";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import NotificationIcon from "#/assets/NotificationIcon";
+import { AdminProfileModal } from "#/components/AdminProfileModal";
 
 export const Route = createFileRoute("/app/admins")({
 	component: AdminsPage,
@@ -35,6 +36,7 @@ function AdminsPage() {
 	});
 
 	const [actionDropdown, setActionDropdown] = useState<{ user: AdminUser; top: number; right: number } | null>(null);
+	const [selectedProfileAdmin, setSelectedProfileAdmin] = useState<AdminUser | null>(null);
 	
 	// Close dropdown when clicking outside
 	useEffect(() => {
@@ -309,7 +311,7 @@ function AdminsPage() {
 							icon: <Eye className="w-4 h-4" />,
 							label: "View admin",
 							onClick: () => {
-								toast.info("View admin feature coming soon");
+								setSelectedProfileAdmin(actionDropdown.user);
 								setActionDropdown(null);
 							},
 						},
@@ -339,6 +341,17 @@ function AdminsPage() {
 							},
 						},
 					]}
+				/>
+			)}
+
+			{selectedProfileAdmin && (
+				<AdminProfileModal
+					admin={selectedProfileAdmin}
+					onClose={() => setSelectedProfileAdmin(null)}
+					onSendMessage={(admin) => {
+						toast.info(`Sending message to ${admin.name}`);
+						setSelectedProfileAdmin(null);
+					}}
 				/>
 			)}
 		</div>
