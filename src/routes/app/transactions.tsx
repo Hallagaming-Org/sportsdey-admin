@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
-import { IoFilter } from "react-icons/io5";
   import { FaFileExport } from "react-icons/fa6";
 import { TimePeriodFilter } from "@/components/TimePeriodFilter";
 export const Route = createFileRoute("/app/transactions")({
