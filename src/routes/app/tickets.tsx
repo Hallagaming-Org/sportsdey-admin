@@ -102,7 +102,7 @@ function TicketsPage() {
     {
       header: "Player Name",
       accessor: (t) => (
-        <span className="truncate block max-w-[150px] text-gray-500 text-xs leading-relaxed" title={t.playerName}>
+        <span className="text-gray-500 text-xs leading-relaxed" title={t.playerName}>
           {t.playerName}
         </span>
       ),
@@ -118,7 +118,7 @@ function TicketsPage() {
     {
       header: "Bet Amount",
       accessor: (t) => (
-        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+        <span className="text-gray-500 text-xs leading-relaxed">
           {t.betAmount}
         </span>
       ),
@@ -126,7 +126,7 @@ function TicketsPage() {
     {
       header: "Game type",
       accessor: (t) => (
-        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+        <span className="text-gray-500 text-xs leading-relaxed">
           {t.gameType}
         </span>
       ),
@@ -134,7 +134,7 @@ function TicketsPage() {
     {
       header: "Odds",
       accessor: (t) => (
-        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+        <span className="text-gray-500 text-xs leading-relaxed">
           {t.odds}
         </span>
       ),
@@ -142,7 +142,7 @@ function TicketsPage() {
     {
       header: "Potential Wins",
       accessor: (t) => (
-        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+        <span className="text-gray-500 text-xs leading-relaxed">
           {t.possibleWin}
         </span>
       ),
