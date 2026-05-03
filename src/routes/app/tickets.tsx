@@ -1,9 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { Search, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Clock, Eye, PauseCircle } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
 import SortIcon from "@/logo/sort.svg?react";
 import FilterIcon from "@/logo/filter.svg?react";
+import { ActionDropdown } from "#/components/ActionDropdown";
+import { UserProfileModal } from "#/components/UserProfileModal";
+import { SendNoticeModal } from "#/components/SendNoticeModal";
+import NotificationIcon from "#/assets/NotificationIcon";
+import type { User } from "#/lib/users";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/tickets")({
   component: TicketsPage,
@@ -58,6 +64,17 @@ function TicketsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+
+  const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
+  const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
+  const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setActionDropdown(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   const filteredTickets = DUMMY_TICKETS.filter((t) => {
     if (activeTab === "active") return t.outcome === "Active";
@@ -142,6 +159,18 @@ function TicketsPage() {
     },
   ];
 
+  // Helper function to mock a User object from a ticket record
+  const getMockUserFromTicket = (ticket: TicketRecord): User => {
+    return {
+      id: `USR-${ticket.id}`,
+      name: ticket.playerName,
+      email: `${ticket.playerName.split(" ")[0].toLowerCase()}@example.com`,
+      wallet: 0,
+      status: "verified",
+      registeredDate: Date.now(),
+    };
+  };
+
   return (
     <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-8">
       {/* Sticky Header */}
@@ -209,7 +238,16 @@ function TicketsPage() {
           data={paginatedTickets}
           columns={columns}
           maxHeight="100%"
-          onActionClick={(t) => console.log("Action for ticket", t.id)}
+          onActionClick={(ticket, e) => {
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+            const rect = e.currentTarget.getBoundingClientRect();
+            setActionDropdown({
+              ticket,
+              top: rect.bottom + window.scrollY,
+              right: window.innerWidth - rect.right,
+            });
+          }}
           emptyMessage="No tickets found"
           pagination={{
             currentPage: page,
@@ -220,6 +258,70 @@ function TicketsPage() {
           }}
         />
       </div>
+
+      {/* Action Dropdown */}
+      {actionDropdown && (
+        <ActionDropdown
+          top={actionDropdown.top}
+          right={actionDropdown.right}
+          onClose={() => setActionDropdown(null)}
+          items={[
+            {
+              icon: <Eye className="w-4 h-4" />,
+              label: "View ticket",
+              onClick: () => {
+                setSelectedProfileUser(getMockUserFromTicket(actionDropdown.ticket));
+                setActionDropdown(null);
+              },
+            },
+            {
+              icon: <NotificationIcon height={"14"} width={"14"} />,
+              label: "Send a notification",
+              onClick: () => {
+                setNoticeModalUser(getMockUserFromTicket(actionDropdown.ticket));
+                setActionDropdown(null);
+              },
+            },
+            {
+              icon: <PauseCircle className="w-4 h-4" />,
+              label: "Suspend",
+              onClick: () => {
+                // Mock suspend logic
+                toast.success(`User suspended successfully`);
+                setActionDropdown(null);
+              },
+            },
+          ]}
+        />
+      )}
+
+      {/* Profile Modal */}
+      {selectedProfileUser && (
+        <UserProfileModal
+          user={selectedProfileUser}
+          onClose={() => setSelectedProfileUser(null)}
+          onSendNotice={(user) => {
+            setNoticeModalUser(user);
+            setSelectedProfileUser(null);
+          }}
+          onSuspend={() => {
+            toast.success(`User suspended successfully`);
+          }}
+        />
+      )}
+
+      {/* Send Notice Modal */}
+      {noticeModalUser && (
+        <SendNoticeModal
+          user={noticeModalUser}
+          availableUsers={[noticeModalUser]} // We provide at least the mock user to the available list
+          onClose={() => setNoticeModalUser(null)}
+          onSubmit={(data) => {
+            console.log("Sending notice:", data);
+            toast.success(`Notice sent to ${noticeModalUser.name}`);
+          }}
+        />
+      )}
     </div>
   );
 }
