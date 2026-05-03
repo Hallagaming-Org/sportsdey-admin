@@ -177,7 +177,7 @@ function UsersPage() {
 				<div className="flex flex-wrap items-center gap-3">
 					<button className="cursor-pointer flex items-center justify-center rounded-full text-[#053209] bg-[#F1F1F1] gap-x-3 w-[159px] h-11">
 						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
-						<span>Send a Notice</span>
+						<span className="text-base">Send a Notice</span>
 					</button>
 					
 					<button
