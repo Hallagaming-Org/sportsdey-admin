@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, Eye, LogOut, Trash2, MessageSquare } from "lucide-react";
+import { Search, Eye, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DataTable, type Column } from "#/components/DataTable";
@@ -314,7 +314,7 @@ function AdminsPage() {
 							},
 						},
 						{
-							icon: <MessageSquare className="w-4 h-4" />,
+							icon: <NotificationIcon className="w-4 h-4" />,
 							label: "Send a message",
 							onClick: () => {
 								toast.info("Send message feature coming soon");
