@@ -3,7 +3,6 @@ import { Search, Eye, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DataTable, type Column } from "#/components/DataTable";
-import { IoFilter } from "react-icons/io5";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
