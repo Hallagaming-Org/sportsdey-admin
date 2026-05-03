@@ -170,7 +170,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 							</div>
 
 							<div className="mt-8 space-y-3">
-								<button className="w-full bg-[#E8F8E5] hover:bg-[#d7f0d3] text-[#10C300] font-bold py-3 rounded-xl transition-colors">
+								<button className="w-full bg-[#C8DDC5] hover:bg-[#d7f0d3] text-[#10C300] font-bold py-3 rounded-full transition-colors">
 									Save changes
 								</button>
 								<div className="flex gap-3">
