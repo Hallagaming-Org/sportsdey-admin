@@ -2,7 +2,7 @@ import { X, ChevronDown } from "lucide-react";
 import type { User } from "../lib/users";
 
 interface SendNoticeModalProps {
-	user: User;
+	user?: User | null;
 	onClose: () => void;
 	onSubmit?: (data: { sendTo: string; authorName: string; message: string }) => void;
 }
