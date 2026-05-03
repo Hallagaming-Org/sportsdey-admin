@@ -42,7 +42,7 @@ export function ActivityChart({ showHeader = true }: ActivityChartProps) {
 				</div>
 			)}
 
-			<div className="relative flex-1 min-h-[240px] w-full mt-2">
+			<div className="relative flex-1 min-h-[200px] w-full mt-2">
 				<div className="absolute bottom-6 left-0 top-0 flex flex-col justify-between text-xs font-medium text-gray-400">
 					<span>{formatK(cap)}</span>
 					<span>{formatK(cap * 0.66)}</span>
