@@ -127,11 +127,11 @@ function UsersPage() {
 					className="flex items-center gap-3 min-w-0 cursor-pointer"
 					onClick={() => setSelectedProfileUser(user)}
 				>
-					<img 
+					{/* <img 
 						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
 						alt="avatar" 
 						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0" 
-					/>
+					/> */}
 					<span className="font-medium text-sm text-gray-900 hover:text-primary transition-colors truncate" title={user.name}>{user.name}</span>
 				</div>
 			)
