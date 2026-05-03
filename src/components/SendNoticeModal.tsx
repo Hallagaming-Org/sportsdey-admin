@@ -56,7 +56,7 @@ export function SendNoticeModal({ user, onClose, onSubmit }: SendNoticeModalProp
 							<ChevronDown className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#687083]" />
 						</div>
 					</div>
-					<div>
+					{/* <div>
 						<label className="block font-medium text-gray-900 mb-1.5 text-sm">
 							Author name
 						</label>
@@ -67,7 +67,7 @@ export function SendNoticeModal({ user, onClose, onSubmit }: SendNoticeModalProp
 							className="w-full rounded-xl bg-[#F9F9F9] px-4 py-3 text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400 placeholder:text-xs"
 							required
 						/>
-					</div>
+					</div> */}
 					<div>
 						<label className="block font-medium text-gray-900 mb-1.5 text-sm">
 							Message
