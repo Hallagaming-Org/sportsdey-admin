@@ -146,23 +146,23 @@ function GamesPage() {
 
       {/* Scrollable Games Grid */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pb-4 px-8">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-40">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
-            {sortedGames.length > 0 ? (
-              sortedGames.map((game) => (
-                <GameCard key={game.id} game={game} onToggle={handleToggle} />
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-500 py-10">
-                No active games found.
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
+          {isLoading ? (
+            Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-2">
+                <div className="w-[90%] h-[220px] rounded-2xl bg-gray-200 animate-pulse"></div>
               </div>
-            )}
-          </div>
-        )}
+            ))
+          ) : sortedGames.length > 0 ? (
+            sortedGames.map((game) => (
+              <GameCard key={game.id} game={game} onToggle={handleToggle} />
+            ))
+          ) : (
+            <div className="col-span-full text-center text-gray-500 py-10">
+              No active games found.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
