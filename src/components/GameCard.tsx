@@ -14,7 +14,7 @@ function GameCard({
 
   return (
     <div
-      className="flex flex-col items-center gap-2 cursor-pointer select-none"
+      className="group flex flex-col items-center gap-2 cursor-pointer select-none"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -23,25 +23,29 @@ function GameCard({
         className="relative w-[90%] h-[220px] rounded-2xl overflow-hidden"
         style={{ opacity: game.enabled ? 1 : 0.5 }}
       >
-        {/* Background gradient */}
-        <div
-          className={`absolute inset-0 bg-linear-to-br ${game.color}`}
+        {/* Image filling the card */}
+        <img 
+          src={game.image} 
+          alt={game.name} 
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" 
         />
+        
+        {/* Dark gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/30" />
 
         {/* Disabled badge */}
         {!game.enabled && (
-          <div className="absolute top-3 right-3 z-10 bg-black/50 rounded-full px-2.5 py-0.5">
+          <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-sm rounded-full px-2.5 py-0.5">
             <span className="text-white/90 font-semibold text-xs">Disabled</span>
           </div>
         )}
 
-        {/* Game visual */}
+        {/* Centered Text Content */}
         <div className="relative z-5 flex flex-col items-center justify-center h-full p-4">
-          <img src={game.image} alt={game.name} className="w-16 h-16 object-contain drop-shadow-lg mb-3" />
-          <h3 className="text-white font-extrabold text-xl uppercase tracking-wide drop-shadow">
+          <h3 className="text-white font-extrabold text-2xl uppercase tracking-wide drop-shadow-lg text-center">
             {game.name}
           </h3>
-          <p className="text-white/70 text-xs mt-1 text-center">
+          <p className="text-white/80 text-sm mt-1 text-center font-medium drop-shadow-md">
             {game.tagline}
           </p>
         </div>
