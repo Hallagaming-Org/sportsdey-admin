@@ -18,10 +18,6 @@ export function ActivityChart() {
     <div className="flex h-full flex-col rounded-xl bg-white p-6 shadow-sm">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900">Activity Trends/Reports</h2>
-        <button className="flex items-center gap-2 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
-          <FilterIcon className="h-3 w-3" />
-          Filter by Region
-        </button>
       </div>
 
       <div className="relative flex-1 min-h-[200px]">
