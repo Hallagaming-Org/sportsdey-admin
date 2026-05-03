@@ -2,8 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Search, Eye, LogOut, Trash2, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import FilterIcon from "@/logo/filter.svg?react";
-import SortIcon from "@/logo/sort.svg?react";
 import { DataTable, type Column } from "#/components/DataTable";
 import { IoFilter } from "react-icons/io5";
 import { ActionDropdown } from "#/components/ActionDropdown";
@@ -28,7 +26,6 @@ function AdminsPage() {
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
-	const [sort, setSort] = useState<"asc" | "desc">("asc");
 	const [activeTab, setActiveTab] = useState<Tab>("all");
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [newAdmin, setNewAdmin] = useState({
