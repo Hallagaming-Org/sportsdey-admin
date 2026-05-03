@@ -7,7 +7,6 @@ import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { type NewUser, type User, userService } from "../../lib/users";
 import { DataTable, type Column } from "#/components/DataTable";
-import { IoFilter } from "react-icons/io5";
 import { ActionDropdown } from "../../components/ActionDropdown";
 import { UserProfileModal } from "../../components/UserProfileModal";
 import { SendNoticeModal } from "../../components/SendNoticeModal";
