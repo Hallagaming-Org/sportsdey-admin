@@ -64,7 +64,7 @@ function ActivityTrendChart() {
 	const formatK = (val: number) => `${Math.round(val / 1000)}K`;
 
 	return (
-		<div className="flex w-full flex-col rounded-2xl bg-white p-6 shadow-[0_2px_12px_0_#0000000F] border border-gray-100">
+		<div className="flex flex-col gap-4">
 			<div className="mb-6 flex items-center justify-between">
 				<h2 className="text-xl font-bold text-gray-900">Activity Trends/Reports</h2>
 				<button className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
@@ -72,6 +72,9 @@ function ActivityTrendChart() {
 					<IoFilter className="h-3.5 w-3.5" />
 				</button>
 			</div>
+	
+		<div className="flex w-full flex-col rounded-2xl bg-white p-6 shadow-[0_2px_12px_0_#0000000F] border border-gray-100">
+			
 
 			<div className="relative h-[240px] w-full mt-2">
 				<div className="absolute bottom-6 left-0 top-0 flex flex-col justify-between text-xs font-medium text-gray-400">
@@ -132,6 +135,7 @@ function ActivityTrendChart() {
 				</div>
 			</div>
 		</div>
+			</div>
 	);
 }
 
