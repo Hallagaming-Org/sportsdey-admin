@@ -190,17 +190,7 @@ function AdminsPage() {
 						/>
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
-					<button
-					onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
-					className="inline-flex cursor-pointer items-center bg-[#F4F8F3] gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
-				>
-					<SortIcon className="h-3 w-3" />
-					Sort
-				</button>
-				<button className="inline-flex cursor-pointer items-center bg-[#F4F8F3] gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50">
-					<FilterIcon className="h-3 w-3" />
-					Filter
-				</button>
+					
 					<button className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap">
 						<span className="hidden lg:block">Time periods</span>
 						<IoFilter className="h-3.5 w-3.5" />
