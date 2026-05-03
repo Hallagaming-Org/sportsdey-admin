@@ -12,6 +12,7 @@ import { LuMessageSquareDot } from "react-icons/lu";
 import { ActionDropdown } from "../../components/ActionDropdown";
 import { UserProfileModal } from "../../components/UserProfileModal";
 import { SendNoticeModal } from "../../components/SendNoticeModal";
+import NotificationIcon from "#/assets/NotificationIcon";
 
 export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
@@ -412,7 +413,7 @@ function UsersPage() {
 							onClick: () => setSelectedProfileUser(actionDropdown.user),
 						},
 						{
-							icon: <LuMessageSquareDot className="w-4 h-4" />,
+							icon: <NotificationIcon />,
 							label: "Send a notification",
 							onClick: () => setNoticeModalUser(actionDropdown.user),
 						},
