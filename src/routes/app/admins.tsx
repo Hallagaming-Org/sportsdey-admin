@@ -7,6 +7,8 @@ import { IoFilter } from "react-icons/io5";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
+import { SendNoticeModal } from "#/components/SendNoticeModal";
+import type { User } from "#/lib/users";
 
 export const Route = createFileRoute("/app/admins")({
 	component: AdminsPage,
@@ -37,6 +39,8 @@ function AdminsPage() {
 
 	const [actionDropdown, setActionDropdown] = useState<{ user: AdminUser; top: number; right: number } | null>(null);
 	const [selectedProfileAdmin, setSelectedProfileAdmin] = useState<AdminUser | null>(null);
+	const [noticeModalAdmin, setNoticeModalAdmin] = useState<AdminUser | null>(null);
+	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 	
 	// Close dropdown when clicking outside
 	useEffect(() => {
@@ -68,6 +72,15 @@ function AdminsPage() {
 	const admins = filteredAdmins.slice((page - 1) * limit, page * limit);
 	const total = filteredAdmins.length;
 	const totalPages = Math.ceil(total / limit);
+
+	const mapAdminToUser = (admin: AdminUser): User => ({
+		id: admin.id,
+		name: admin.name,
+		email: admin.email,
+		status: "verified",
+		wallet: 0,
+		registeredDate: admin.dateAdded,
+	});
 
 	const columns: Column<AdminUser>[] = [
 		{ 
@@ -115,7 +128,7 @@ function AdminsPage() {
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
 					<button 
-						onClick={() => toast.info("Send Notice triggered")}
+						onClick={() => setShowGlobalNoticeModal(true)}
 						className="cursor-pointer flex items-center justify-center rounded-full text-[#053209] bg-[#F1F1F1] gap-x-3 w-[159px] h-11"
 					>
 						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
@@ -319,7 +332,7 @@ function AdminsPage() {
 							icon: <NotificationIcon className="w-4 h-4" />,
 							label: "Send a message",
 							onClick: () => {
-								toast.info("Send message feature coming soon");
+								setNoticeModalAdmin(actionDropdown.user);
 								setActionDropdown(null);
 							},
 						},
@@ -349,8 +362,21 @@ function AdminsPage() {
 					admin={selectedProfileAdmin}
 					onClose={() => setSelectedProfileAdmin(null)}
 					onSendMessage={(admin) => {
-						toast.info(`Sending message to ${admin.name}`);
+						setNoticeModalAdmin(admin);
 						setSelectedProfileAdmin(null);
+					}}
+				/>
+			)}
+			{(noticeModalAdmin || showGlobalNoticeModal) && (
+				<SendNoticeModal
+					user={noticeModalAdmin ? mapAdminToUser(noticeModalAdmin) : null}
+					availableUsers={dummyAdmins.map(mapAdminToUser)}
+					onClose={() => {
+						setNoticeModalAdmin(null);
+						setShowGlobalNoticeModal(false);
+					}}
+					onSubmit={(data) => {
+						toast.success(noticeModalAdmin ? `Message sent to ${noticeModalAdmin.name}` : "Notice sent successfully");
 					}}
 				/>
 			)}
