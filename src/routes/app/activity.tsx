@@ -90,10 +90,10 @@ function ActivityTrendChart() {
 
 						<div className="absolute bottom-0 left-0 right-0 top-0 flex items-end justify-between px-4 lg:px-12">
 							{data.map((day, idx) => (
-								<div key={idx} className="flex h-full w-12 items-end justify-center gap-1 z-10 group relative">
-									<div className="w-2.5 rounded-t-sm bg-black transition-all duration-300" style={{ height: `${(day.rev / cap) * 100}%` }}></div>
-									<div className="w-2.5 rounded-t-sm bg-[#10C300] transition-all duration-300" style={{ height: `${(day.bet / cap) * 100}%` }}></div>
-									<div className="w-2.5 rounded-t-sm bg-[#E5E7EB] transition-all duration-300" style={{ height: `${(day.users / cap) * 100}%` }}></div>
+								<div key={idx} className="flex h-full w-12 items-end justify-center z-10 group relative">
+									<div className="w-2.5 bg-black transition-all duration-300" style={{ height: `${(day.rev / cap) * 100}%` }}></div>
+									<div className="w-2.5 bg-[#10C300] transition-all duration-300" style={{ height: `${(day.bet / cap) * 100}%` }}></div>
+									<div className="w-2.5 bg-[#E2FDD9] transition-all duration-300" style={{ height: `${(day.users / cap) * 100}%` }}></div>
 									
 									{/* Tooltip on hover */}
 									<div className="absolute top-full mt-2 hidden group-hover:flex flex-col bg-gray-900 text-white text-[10px] p-2 rounded shadow-lg z-20 whitespace-nowrap">
@@ -127,7 +127,7 @@ function ActivityTrendChart() {
 					<span>Bets Placed</span>
 				</div>
 				<div className="flex items-center gap-2">
-					<div className="h-2 w-2 rounded-full bg-[#E5E7EB]"></div>
+					<div className="h-2 w-2 rounded-full bg-[#E2FDD9]"></div>
 					<span>All Users</span>
 				</div>
 			</div>
