@@ -1,4 +1,3 @@
-import { IoFilter } from "react-icons/io5";
 import { TimePeriodFilter } from "./TimePeriodFilter";
 
 interface ActivityChartProps {
