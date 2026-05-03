@@ -144,7 +144,10 @@ function ActivityPage() {
 
 			<div className="flex-1 overflow-y-auto custom-scrollbar pb-10 space-y-6">
 				{/* Top Section */}
-				<ActivityTrendChart showHeader={false} />
+				<div className="h-[383px] w-full">
+					<ActivityTrendChart showHeader={false} />
+
+				</div>
 
 				{/* Middle Section */}
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
