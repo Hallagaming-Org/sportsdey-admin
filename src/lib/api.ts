@@ -56,7 +56,17 @@ async function fetchApi<T>(
 		fetchOptions.body = JSON.stringify(body);
 	}
 
-	const response = await fetch(`${API_BASE}${endpoint}`, fetchOptions);
+	let baseUrl = API_BASE;
+	if (endpoint.startsWith("/games")) {
+		if (typeof window !== "undefined" && window.location) {
+			const hostname = window.location.hostname;
+			if (hostname === "localhost" || hostname === "127.0.0.1") {
+				baseUrl = "https://staging-api.sportsdey.com";
+			}
+		}
+	}
+
+	const response = await fetch(`${baseUrl}${endpoint}`, fetchOptions);
 
 	let result;
 	try {

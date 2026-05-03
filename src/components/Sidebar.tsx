@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import AdminPanelIcon from "#/assets/AdminPanelIcon";
 import {
 	Activity,
 	ChevronLeft,
@@ -37,7 +38,9 @@ const menuItems: NavItem[] = [
 	{ icon: Gamepad2, label: "Game management", to: "/app/games" },
 	{ icon: Ticket, label: "Ticket history", to: "/app/tickets" },
 	{ icon: Settings, label: "CMS Controls", to: "/app/cms" },
-	{ icon: Activity, label: "Activity log" },
+	
+	{ icon: Activity, label: "Activity log", to: "/app/activity" },
+	{ icon: AdminPanelIcon as LucideIcon, label: "Admin Panel/Other Admins", to: "/app/admins" },
 ];
 
 const otherItems: NavItem[] = [

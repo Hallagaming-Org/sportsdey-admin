@@ -56,7 +56,7 @@ export function DataTable<T>({
               {columns.map((col, idx) => (
                 <th
                   key={idx}
-                  className={`py-4 font-medium ${idx === 0 ? "pl-4" : "px-4"} ${col.headerClassName || ""}`}
+                  className={`py-4 font-medium whitespace-nowrap ${idx === 0 ? "pl-4" : "px-4"} ${col.headerClassName || ""}`}
                 >
                   {col.header}
                 </th>
@@ -90,7 +90,7 @@ export function DataTable<T>({
                   {columns.map((col, colIdx) => (
                     <td
                       key={colIdx}
-                      className={`py-4 ${colIdx === 0 ? "pl-4 text-gray-900" : "px-4"} ${col.cellClassName || ""}`}
+                      className={`py-4 whitespace-nowrap ${colIdx === 0 ? "pl-4 text-gray-900" : "px-4"} ${col.cellClassName || ""}`}
                     >
                       {typeof col.accessor === "function"
                         ? col.accessor(item)

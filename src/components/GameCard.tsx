@@ -14,36 +14,35 @@ function GameCard({
 
   return (
     <div
-      className="flex flex-col items-center gap-2 cursor-pointer select-none"
+      className="group flex flex-col items-center gap-2 cursor-pointer select-none"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Card */}
       <div
         className="relative w-[90%] h-[220px] rounded-2xl overflow-hidden"
         style={{ opacity: game.enabled ? 1 : 0.5 }}
       >
-        {/* Background gradient */}
-        <div
-          className={`absolute inset-0 bg-linear-to-br ${game.color}`}
+        <img 
+          src={game.image} 
+          alt={game.name} 
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" 
         />
+        
+        {/* Dark gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-black/20 to-black/30" />
 
-        {/* Disabled badge */}
         {!game.enabled && (
-          <div className="absolute top-3 right-3 z-10 bg-black/50 rounded-full px-2.5 py-0.5">
+          <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-sm rounded-full px-2.5 py-0.5">
             <span className="text-white/90 font-semibold text-xs">Disabled</span>
           </div>
         )}
-
-        {/* Game visual */}
         <div className="relative z-5 flex flex-col items-center justify-center h-full p-4">
-          <div className="text-6xl mb-3 drop-shadow-lg">{game.emoji}</div>
-          <h3 className="text-white font-extrabold text-xl uppercase tracking-wide drop-shadow">
+          <h3 className="text-white mt-20 font-extrabold text-xl uppercase tracking-wide drop-shadow-lg text-center">
             {game.name}
           </h3>
-          <p className="text-white/70 text-xs mt-1 text-center">
+          {/* <p className="text-white/80 text-sm mt-1 text-center font-medium drop-shadow-md">
             {game.tagline}
-          </p>
+          </p> */}
         </div>
       </div>
 
@@ -61,8 +60,8 @@ function GameCard({
           }}
           className={`flex justify-center items-center gap-2 rounded-full w-[157px] h-10 font-semibold text-sm border transition-colors shadow-sm ${
             game.enabled
-              ? "border-[#053209] bg-[#F4F8F3] text-[#053209] cursor-pointer"
-              : "border-[#053209] bg-[#053209] text-white cursor-pointer"
+              ? "border-[#E60D0D] bg-[#FFE7E7] text-[#C03320] cursor-pointer"
+              : "border-[#0fa61c] bg-[#d7f4d8] text-[#0fa61c] cursor-pointer"
           }`}
         >
           {game.enabled ? (

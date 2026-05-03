@@ -53,7 +53,7 @@ export function UserAnalyticsTable() {
           <img 
             src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
             alt="avatar" 
-            className="h-8 w-8 rounded-full bg-gray-100 object-cover flex-shrink-0" 
+            className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0" 
           />
           <span className="font-medium text-gray-900 truncate" title={user.name}>{user.name}</span>
         </div>
