@@ -5,6 +5,17 @@ import SortIcon from "@/logo/sort.svg?react";
 import GameCard from "#/components/GameCard";
 import { fetchApi } from "#/lib/api";
 
+import Img21 from "#/assets/21.png";
+import Img777 from "#/assets/777.png";
+import ImgBlackjack from "#/assets/BlackJack.png";
+import ImgBlocks from "#/assets/Blocks.png";
+import ImgPlinko from "#/assets/Plinko.png";
+import ImgSolitaire from "#/assets/Solitaire.png";
+import ImgEagle from "#/assets/eagle_lite.jpg";
+import ImgLagosRush from "#/assets/lagos-rush.png";
+import ImgLuckyRise from "#/assets/lucky_rise.png";
+import ImgXcape from "#/assets/xcape.png";
+
 export const Route = createFileRoute("/app/games")({
   component: GamesPage,
 });
@@ -17,7 +28,7 @@ export interface Game {
   color: string;
   accentColor: string;
   enabled: boolean;
-  emoji: string;
+  image: string;
 }
 
 interface APIGame {
@@ -30,17 +41,17 @@ interface APIGame {
   updatedAt: string;
 }
 
-const GAME_METADATA: Record<string, { tagline: string, type: string, color: string, accentColor: string, emoji: string }> = {
-  blackjack: { tagline: "Classic card game", type: "Card game", color: "from-green-600 to-green-800", accentColor: "#16A34A", emoji: "🃏" },
-  blocks: { tagline: "Building puzzle", type: "Puzzle game", color: "from-blue-500 to-indigo-700", accentColor: "#4F46E5", emoji: "🧱" },
-  EAGLEHB: { tagline: "For filling game", type: "For filling game", color: "from-emerald-500 to-teal-700", accentColor: "#10B981", emoji: "🦅" },
-  LAGOSRUSH: { tagline: "For filling game", type: "For filling game", color: "from-orange-500 to-red-600", accentColor: "#F97316", emoji: "🏎️" },
-  LUCKYRISEHB: { tagline: "For filling game", type: "For filling game", color: "from-yellow-400 to-amber-600", accentColor: "#FBBF24", emoji: "🍀" },
-  plinko: { tagline: "Drop the ball", type: "Arcade game", color: "from-pink-500 to-rose-700", accentColor: "#E11D48", emoji: "🎯" },
-  slots: { tagline: "Spin to win", type: "Casino game", color: "from-yellow-500 to-orange-600", accentColor: "#F59E0B", emoji: "777" },
-  solitaire: { tagline: "Single player card", type: "Card game", color: "from-cyan-500 to-blue-600", accentColor: "#0284C7", emoji: "♠️" },
-  twentyone: { tagline: "Reach 21", type: "Card game", color: "from-red-500 to-red-700", accentColor: "#DC2626", emoji: "21" },
-  XCAPEHB: { tagline: "Crash game", type: "Crash game", color: "from-purple-500 to-violet-700", accentColor: "#8B5CF6", emoji: "🚀" },
+const GAME_METADATA: Record<string, { tagline: string, type: string, color: string, accentColor: string, image: string }> = {
+  blackjack: { tagline: "Classic card game", type: "Card game", color: "from-green-600 to-green-800", accentColor: "#16A34A", image: ImgBlackjack },
+  blocks: { tagline: "Building puzzle", type: "Puzzle game", color: "from-blue-500 to-indigo-700", accentColor: "#4F46E5", image: ImgBlocks },
+  EAGLEHB: { tagline: "For filling game", type: "For filling game", color: "from-emerald-500 to-teal-700", accentColor: "#10B981", image: ImgEagle },
+  LAGOSRUSH: { tagline: "For filling game", type: "For filling game", color: "from-orange-500 to-red-600", accentColor: "#F97316", image: ImgLagosRush },
+  LUCKYRISEHB: { tagline: "For filling game", type: "For filling game", color: "from-yellow-400 to-amber-600", accentColor: "#FBBF24", image: ImgLuckyRise },
+  plinko: { tagline: "Drop the ball", type: "Arcade game", color: "from-pink-500 to-rose-700", accentColor: "#E11D48", image: ImgPlinko },
+  slots: { tagline: "Spin to win", type: "Casino game", color: "from-yellow-500 to-orange-600", accentColor: "#F59E0B", image: Img777 },
+  solitaire: { tagline: "Single player card", type: "Card game", color: "from-cyan-500 to-blue-600", accentColor: "#0284C7", image: ImgSolitaire },
+  twentyone: { tagline: "Reach 21", type: "Card game", color: "from-red-500 to-red-700", accentColor: "#DC2626", image: Img21 },
+  XCAPEHB: { tagline: "Crash game", type: "Crash game", color: "from-purple-500 to-violet-700", accentColor: "#8B5CF6", image: ImgXcape },
 };
 
 function GamesPage() {
@@ -66,7 +77,7 @@ function GamesPage() {
         type: "Arcade game",
         color: "from-gray-500 to-gray-700",
         accentColor: "#6B7280",
-        emoji: "🎲",
+        image: ImgPlinko, // Fallback image
       };
       return {
         id: g.id,
@@ -76,7 +87,7 @@ function GamesPage() {
         color: meta.color,
         accentColor: meta.accentColor,
         enabled: g.enabled,
-        emoji: meta.emoji,
+        image: meta.image,
       };
     });
 
