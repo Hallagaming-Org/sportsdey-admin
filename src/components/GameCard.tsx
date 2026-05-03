@@ -37,7 +37,7 @@ function GameCard({
 
         {/* Game visual */}
         <div className="relative z-5 flex flex-col items-center justify-center h-full p-4">
-          <div className="text-6xl mb-3 drop-shadow-lg">{game.emoji}</div>
+          <img src={game.image} alt={game.name} className="w-16 h-16 object-contain drop-shadow-lg mb-3" />
           <h3 className="text-white font-extrabold text-xl uppercase tracking-wide drop-shadow">
             {game.name}
           </h3>
