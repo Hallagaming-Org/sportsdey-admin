@@ -91,9 +91,9 @@ function ActivityTrendChart() {
 						<div className="absolute bottom-0 left-0 right-0 top-0 flex items-end justify-between px-4 lg:px-12">
 							{data.map((day, idx) => (
 								<div key={idx} className="flex h-full w-12 items-end justify-center z-10 group relative">
-									<div className="w-2.5 bg-black transition-all duration-300" style={{ height: `${(day.rev / cap) * 100}%` }}></div>
-									<div className="w-2.5 bg-[#10C300] transition-all duration-300" style={{ height: `${(day.bet / cap) * 100}%` }}></div>
-									<div className="w-2.5 bg-[#E2FDD9] transition-all duration-300" style={{ height: `${(day.users / cap) * 100}%` }}></div>
+									<div className={`w-2.5 bg-[#0D0D0D] transition-all duration-300 ${idx < 6 ? 'opacity-40' : 'opacity-100'}`} style={{ height: `${(day.rev / cap) * 100}%` }}></div>
+									<div className={`w-2.5 bg-[#1BAA04] transition-all duration-300 ${idx < 6 ? 'opacity-40' : 'opacity-100'}`} style={{ height: `${(day.bet / cap) * 100}%` }}></div>
+									<div className={`w-2.5 bg-[#E2FDD9] transition-all duration-300 ${idx < 6 ? 'opacity-40' : 'opacity-100'}`} style={{ height: `${(day.users / cap) * 100}%` }}></div>
 									
 									{/* Tooltip on hover */}
 									<div className="absolute top-full mt-2 hidden group-hover:flex flex-col bg-gray-900 text-white text-[10px] p-2 rounded shadow-lg z-20 whitespace-nowrap">
@@ -119,11 +119,11 @@ function ActivityTrendChart() {
 
 			<div className="mt-8 flex items-center justify-end gap-6 text-xs font-medium text-gray-600">
 				<div className="flex items-center gap-2">
-					<div className="h-2 w-2 rounded-full bg-black"></div>
+					<div className="h-2 w-2 rounded-full bg-[#0D0D0D]"></div>
 					<span>Revenue generated</span>
 				</div>
 				<div className="flex items-center gap-2">
-					<div className="h-2 w-2 rounded-full bg-[#10C300]"></div>
+					<div className="h-2 w-2 rounded-full bg-[#1BAA04]"></div>
 					<span>Bets Placed</span>
 				</div>
 				<div className="flex items-center gap-2">
