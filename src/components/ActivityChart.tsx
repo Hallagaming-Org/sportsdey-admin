@@ -1,4 +1,5 @@
 import { IoFilter } from "react-icons/io5";
+import { TimePeriodFilter } from "./TimePeriodFilter";
 
 interface ActivityChartProps {
 	showHeader?: boolean;
@@ -34,10 +35,7 @@ export function ActivityChart({ showHeader = true }: ActivityChartProps) {
 			{showHeader && (
 				<div className="mb-6 flex items-center justify-between">
 					<h2 className="text-xl font-bold text-gray-900">Activity Trends/Reports</h2>
-					<button className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
-						<span className="hidden lg:block">Time periods</span>
-						<IoFilter className="h-3.5 w-3.5" />
-					</button>
+					<TimePeriodFilter onFilterChange={(period, customRange) => console.log(period, customRange)} />
 				</div>
 			)}
 

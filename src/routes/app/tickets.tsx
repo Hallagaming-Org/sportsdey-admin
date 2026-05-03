@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Search, Clock, Eye, PauseCircle } from "lucide-react";
+import { TimePeriodFilter } from "@/components/TimePeriodFilter";
+import { Search, Eye, PauseCircle } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
 import SortIcon from "@/logo/sort.svg?react";
 import FilterIcon from "@/logo/filter.svg?react";
@@ -10,7 +11,8 @@ import { SendNoticeModal } from "#/components/SendNoticeModal";
 import NotificationIcon from "#/assets/NotificationIcon";
 import type { User } from "#/lib/users";
 import { toast } from "sonner";
-import { IoFilter } from "react-icons/io5";
+
+
 
 export const Route = createFileRoute("/app/tickets")({
   component: TicketsPage,
@@ -222,14 +224,14 @@ function TicketsPage() {
               placeholder="Search"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-52 rounded-full border border-gray-200 bg-gray-50 py-2 pr-4 pl-9 text-sm focus:border-[#1BAA04] focus:outline-none focus:ring-1 focus:ring-[#1BAA04]"
+              className="w-[352px] rounded-full border border-gray-200 bg-gray-50 py-2 pr-4 pl-9 text-sm focus:border-[#1BAA04] focus:outline-none focus:ring-1 focus:ring-[#1BAA04]"
             />
             <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
           </div>
-         <button className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap">
-                      <span className="hidden lg:block">Time periods</span>
-                      <IoFilter className="h-3.5 w-3.5" />
-                    </button>
+         <TimePeriodFilter 
+            buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
+            onFilterChange={(period, customRange) => console.log(period, customRange)} 
+          />
         </div>
       </div>
 

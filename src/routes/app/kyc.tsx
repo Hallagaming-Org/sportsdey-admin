@@ -5,7 +5,7 @@ import { IoFilter } from "react-icons/io5";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { DataTable, type Column } from "#/components/DataTable";
-
+import { TimePeriodFilter } from "@/components/TimePeriodFilter";
 export const Route = createFileRoute("/app/kyc")({
   component: KycPage,
 });
@@ -320,10 +320,10 @@ function KycPage() {
               />
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
             </div>
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
-              Time periods
-              <IoFilter className="h-3.5 w-3.5" />
-            </button>
+            <TimePeriodFilter 
+              buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
+              onFilterChange={(period, customRange) => console.log(period, customRange)} 
+            />
           </div>
         </div>
 
