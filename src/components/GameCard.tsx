@@ -61,8 +61,8 @@ function GameCard({
           }}
           className={`flex justify-center items-center gap-2 rounded-full w-[157px] h-10 font-semibold text-sm border transition-colors shadow-sm ${
             game.enabled
-              ? "border-[#053209] bg-[#F4F8F3] text-[#053209] cursor-pointer"
-              : "border-[#053209] bg-[#053209] text-white cursor-pointer"
+              ? "border-[#E60D0D] bg-[#FFE7E7] text-[#C03320] cursor-pointer"
+              : "border-[#0fa61c] bg-[#d7f4d8] text-[#0fa61c] cursor-pointer"
           }`}
         >
           {game.enabled ? (
