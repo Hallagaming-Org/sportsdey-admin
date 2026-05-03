@@ -418,7 +418,7 @@ function UsersPage() {
 						},
 						{
 							icon: <PauseCircle className="w-4 h-4" />,
-							label: "Suspend/Reactivate",
+							label: actionDropdown.user.status.toLowerCase() === 'suspended' ? "Reactivate" : "Suspend",
 							onClick: () => {
 								// Handle suspend logic
 							},
