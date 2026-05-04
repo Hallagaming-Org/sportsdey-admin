@@ -8,7 +8,6 @@ import FilterIcon from "@/logo/filter.svg?react";
 import PostIcon from "@/logo/post.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { cmsService } from "../../lib/cms";
-import { IoFilter } from "react-icons/io5";
 import { TimePeriodFilter } from "@/components/TimePeriodFilter";
 import { CmsAddModal } from "../../components/CmsAddModal";
 import { ActionDropdown } from "@/components/ActionDropdown";
