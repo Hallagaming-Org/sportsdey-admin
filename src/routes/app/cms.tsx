@@ -210,21 +210,23 @@ function CmsPage() {
 
 						{!error && (
 							<form
-								className="relative space-x-4"
+								className="flex items-center gap-4"
 								onSubmit={(e) => {
 									e.preventDefault();
 									setPage(1);
 									queryClient.invalidateQueries({ queryKey: ["cms"] });
 								}}
 							>
-								<input
-									type="text"
-									placeholder="Search"
-									value={search}
-									onChange={(e) => setSearch(e.target.value)}
-									className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
-								/>
-								<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+								<div className="relative">
+									<input
+										type="text"
+										placeholder="Search"
+										value={search}
+										onChange={(e) => setSearch(e.target.value)}
+										className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
+									/>
+									<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+								</div>
 								<TimePeriodFilter 
 									buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
 									onFilterChange={(period, customRange) => console.log(period, customRange)} 
