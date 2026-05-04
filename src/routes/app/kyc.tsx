@@ -327,11 +327,7 @@ function KycPage() {
 				</div>
 
 				<div className="flex-1 min-h-0 relative overflow-hidden rounded-lg bg-white shadow-md">
-					{isLoading ? (
-						<div className="flex h-full items-center justify-center">
-							<div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-accent" />
-						</div>
-					) : error ? (
+					{error ? (
 						<div className="flex h-full items-center justify-center text-red-600">
 							{error instanceof Error
 								? error.message
@@ -341,6 +337,7 @@ function KycPage() {
 						<DataTable
 							data={paginatedRecords}
 							columns={columns}
+							isLoading={isLoading}
 							maxHeight="100%"
 							actionMenuItems={[
 								{
