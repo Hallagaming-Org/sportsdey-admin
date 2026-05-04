@@ -4,8 +4,8 @@ import { StatCard } from "@/components/StatCard";
 import { ActivityChart } from "@/components/ActivityChart";
 import { TopBets } from "@/components/TopBets";
 import { UserAnalyticsTable } from "@/components/UserAnalyticsTable";
+import { TimePeriodFilter } from "@/components/TimePeriodFilter";
 import { FaPeopleGroup } from "react-icons/fa6";
-import { IoFilterSharp } from "react-icons/io5";
 
 export const Route = createFileRoute("/app/")({
 	component: DashboardPage,
@@ -13,22 +13,23 @@ export const Route = createFileRoute("/app/")({
 
 function DashboardPage() {
 	return (
-		<div className="flex flex-col gap-6 w-full mx-auto pb-10">
+		<div className="flex h-[calc(100vh-120px)] flex-1 flex-col overflow-hidden px-2 lg:px-4">
 			{/* Header */}
-			<div className="flex flex-wrap items-center justify-between gap-4">
+			<div className="flex-none mb-6 flex flex-wrap items-center justify-between gap-4">
 				<h1 className="text-3xl font-bold text-gray-900">Overview</h1>
 				<div className="flex flex-wrap items-center gap-3">
 					<button className="flex cursor-pointer items-center gap-2 rounded-full bg-[#1BAA04] px-4 py-2 text-sm font-medium text-white hover:bg-[#0ea800]">
 						<Plus className="h-4 w-4" />
 						Add new user
 					</button>
-					<button className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
-						Time periods
-						<IoFilterSharp className="h-4 w-4 text-gray-400" />
-					</button>
+					<TimePeriodFilter 
+						buttonClassName="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+						onFilterChange={(period, customRange) => console.log(period, customRange)} 
+					/>
 				</div>
 			</div>
 
+			<div className="flex-1 overflow-y-auto custom-scrollbar pb-10 space-y-6">
 			{/* Stats Cards */}
 			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
 				<StatCard 
@@ -66,6 +67,7 @@ function DashboardPage() {
 			{/* Bottom Section (Table) */}
 			<div>
 				<UserAnalyticsTable />
+			</div>
 			</div>
 		</div>
 	);
