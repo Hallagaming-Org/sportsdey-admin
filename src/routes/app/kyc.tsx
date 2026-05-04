@@ -6,7 +6,7 @@ import { IoFilter } from "react-icons/io5";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { DataTable, type Column } from "#/components/DataTable";
-import { kycService, type KycDocumentResponse, type KycStatusFilter } from "@/lib/kyc";
+import { kycService, type KycStatusFilter } from "@/lib/kyc";
 
 export const Route = createFileRoute("/app/kyc")({
 	component: KycPage,
@@ -327,18 +327,12 @@ function KycPage() {
 				</div>
 
 				<div className="flex-1 min-h-0 relative overflow-hidden rounded-lg bg-white shadow-md">
-					{error ? (
-						<div className="flex h-full items-center justify-center text-red-600">
-							{error instanceof Error
-								? error.message
-								: "Failed to load KYC records"}
-						</div>
-					) : (
-						<DataTable
-							data={paginatedRecords}
-							columns={columns}
-							isLoading={isLoading}
-							maxHeight="100%"
+					<DataTable
+						data={error ? [] : paginatedRecords}
+						columns={columns}
+						isLoading={isLoading}
+						emptyMessage={error ? (error instanceof Error ? (error.message.toLowerCase().includes("not found") ? "No KYC records found" : error.message) : "Failed to load KYC records") : "No KYC records found"}
+						maxHeight="100%"
 							actionMenuItems={[
 								{
 									label: "View document",
@@ -359,7 +353,6 @@ function KycPage() {
 									onClick: (record) => console.log("Review status for", record.sn),
 								},
 							]}
-							emptyMessage="No document found"
 							pagination={{
 								currentPage: page,
 								totalPages,
@@ -368,7 +361,6 @@ function KycPage() {
 								itemsPerPage: ITEMS_PER_PAGE,
 							}}
 						/>
-					)}
 				</div>
 			</div>
 
