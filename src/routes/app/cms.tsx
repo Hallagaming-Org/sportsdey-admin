@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search } from "lucide-react";
+import { Search, Eye, Edit2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { type Column, DataTable } from "@/components/DataTable";
@@ -11,6 +11,8 @@ import { cmsService } from "../../lib/cms";
 import { IoFilter } from "react-icons/io5";
 import { TimePeriodFilter } from "@/components/TimePeriodFilter";
 import { CmsAddModal } from "../../components/CmsAddModal";
+import { ActionDropdown } from "@/components/ActionDropdown";
+
 
 export const Route = createFileRoute("/app/cms")({
 	component: CmsPage,
@@ -26,6 +28,13 @@ function CmsPage() {
 	const [sortBy, setSortBy] = useState<"title" | "">("");
 	const [activeTab, setActiveTab] = useState<ContentType>("all");
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [actionDropdown, setActionDropdown] = useState<{ item: any; top: number; right: number } | null>(null);
+
+	useEffect(() => {
+		const handleClickOutside = () => setActionDropdown(null);
+		document.addEventListener("click", handleClickOutside);
+		return () => document.removeEventListener("click", handleClickOutside);
+	}, []);
 
 	const {
 		data: cmsData,
@@ -266,7 +275,18 @@ function CmsPage() {
 								columns={cmsColumns}
 								isLoading={isLoading}
 								emptyMessage="No cms content found"
-								onActionClick={(item) => console.log("Action for content", item._id)}
+								onActionClick={(item, e) => {
+									if (e) {
+										e.stopPropagation();
+										e.nativeEvent.stopImmediatePropagation();
+										const rect = e.currentTarget.getBoundingClientRect();
+										setActionDropdown({
+											item,
+											top: rect.bottom + window.scrollY,
+											right: window.innerWidth - rect.right,
+										});
+									}
+								}}
 								maxHeight="100%"
 								pagination={{
 									currentPage: page,
@@ -284,6 +304,41 @@ function CmsPage() {
 				isOpen={showAddModal}
 				onClose={() => setShowAddModal(false)}
 			/>
+
+			{actionDropdown && (
+				<ActionDropdown
+					top={actionDropdown.top}
+					right={actionDropdown.right}
+					onClose={() => setActionDropdown(null)}
+					items={[
+						{
+							icon: <Eye className="w-4 h-4" />,
+							label: "View content",
+							onClick: () => {
+								console.log("View content", actionDropdown.item);
+								setActionDropdown(null);
+							},
+						},
+						{
+							icon: <Edit2 className="w-4 h-4" />,
+							label: "Edit content",
+							onClick: () => {
+								console.log("Edit content", actionDropdown.item);
+								setActionDropdown(null);
+							},
+						},
+						{
+							icon: <Trash2 className="w-4 h-4 text-red-500" />,
+							label: "Delete content",
+							className: "!text-red-500",
+							onClick: () => {
+								console.log("Delete content", actionDropdown.item);
+								setActionDropdown(null);
+							},
+						}
+					]}
+				/>
+			)}
 		</div>
 	);
 }
