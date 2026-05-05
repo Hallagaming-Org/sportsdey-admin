@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search } from "lucide-react";
+import { Search, Eye, Edit2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { type Column, DataTable } from "@/components/DataTable";
@@ -8,9 +8,10 @@ import FilterIcon from "@/logo/filter.svg?react";
 import PostIcon from "@/logo/post.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { cmsService } from "../../lib/cms";
-import { IoFilter } from "react-icons/io5";
 import { TimePeriodFilter } from "@/components/TimePeriodFilter";
 import { CmsAddModal } from "../../components/CmsAddModal";
+import { ActionDropdown } from "@/components/ActionDropdown";
+
 
 export const Route = createFileRoute("/app/cms")({
 	component: CmsPage,
@@ -26,6 +27,13 @@ function CmsPage() {
 	const [sortBy, setSortBy] = useState<"title" | "">("");
 	const [activeTab, setActiveTab] = useState<ContentType>("all");
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [actionDropdown, setActionDropdown] = useState<{ item: any; top: number; right: number } | null>(null);
+
+	useEffect(() => {
+		const handleClickOutside = () => setActionDropdown(null);
+		document.addEventListener("click", handleClickOutside);
+		return () => document.removeEventListener("click", handleClickOutside);
+	}, []);
 
 	const {
 		data: cmsData,
@@ -210,21 +218,23 @@ function CmsPage() {
 
 						{!error && (
 							<form
-								className="relative space-x-4"
+								className="flex items-center gap-4"
 								onSubmit={(e) => {
 									e.preventDefault();
 									setPage(1);
 									queryClient.invalidateQueries({ queryKey: ["cms"] });
 								}}
 							>
-								<input
-									type="text"
-									placeholder="Search"
-									value={search}
-									onChange={(e) => setSearch(e.target.value)}
-									className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
-								/>
-								<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+								<div className="relative">
+									<input
+										type="text"
+										placeholder="Search"
+										value={search}
+										onChange={(e) => setSearch(e.target.value)}
+										className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
+									/>
+									<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+								</div>
 								<TimePeriodFilter 
 									buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
 									onFilterChange={(period, customRange) => console.log(period, customRange)} 
@@ -264,7 +274,18 @@ function CmsPage() {
 								columns={cmsColumns}
 								isLoading={isLoading}
 								emptyMessage="No cms content found"
-								onActionClick={(item) => console.log("Action for content", item._id)}
+								onActionClick={(item, e) => {
+									if (e) {
+										e.stopPropagation();
+										e.nativeEvent.stopImmediatePropagation();
+										const rect = e.currentTarget.getBoundingClientRect();
+										setActionDropdown({
+											item,
+											top: rect.bottom + window.scrollY,
+											right: window.innerWidth - rect.right,
+										});
+									}
+								}}
 								maxHeight="100%"
 								pagination={{
 									currentPage: page,
@@ -282,6 +303,41 @@ function CmsPage() {
 				isOpen={showAddModal}
 				onClose={() => setShowAddModal(false)}
 			/>
+
+			{actionDropdown && (
+				<ActionDropdown
+					top={actionDropdown.top}
+					right={actionDropdown.right}
+					onClose={() => setActionDropdown(null)}
+					items={[
+						{
+							icon: <Eye className="w-4 h-4" />,
+							label: "View content",
+							onClick: () => {
+								console.log("View content", actionDropdown.item);
+								setActionDropdown(null);
+							},
+						},
+						{
+							icon: <Edit2 className="w-4 h-4" />,
+							label: "Edit content",
+							onClick: () => {
+								console.log("Edit content", actionDropdown.item);
+								setActionDropdown(null);
+							},
+						},
+						{
+							icon: <Trash2 className="w-4 h-4 text-red-500" />,
+							label: "Delete content",
+							className: "!text-red-500",
+							onClick: () => {
+								console.log("Delete content", actionDropdown.item);
+								setActionDropdown(null);
+							},
+						}
+					]}
+				/>
+			)}
 		</div>
 	);
 }
