@@ -42,6 +42,19 @@ interface APIGame {
   updatedAt: string;
 }
 
+const GAMES = [
+  { name: "Solitaire", code: "solitaire" },
+  { name: "Blocks", code: "blocks" },
+  { name: "Twenty One", code: "twentyone" },
+  { name: "Blackjack", code: "blackjack" },
+  { name: "Slots", code: "slots" },
+  { name: "Plinko", code: "plinko" },
+  { name: "Xcape", code: "XCAPEHB" },
+  { name: "Eagle", code: "EAGLEHB" },
+  { name: "Lucky Rise", code: "LUCKYRISEHB" },
+  { name: "Lagos Rush", code: "LAGOSRUSH" },
+];
+
 const GAME_METADATA: Record<string, { tagline: string, type: string, color: string, accentColor: string, image: string }> = {
   blackjack: { tagline: "Classic card game", type: "Card game", color: "from-green-600 to-green-800", accentColor: "#16A34A", image: ImgBlackjack },
   blocks: { tagline: "Building puzzle", type: "Puzzle game", color: "from-blue-500 to-indigo-700", accentColor: "#4F46E5", image: ImgBlocks },
@@ -71,8 +84,10 @@ function GamesPage() {
 
   console.log({apiGames})
 
+  const GameCodes = new Set(GAMES.map(g => g.code));
+
   const games: Game[] = apiGames
-    // .filter((g) => g.enabled)
+    .filter((g) => GameCodes.has(g.code))
     .map((g) => {
       const meta = GAME_METADATA[g.code] || {
         tagline: "Sportsdey game",
@@ -101,7 +116,7 @@ function GamesPage() {
   const toggleMutation = useMutation({
     mutationFn: async ({ id, isCurrentlyEnabled }: { id: string; isCurrentlyEnabled: boolean }) => {
       const action = isCurrentlyEnabled ? "disable" : "enable";
-      const res = await fetchApi(`/games/${id}/${action}`, { method: "POST" });
+      const res = await fetchApi(`/games/${id}/${action}`, { method: "PATCH" });
       if (!res.success) throw new Error(res.error || `Failed to ${action} game`);
       return res.data;
     },

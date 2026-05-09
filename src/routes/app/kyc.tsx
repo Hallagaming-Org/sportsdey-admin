@@ -6,10 +6,8 @@ import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { DataTable, type Column } from "#/components/DataTable";
 import { TimePeriodFilter } from "@/components/TimePeriodFilter";
-import {
-  kycService,
-  type KycStatusFilter,
-} from "@/lib/kyc";
+import { SendNoticeModal } from "#/components/SendNoticeModal";
+import { kycService, type KycStatusFilter } from "@/lib/kyc";
 
 export const Route = createFileRoute("/app/kyc")({
   component: KycPage,
@@ -73,12 +71,13 @@ const DOCUMENT_NAMES: Record<string, string> = {
 const ITEMS_PER_PAGE = 10;
 
 function getDocumentType(mime: string): DocumentType {
+  if (!mime) return "-";
   return MIME_TO_EXTENSION[mime] || "-";
 }
 
 function formatFileSize(bytes: number) {
   if (!bytes) return "-";
-  const sizes = ["B", "KB", "MB"];
+  const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return `${(bytes / Math.pow(1024, i)).toFixed(1)}${sizes[i]}`;
 }
@@ -98,8 +97,9 @@ function KycPage() {
   const [sortAsc, setSortAsc] = useState(true);
   const [selectedRecord, setSelectedRecord] = useState<KycRecord | null>(null);
   const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [noticeUser, setNoticeUser] = useState<{ id: string; name: string; email?: string } | null>(null);
 
-  // NEW: time filter
+  // time filter
   const [timeFilter, setTimeFilter] = useState<any>(null);
 
   const statusParam: KycStatusFilter | undefined = useMemo(() => {
@@ -117,15 +117,16 @@ function KycPage() {
       const res = await kycService.listKyc({
         page,
         limit: ITEMS_PER_PAGE,
-        search: search || undefined,
+        search: search.trim() || undefined,
         status: statusParam,
-        // 👇 pass time filter if backend supports it
         ...timeFilter,
       });
 
       if (!res.success) throw new Error(res.error);
       return res.data;
     },
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: documents, isLoading: docLoading } = useQuery({
@@ -143,12 +144,16 @@ function KycPage() {
     if (!data?.records) return [];
 
     return data.records.map((r, i) => ({
-      sn: String(i + 1 + (page - 1) * ITEMS_PER_PAGE),
+      sn: String(i + 1 + (page - 1) * ITEMS_PER_PAGE).padStart(6, "0"),
       kycId: r.id,
       playerName: r.playername,
       image: r.image,
-      documentName: DOCUMENT_NAMES[r.form_of_identification] || r.form_of_identification,
-      size: `${formatFileSize(r.size.front)} / ${formatFileSize(r.size.back)}`,
+      documentName:
+        DOCUMENT_NAMES[r.form_of_identification] ||
+        r.form_of_identification,
+      size: `${formatFileSize(r.size.front)} / ${formatFileSize(
+        r.size.back
+      )}`,
       dateUploaded: formatDate(r.uploaded_at),
       type: getDocumentType(r.type.front || r.type.back),
       status: STATUS_API_TO_UI[r.status] || "not_verified",
@@ -161,34 +166,58 @@ function KycPage() {
     );
   }, [records, sortAsc]);
 
-  const totalPages = Math.max(1, Math.ceil((data?.total || 0) / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil((data?.total || 0) / ITEMS_PER_PAGE)
+  );
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
 
   const columns: Column<KycRecord>[] = [
-    { header: "S/N", accessor: "sn" },
+    {
+      header: "S/N",
+      accessor: "sn",
+      headerClassName: "w-[100px]",
+    },
     {
       header: "Player Name",
       accessor: (r) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <img
-            src={r.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.playerName}`}
-            className="h-6 w-6 rounded-full"
+            src={
+              r.image ||
+              `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.playerName}`
+            }
+            className="h-6 w-6 rounded-full object-cover"
           />
-          {r.playerName}
+          <span className="truncate">{r.playerName}</span>
         </div>
       ),
     },
-    { header: "Form", accessor: "documentName" },
-    { header: "Size", accessor: "size" },
-    { header: "Date", accessor: "dateUploaded" },
-    { header: "Type", accessor: "type" },
+    {
+      header: "Form",
+      accessor: "documentName",
+    },
+    {
+      header: "Size",
+      accessor: "size",
+    },
+    {
+      header: "Date",
+      accessor: "dateUploaded",
+    },
+    {
+      header: "Type",
+      accessor: "type",
+    },
     {
       header: "Status",
       accessor: (r) => (
-        <span className={`px-2 py-1 rounded ${STATUS_STYLES[r.status]}`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs ${STATUS_STYLES[r.status]}`}
+        >
           {STATUS_LABELS[r.status]}
         </span>
       ),
@@ -196,102 +225,170 @@ function KycPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 px-6 h-full">
+    <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-6">
 
       {/* HEADER */}
-      <div className="flex justify-between">
-        <h2 className="text-2xl font-bold">KYC & Document Uploads</h2>
+      <div className="flex-none flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">KYC & Document Uploads</h2>
+          <p className="text-gray-600">
+            Manage all Documents and files Uploaded.
+          </p>
+        </div>
 
-        <div className="flex gap-2">
-          <button onClick={() => setSortAsc(!sortAsc)}>
-            <SortIcon />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSortAsc((c) => !c)}
+            className="flex items-center gap-2 border px-3 py-2 rounded-full"
+          >
+            <SortIcon className="h-3 w-3" />
+            Sort
           </button>
-          <button>
-            <FilterIcon />
+
+          <button className="flex items-center gap-2 border px-3 py-2 rounded-full">
+            <FilterIcon className="h-3 w-3" />
+            Filter
           </button>
         </div>
       </div>
 
-      {/* FILTERS */}
-      <div className="flex justify-between">
-        <div className="flex gap-4">
-          {TAB_OPTIONS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => {
-                setActiveTab(t.key);
-                setPage(1);
+      {/* CONTENT */}
+      <div className="flex-1 min-h-0 flex flex-col gap-4">
+
+        {/* FILTER BAR */}
+        <div className="flex-none flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+          {/* TABS */}
+          <div className="flex gap-6 overflow-x-auto border-b">
+            {TAB_OPTIONS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  setPage(1);
+                }}
+                className={`pb-2 ${
+                  activeTab === tab.key
+                    ? "border-b-2 border-green-600 text-green-600"
+                    : "text-gray-500"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* SEARCH + FILTER */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="relative">
+              <input
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search"
+                className="w-64 pl-10 pr-4 py-2 border rounded-full"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            </div>
+
+            <TimePeriodFilter
+              buttonClassName="px-3 py-2 border rounded-lg text-sm"
+              onFilterChange={(period, range) =>
+                setTimeFilter({ period, range })
+              }
+            />
+          </div>
+        </div>
+
+        {/* TABLE */}
+        <div className="flex-1 min-h-0 overflow-hidden bg-white rounded-lg shadow">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              Loading...
+            </div>
+          ) : error ? (
+            <div className="text-red-500 p-4">
+              {(error as Error).message}
+            </div>
+          ) : (
+            <DataTable
+              data={sorted}
+              columns={columns}
+              maxHeight="100%"
+              pagination={{
+                currentPage: page,
+                totalPages,
+                onPageChange: setPage,
+                totalItems: data?.total || 0,
+                itemsPerPage: ITEMS_PER_PAGE,
               }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex gap-2">
-          <input
-            placeholder="Search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
-          <TimePeriodFilter
-            onFilterChange={(period, range) =>
-              setTimeFilter({ period, range })
-            }
-          />
+              actionMenuItems={[
+                {
+                  label: "View document",
+                  icon: <Eye className="h-4 w-4" />,
+                  onClick: (r) => {
+                    setSelectedRecord(r);
+                    setShowDocumentModal(true);
+                  },
+                },
+                {
+                  label: "Notify",
+                  icon: <SendHorizonal className="h-4 w-4" />,
+                  onClick: (r) => setNoticeUser({ id: r.kycId, name: r.playerName }),
+                },
+                {
+                  label: "Review",
+                  icon: <PauseCircle className="h-4 w-4" />,
+                  onClick: (r) => console.log(r),
+                },
+              ]}
+            />
+          )}
         </div>
       </div>
-
-      {/* TABLE */}
-      <DataTable
-        data={sorted}
-        columns={columns}
-        pagination={{
-          currentPage: page,
-          totalPages,
-          onPageChange: setPage,
-          totalItems: data?.total || 0,
-          itemsPerPage: ITEMS_PER_PAGE,
-        }}
-        actionMenuItems={[
-          {
-            label: "View",
-            icon: <Eye />,
-            onClick: (r) => {
-              setSelectedRecord(r);
-              setShowDocumentModal(true);
-            },
-          },
-          {
-            label: "Notify",
-            icon: <SendHorizonal />,
-            onClick: (r) => console.log(r),
-          },
-          {
-            label: "Review",
-            icon: <PauseCircle />,
-            onClick: (r) => console.log(r),
-          },
-        ]}
-      />
 
       {/* MODAL */}
       {showDocumentModal && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-center">
-          <button onClick={() => setShowDocumentModal(false)}>
-            <X />
-          </button>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
+          <div className="relative w-[60%] h-[70%] bg-white rounded-lg p-4">
+            <button
+              onClick={() => setShowDocumentModal(false)}
+              className="absolute top-2 right-2"
+            >
+              <X />
+            </button>
 
-          {docLoading ? (
-            "Loading..."
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <iframe src={documents?.frontDocument?.url} />
-              <iframe src={documents?.backDocument?.url} />
-            </div>
-          )}
+            {docLoading ? (
+              <div className="flex justify-center items-center h-full">
+                Loading...
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 h-full">
+                <iframe
+                  src={documents?.frontDocument?.url}
+                  className="w-full h-full"
+                />
+                <iframe
+                  src={documents?.backDocument?.url}
+                  className="w-full h-full"
+                />
+              </div>
+            )}
+          </div>
         </div>
+      )}
+
+      {/* Send Notice Modal */}
+      {noticeUser && (
+        <SendNoticeModal
+          user={noticeUser}
+          onClose={() => setNoticeUser(null)}
+          onSubmit={(data) => {
+            console.log("Sending notice:", data);
+          }}
+        />
       )}
     </div>
   );

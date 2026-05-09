@@ -1,53 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Search, ChevronDown } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
   import { FaFileExport } from "react-icons/fa6";
 import { TimePeriodFilter } from "@/components/TimePeriodFilter";
+import { transactionService, type Transaction, type TransactionStatus } from "#/lib/transactions";
 export const Route = createFileRoute("/app/transactions")({
   component: WalletPage,
 });
 
-type TransactionStatus = "Won" | "Pending" | "Failed" | "Refund";
-type TransactionType = "Deposit" | "Withdrawal" | "Payments" | "Refund";
 type TabKey = "all" | "deposits" | "withdrawals" | "payments";
-
-interface Transaction {
-  id: string;
-  dateTime: string;
-  type: TransactionType;
-  paymentMethod: string;
-  amount: string;
-  balanceAfter: string;
-  status: TransactionStatus;
-}
-
-const DUMMY_TRANSACTIONS: Transaction[] = [
-  { id: "012345", dateTime: "Aug 8, 2025\n10:42 pm", type: "Deposit", paymentMethod: "Card payment", amount: "0.5", balanceAfter: "₦225,000", status: "Won" },
-  { id: "012346", dateTime: "Aug 8, 2025\n10:42 pm", type: "Withdrawal", paymentMethod: "Paystack", amount: "1.02", balanceAfter: "₦225,000", status: "Pending" },
-  { id: "012347", dateTime: "Aug 8, 2025\n10:42 pm", type: "Payments", paymentMethod: "Paystack", amount: "1.5", balanceAfter: "₦225,000", status: "Failed" },
-  { id: "012348", dateTime: "Aug 8, 2025\n10:42 pm", type: "Refund", paymentMethod: "Quick Bets", amount: "2.5", balanceAfter: "₦225,000", status: "Won" },
-  { id: "012349", dateTime: "Aug 9, 2025\n11:00 am", type: "Deposit", paymentMethod: "Card payment", amount: "5.0", balanceAfter: "₦430,000", status: "Won" },
-  { id: "012350", dateTime: "Aug 9, 2025\n01:15 pm", type: "Withdrawal", paymentMethod: "Bank Transfer", amount: "2.0", balanceAfter: "₦380,000", status: "Pending" },
-  { id: "012351", dateTime: "Aug 10, 2025\n09:30 am", type: "Payments", paymentMethod: "Paystack", amount: "3.5", balanceAfter: "₦290,000", status: "Won" },
-  { id: "012352", dateTime: "Aug 10, 2025\n02:45 pm", type: "Deposit", paymentMethod: "Card payment", amount: "10.0", balanceAfter: "₦590,000", status: "Failed" },
-  { id: "012353", dateTime: "Aug 11, 2025\n08:00 am", type: "Refund", paymentMethod: "Quick Bets", amount: "1.0", balanceAfter: "₦600,000", status: "Won" },
-  { id: "012354", dateTime: "Aug 11, 2025\n05:20 pm", type: "Withdrawal", paymentMethod: "Paystack", amount: "4.0", balanceAfter: "₦200,000", status: "Pending" },
-  { id: "012355", dateTime: "Aug 12, 2025\n10:10 am", type: "Deposit", paymentMethod: "Card payment", amount: "7.5", balanceAfter: "₦750,000", status: "Won" },
-  { id: "012356", dateTime: "Aug 12, 2025\n03:00 pm", type: "Payments", paymentMethod: "Bank Transfer", amount: "2.2", balanceAfter: "₦527,800", status: "Failed" },
-  { id: "012357", dateTime: "Aug 13, 2025\n09:00 am", type: "Deposit", paymentMethod: "Card payment", amount: "15.0", balanceAfter: "₦1,027,800", status: "Won" },
-  { id: "012358", dateTime: "Aug 13, 2025\n02:30 pm", type: "Withdrawal", paymentMethod: "Paystack", amount: "3.0", balanceAfter: "₦697,800", status: "Pending" },
-  { id: "012359", dateTime: "Aug 14, 2025\n11:45 am", type: "Payments", paymentMethod: "Quick Bets", amount: "6.0", balanceAfter: "₦337,800", status: "Won" },
-  { id: "012360", dateTime: "Aug 14, 2025\n04:00 pm", type: "Refund", paymentMethod: "Bank Transfer", amount: "1.5", balanceAfter: "₦489,300", status: "Won" },
-  { id: "012361", dateTime: "Aug 15, 2025\n08:30 am", type: "Deposit", paymentMethod: "Card payment", amount: "20.0", balanceAfter: "₦1,489,300", status: "Won" },
-  { id: "012362", dateTime: "Aug 15, 2025\n01:00 pm", type: "Withdrawal", paymentMethod: "Paystack", amount: "8.0", balanceAfter: "₦689,300", status: "Failed" },
-  { id: "012363", dateTime: "Aug 16, 2025\n10:00 am", type: "Payments", paymentMethod: "Quick Bets", amount: "4.5", balanceAfter: "₦239,300", status: "Won" },
-  { id: "012364", dateTime: "Aug 16, 2025\n03:30 pm", type: "Deposit", paymentMethod: "Card payment", amount: "12.0", balanceAfter: "₦1,439,300", status: "Pending" },
-  { id: "012365", dateTime: "Aug 17, 2025\n09:15 am", type: "Refund", paymentMethod: "Bank Transfer", amount: "2.0", balanceAfter: "₦1,639,300", status: "Won" },
-  { id: "012366", dateTime: "Aug 17, 2025\n02:00 pm", type: "Withdrawal", paymentMethod: "Paystack", amount: "5.5", balanceAfter: "₦1,089,300", status: "Failed" },
-];
-
-// const SUGGESTED_AMOUNTS = ["₦1,000,000", "₦2,000,000", "₦3,000,000", "₦4,000,000"];
 
 const STATUS_STYLES: Record<TransactionStatus, string> = {
   Won: "bg-[#E8F8E5] text-[#10C300]",
@@ -66,41 +29,31 @@ const TABS: { key: TabKey; label: string }[] = [
 const ITEMS_PER_PAGE = 10;
 
 function WalletPage() {
-  // const [amount, setAmount] = useState("");
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  // const formatAmount = (val: string) => {
-  //   const num = val.replace(/\D/g, "");
-  //   return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  // };
+  const typeParam = activeTab === "all" ? undefined : activeTab;
 
-  // const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const formatted = formatAmount(e.target.value);
-  //   setAmount(formatted);
-  // };
+  const { data: response, isLoading, error } = useQuery({
+    queryKey: ["transactions", page, typeParam, search],
+    queryFn: async () => {
+      const result = await transactionService.getTransactions({
+        page,
+        limit: ITEMS_PER_PAGE,
+        type: typeParam,
+        search: search || undefined,
+      });
+      if (!result.success) {
+        throw new Error(result.error || "Failed to fetch transactions");
+      }
+      return result.data;
+    },
+  });
 
-  // When sending to backend, use: amount.replace(/,/g, "")
-
-  const filteredTransactions = DUMMY_TRANSACTIONS.filter((t) => {
-    if (activeTab === "deposits") return t.type === "Deposit";
-    if (activeTab === "withdrawals") return t.type === "Withdrawal";
-    if (activeTab === "payments") return t.type === "Payments";
-    return true;
-  }).filter((t) =>
-    search
-      ? t.id.includes(search) ||
-        t.type.toLowerCase().includes(search.toLowerCase()) ||
-        t.paymentMethod.toLowerCase().includes(search.toLowerCase())
-      : true
-  );
-
-  const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
-  const paginatedTransactions = filteredTransactions.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
-  );
+  const transactions: Transaction[] = response?.transactions ?? [];
+  const totalItems = response?.pagination.total ?? 0;
+  const totalPages = response?.pagination.totalPages ?? 0;
 
   const columns: Column<Transaction>[] = [
     {
@@ -166,7 +119,7 @@ function WalletPage() {
             </button>
             <button className="inline-flex items-center h-11 gap-1.5 rounded-full bg-[#1BAA04] px-3 py-1.5 text-sm font-medium text-white cursor-pointer">
               Export File as
-            
+             
 <FaFileExport className="h-3.5 w-3.5 text-white" />
             </button>
           </div>
@@ -211,16 +164,17 @@ function WalletPage() {
         {/* Reusable DataTable */}
         <div className="flex-1 min-h-0">
           <DataTable
-            data={paginatedTransactions}
+            data={transactions}
             columns={columns}
             maxHeight="100%"
+            isLoading={isLoading}
             onActionClick={(t) => console.log("Action for transaction", t.id)}
-            emptyMessage="No transactions found"
+            emptyMessage={error ? error.message : "No transactions found"}
             pagination={{
               currentPage: page,
               totalPages,
               onPageChange: setPage,
-              totalItems: filteredTransactions.length,
+              totalItems,
               itemsPerPage: ITEMS_PER_PAGE,
             }}
           />

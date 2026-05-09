@@ -1,17 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, Eye, PauseCircle} from "lucide-react";
+import { Eye, PauseCircle, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import NotificationIcon from "#/assets/NotificationIcon";
+import { type Column, DataTable } from "#/components/DataTable";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
-import { type NewUser, type User, userService } from "../../lib/users";
-import { DataTable, type Column } from "#/components/DataTable";
 import { ActionDropdown } from "../../components/ActionDropdown";
-import { UserProfileModal } from "../../components/UserProfileModal";
 import { SendNoticeModal } from "../../components/SendNoticeModal";
 import { TimePeriodFilter } from "../../components/TimePeriodFilter";
-import NotificationIcon from "#/assets/NotificationIcon";
+import { UserProfileModal } from "../../components/UserProfileModal";
+import { type NewUser, type User, userService } from "../../lib/users";
 
 export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
@@ -34,8 +34,14 @@ function UsersPage() {
 		mobileNumber: "",
 	});
 
-	const [actionDropdown, setActionDropdown] = useState<{ user: User; top: number; right: number } | null>(null);
-	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
+	const [actionDropdown, setActionDropdown] = useState<{
+		user: User;
+		top: number;
+		right: number;
+	} | null>(null);
+	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
+		null,
+	);
 	const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 
@@ -92,79 +98,70 @@ function UsersPage() {
 		},
 	});
 
-	const dummyUsers: User[] = [
-		{ id: "USR001", name: "George Jones", email: "george@example.com", wallet: 3000000, status: "verified", registeredDate: Date.now() },
-		{ id: "USR002", name: "Robert Fox", email: "robert@example.com", wallet: 1200000, status: "pending_verification", registeredDate: Date.now() },
-		{ id: "USR003", name: "Savannah Nguyen", email: "savannah@example.com", wallet: 500000, status: "not_verified", registeredDate: Date.now() },
-		{ id: "USR004", name: "Leslie Alexander", email: "leslie@example.com", wallet: 4100000, status: "verified", registeredDate: Date.now() },
-		{ id: "USR005", name: "Jenny Wilson", email: "jenny@example.com", wallet: 1500000, status: "verified", registeredDate: Date.now() },
-		{ id: "USR006", name: "Courtney Henry", email: "courtney@example.com", wallet: 2200000, status: "pending_verification", registeredDate: Date.now() },
-		{ id: "USR007", name: "Eleanor Pena", email: "eleanor@example.com", wallet: 900000, status: "verified", registeredDate: Date.now() },
-		{ id: "USR008", name: "Arlene McCoy", email: "arlene@example.com", wallet: 800000, status: "not_verified", registeredDate: Date.now() },
-		{ id: "USR009", name: "Cody Fisher", email: "cody@example.com", wallet: 4500000, status: "verified", registeredDate: Date.now() },
-		{ id: "USR010", name: "Coady Gakpo", email: "coady@example.com", wallet: 4500000, status: "verified", registeredDate: Date.now() },
-		{ id: "USR011", name: "Bessie Cooper", email: "bessie@example.com", wallet: 1100000, status: "pending_verification", registeredDate: Date.now() },
-	];
-
-	const isUsingDummyData = !usersData?.users || usersData.users.length === 0;
-	
-	const users = isUsingDummyData 
-		? dummyUsers.slice((page - 1) * limit, page * limit) 
-		: usersData.users;
-		
-	const total = isUsingDummyData ? dummyUsers.length : usersData.total;
-	const totalPages = Math.ceil(total / limit);
-
 	const columns: Column<User>[] = [
-		{ 
-			header: "User Id", 
-			accessor: "id" 
+		{
+			header: "User Id",
+			accessor: "id",
 		},
-		{ 
-			header: "Player Name", 
+		{
+			header: "Player Name",
 			accessor: (user) => (
-				<div 
+				<div
 					className="flex items-center gap-3 min-w-0 cursor-pointer"
 					onClick={() => setSelectedProfileUser(user)}
 				>
-					{/* <img 
-						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
-						alt="avatar" 
-						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0" 
+					{/* <img
+						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+						alt="avatar"
+						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0"
 					/> */}
-					<span className="font-medium text-sm text-gray-900 hover:text-primary transition-colors truncate" title={user.name}>{user.name}</span>
+					<span
+						className="font-medium text-sm text-gray-900 hover:text-primary transition-colors truncate"
+						title={user.name}
+					>
+						{user.name}
+					</span>
 				</div>
-			)
+			),
 		},
-		{ 
-			header: "Email address", 
+		{
+			header: "Email address",
 			accessor: "email",
-			cellClassName: "text-gray-500"
+			cellClassName: "text-gray-500",
 		},
-		{ 
-			header: "Registration Date", 
-			accessor: (user) => user.registeredDate ? new Date(user.registeredDate).toLocaleDateString() : "-",
-			cellClassName: "text-gray-500"
+		{
+			header: "Registration Date",
+			accessor: (user) =>
+				user.registeredDate
+					? new Date(user.registeredDate).toLocaleDateString()
+					: "-",
+			cellClassName: "text-gray-500",
 		},
-		{ 
-			header: "Wallet Balance", 
+		{
+			header: "Wallet Balance",
 			accessor: (user) => `₦${user.wallet.toLocaleString()}`,
-			cellClassName: "font-medium text-gray-900"
+			cellClassName: "font-medium text-gray-900",
 		},
-		{ 
-			header: "Status", 
+		{
+			header: "Status",
 			accessor: (user) => (
-				<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-					user.status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
-					user.status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
-					"bg-[#FEECEB] text-[#EE201C]"
-				}`}>
-					{user.status === "verified" ? "Verified" : 
-					 user.status === "pending_verification" ? "Pending" : 
-					 "Not Verified"}
+				<span
+					className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+						user.status === "verified"
+							? "bg-[#E8F8E5] text-[#10C300]"
+							: user.status === "pending_verification"
+								? "bg-[#FFF8E5] text-[#FFB000]"
+								: "bg-[#FEECEB] text-[#EE201C]"
+					}`}
+				>
+					{user.status === "verified"
+						? "Verified"
+						: user.status === "pending_verification"
+							? "Pending"
+							: "Not Verified"}
 				</span>
-			)
-		}
+			),
+		},
 	];
 
 	return (
@@ -175,14 +172,14 @@ function UsersPage() {
 					<p className="text-gray-600">Manage all your users and activities</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
-					<button 
+					<button
 						onClick={() => setShowGlobalNoticeModal(true)}
 						className="cursor-pointer flex items-center justify-center rounded-full text-[#053209] bg-[#F1F1F1] gap-x-3 w-[159px] h-11"
 					>
 						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
 						<span className="text-base">Send a Notice</span>
 					</button>
-					
+
 					<button
 						type="button"
 						onClick={() => setShowAddModal(true)}
@@ -253,26 +250,28 @@ function UsersPage() {
 							<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 						</div>
 						<button
-						onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
-						className="inline-flex cursor-pointer items-center bg-[#F4F8F3] gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
-					>
-						<SortIcon className="h-3 w-3" />
-						Sort
-					</button>
-					<button className="inline-flex cursor-pointer items-center bg-[#F4F8F3] gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50">
-						<FilterIcon className="h-3 w-3" />
-						Filter
-					</button>
-						<TimePeriodFilter 
+							onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
+							className="inline-flex cursor-pointer items-center bg-[#F4F8F3] gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
+						>
+							<SortIcon className="h-3 w-3" />
+							Sort
+						</button>
+						<button className="inline-flex cursor-pointer items-center bg-[#F4F8F3] gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50">
+							<FilterIcon className="h-3 w-3" />
+							Filter
+						</button>
+						<TimePeriodFilter
 							buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
-							onFilterChange={(period, customRange) => console.log(period, customRange)} 
+							onFilterChange={(period, customRange) =>
+								console.log(period, customRange)
+							}
 						/>
 					</form>
 				)}
 			</div>
 
 			<DataTable
-				data={users}
+				data={usersData?.users ? usersData?.users : []}
 				isLoading={isLoading}
 				columns={columns}
 				maxHeight="100%"
@@ -289,9 +288,9 @@ function UsersPage() {
 				emptyMessage="No user found"
 				pagination={{
 					currentPage: page,
-					totalPages,
+					totalPages: usersData ? usersData.totalPages : 0,
 					onPageChange: setPage,
-					totalItems: total,
+					totalItems: usersData ? usersData.total : 0,
 					itemsPerPage: limit,
 				}}
 			/>
@@ -427,7 +426,10 @@ function UsersPage() {
 						},
 						{
 							icon: <PauseCircle className="w-4 h-4" />,
-							label: actionDropdown.user.status.toLowerCase() === 'suspended' ? "Reactivate" : "Suspend",
+							label:
+								actionDropdown.user.status.toLowerCase() === "suspended"
+									? "Reactivate"
+									: "Suspend",
 							onClick: () => {
 								// Handle suspend logic
 							},
@@ -455,14 +457,18 @@ function UsersPage() {
 			{(noticeModalUser || showGlobalNoticeModal) && (
 				<SendNoticeModal
 					user={noticeModalUser}
-					availableUsers={isUsingDummyData ? dummyUsers : usersData?.users || []}
+					availableUsers={usersData?.users ? usersData?.users : []}
 					onClose={() => {
 						setNoticeModalUser(null);
 						setShowGlobalNoticeModal(false);
 					}}
 					onSubmit={(data) => {
 						console.log("Sending notice:", data);
-						toast.success(noticeModalUser ? `Notice sent to ${noticeModalUser.name}` : "Notice sent successfully");
+						toast.success(
+							noticeModalUser
+								? `Notice sent to ${noticeModalUser.name}`
+								: "Notice sent successfully",
+						);
 					}}
 				/>
 			)}
