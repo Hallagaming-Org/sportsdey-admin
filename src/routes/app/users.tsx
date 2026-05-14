@@ -212,7 +212,7 @@ function UsersPage() {
 				</div>
 			</div>
 
-			<div className="mt-8 flex shrink-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
+			<div className="mt-8 mb-5 flex shrink-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
 				<div className="overflow-x-auto custom-scrollbar lg:overflow-visible">
 					<div className="flex min-w-max gap-8 border-gray-300 border-b">
 						{[
@@ -239,39 +239,38 @@ function UsersPage() {
 					</div>
 				</div>
 
-				{!error && (
-					<form className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
-						<button
-							onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
-							className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-full bg-white px-6 font-medium text-base text-[#2B2F38] shadow-[0_2px_10px_rgba(0,0,0,0.06)] hover:bg-gray-50"
-						>
-							Price range
-							<ChevronDown className="h-4 w-4" />
-						</button>
-						<button
-							type="button"
-							onClick={() =>
-								setStatusFilter((current) => {
-									if (current === "all") return "verified";
-									if (current === "verified") return "pending";
-									return "all";
-								})
-							}
-							className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-full bg-white px-6 font-medium text-base text-[#2B2F38] shadow-[0_2px_10px_rgba(0,0,0,0.06)] hover:bg-gray-50"
-						>
-							{statusFilter === "all"
-								? "Status"
-								: statusFilter === "verified"
-									? "Verified"
-									: "Pending"}
-							<ChevronDown className="h-4 w-4" />
-						</button>
-						<div className="inline-flex h-12 items-center gap-3 rounded-full bg-white px-6 font-medium text-base text-[#2B2F38] shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-							Time periods
-							<SlidersHorizontal className="h-4 w-4" />
-						</div>
-					</form>
-				)}
+				<form className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
+					<button
+						type="button"
+						onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
+						className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
+					>
+						Price range
+						<ChevronDown className="h-3.5 w-3.5" />
+					</button>
+					<button
+						type="button"
+						onClick={() =>
+							setStatusFilter((current) => {
+								if (current === "all") return "verified";
+								if (current === "verified") return "pending";
+								return "all";
+							})
+						}
+						className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
+					>
+						{statusFilter === "all"
+							? "Status"
+							: statusFilter === "verified"
+								? "Verified"
+								: "Pending"}
+						<ChevronDown className="h-3.5 w-3.5" />
+					</button>
+					<div className="inline-flex h-9 items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+						Time periods
+						<SlidersHorizontal className="h-3.5 w-3.5" />
+					</div>
+				</form>
 			</div>
 
 			<DataTable
