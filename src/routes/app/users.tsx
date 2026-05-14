@@ -1,15 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Eye, PauseCircle, Search } from "lucide-react";
+import { ChevronDown, Eye, PauseCircle, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { type Column, DataTable } from "#/components/DataTable";
-import FilterIcon from "@/logo/filter.svg?react";
-import SortIcon from "@/logo/sort.svg?react";
 import { ActionDropdown } from "../../components/ActionDropdown";
 import { SendNoticeModal } from "../../components/SendNoticeModal";
-import { TimePeriodFilter } from "../../components/TimePeriodFilter";
 import { UserProfileModal } from "../../components/UserProfileModal";
 import { type NewUser, type User, userService } from "../../lib/users";
 
@@ -21,11 +18,13 @@ type Tab = "all" | "recent" | "pending";
 
 function UsersPage() {
 	const queryClient = useQueryClient();
-	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
 	const [sort, setSort] = useState<"asc" | "desc">("asc");
 	const [activeTab, setActiveTab] = useState<Tab>("all");
+	const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
+		"all",
+	);
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [newUser, setNewUser] = useState<NewUser>({
 		name: "",
@@ -57,14 +56,13 @@ function UsersPage() {
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ["users", page, limit, sort, activeTab, search],
+		queryKey: ["users", page, limit, sort, activeTab],
 		queryFn: async () => {
 			const result = await userService.listUsers({
 				page,
 				limit,
 				sort,
 				tab: activeTab,
-				search: search || undefined,
 			});
 			if (!result.success) {
 				throw new Error(result.error || "Failed to fetch users");
@@ -164,17 +162,28 @@ function UsersPage() {
 		},
 	];
 
+	const filteredUsers =
+		usersData?.users?.filter((user) => {
+			if (statusFilter === "all") return true;
+			if (statusFilter === "verified") return user.status === "verified";
+			return user.status === "pending_verification";
+		}) ?? [];
+
 	return (
-		<div className="flex h-[calc(100vh-120px)]  flex-1 flex-col space-y-6 overflow-hidden">
+		<div className="flex h-[calc(100vh-120px)] flex-1 flex-col overflow-hidden">
 			<div className="flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-center">
 				<div>
-					<h2 className="font-bold text-2xl text-gray-900">All users</h2>
-					<p className="text-gray-600">Manage all your users and activities</p>
+					<h2 className="font-bold text-[46px] leading-none text-[#11142D]">
+						All Users
+					</h2>
+					<p className="mt-3 text-base text-[#222]">
+						Manage all your users and activities.
+					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
 					<button
 						onClick={() => setShowGlobalNoticeModal(true)}
-						className="cursor-pointer flex items-center justify-center rounded-full text-[#053209] bg-[#F1F1F1] gap-x-3 w-[159px] h-11"
+						className="cursor-pointer flex h-12 items-center justify-center gap-x-3 rounded-full bg-[#F5F6F7] px-6 text-[#1A1A1A]"
 					>
 						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
 						<span className="text-base">Send a Notice</span>
@@ -183,7 +192,7 @@ function UsersPage() {
 					<button
 						type="button"
 						onClick={() => setShowAddModal(true)}
-						className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-accent px-4 py-2 font-medium text-white text-sm hover:bg-accent/90"
+						className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-full bg-accent px-6 py-2 font-medium text-white text-base hover:bg-accent/90"
 					>
 						<svg
 							className="h-4 w-4"
@@ -203,9 +212,9 @@ function UsersPage() {
 				</div>
 			</div>
 
-			<div className="flex shrink-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
+			<div className="mt-8 flex shrink-0 flex-col justify-between gap-4 lg:flex-row lg:items-center">
 				<div className="overflow-x-auto custom-scrollbar lg:overflow-visible">
-					<div className="flex gap-8 border-b border-gray-300 min-w-max px-4 lg:px-0">
+					<div className="flex min-w-max gap-8 border-gray-300 border-b">
 						{[
 							{ key: "all", label: "All Users" },
 							{ key: "recent", label: "Recently registered" },
@@ -218,7 +227,7 @@ function UsersPage() {
 									setActiveTab(tab.key as Tab);
 									setPage(1);
 								}}
-								className={`cursor-pointer pb-3 font-medium text-sm transition-colors ${
+								className={`cursor-pointer pb-3 font-medium text-base transition-colors ${
 									activeTab === tab.key
 										? "border-b-2 border-accent text-accent"
 										: "text-gray-600 hover:text-gray-900"
@@ -231,47 +240,42 @@ function UsersPage() {
 				</div>
 
 				{!error && (
-					<form
-						className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap"
-						onSubmit={(e) => {
-							e.preventDefault();
-							setPage(1);
-							queryClient.invalidateQueries({ queryKey: ["users"] });
-						}}
-					>
-						<div className="relative w-72 lg:w-80">
-							<input
-								type="text"
-								placeholder="Search"
-								value={search}
-								onChange={(e) => setSearch(e.target.value)}
-								className="w-full rounded-full border border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
-							/>
-							<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
-						</div>
+					<form className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
 						<button
 							onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
-							className="inline-flex cursor-pointer items-center bg-[#F4F8F3] gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
+							className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-full bg-white px-6 font-medium text-base text-[#2B2F38] shadow-[0_2px_10px_rgba(0,0,0,0.06)] hover:bg-gray-50"
 						>
-							<SortIcon className="h-3 w-3" />
-							Sort
+							Price range
+							<ChevronDown className="h-4 w-4" />
 						</button>
-						<button className="inline-flex cursor-pointer items-center bg-[#F4F8F3] gap-2 rounded-full border-2 border-[#053209] px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50">
-							<FilterIcon className="h-3 w-3" />
-							Filter
-						</button>
-						<TimePeriodFilter
-							buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
-							onFilterChange={(period, customRange) =>
-								console.log(period, customRange)
+						<button
+							type="button"
+							onClick={() =>
+								setStatusFilter((current) => {
+									if (current === "all") return "verified";
+									if (current === "verified") return "pending";
+									return "all";
+								})
 							}
-						/>
+							className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-full bg-white px-6 font-medium text-base text-[#2B2F38] shadow-[0_2px_10px_rgba(0,0,0,0.06)] hover:bg-gray-50"
+						>
+							{statusFilter === "all"
+								? "Status"
+								: statusFilter === "verified"
+									? "Verified"
+									: "Pending"}
+							<ChevronDown className="h-4 w-4" />
+						</button>
+						<div className="inline-flex h-12 items-center gap-3 rounded-full bg-white px-6 font-medium text-base text-[#2B2F38] shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
+							Time periods
+							<SlidersHorizontal className="h-4 w-4" />
+						</div>
 					</form>
 				)}
 			</div>
 
 			<DataTable
-				data={usersData?.users ? usersData?.users : []}
+				data={filteredUsers}
 				isLoading={isLoading}
 				columns={columns}
 				maxHeight="100%"
@@ -290,7 +294,7 @@ function UsersPage() {
 					currentPage: page,
 					totalPages: usersData ? usersData.totalPages : 0,
 					onPageChange: setPage,
-					totalItems: usersData ? usersData.total : 0,
+					totalItems: filteredUsers.length,
 					itemsPerPage: limit,
 				}}
 			/>

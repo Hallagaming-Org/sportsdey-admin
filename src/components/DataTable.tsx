@@ -61,30 +61,25 @@ export function DataTable<T>({
 
   return (
     <div
-      className={`relative overflow-hidden bg-white ${isFullHeight ? "flex flex-col h-full" : ""}`}
-      style={{
-        borderRight: "2px solid #e2e8f0",
-        borderBottom: "2px solid #e2e8f0",
-        boxShadow: "4px 4px 16px -4px rgba(0,0,0,0.10)",
-      }}
+      className={`relative overflow-hidden rounded-[18px] border border-[#E7E7E7] bg-white shadow-[0_8px_30px_rgba(16,24,40,0.06)] ${isFullHeight ? "flex h-full flex-col" : ""}`}
     >
       <div
         className={`overflow-x-auto overflow-y-auto custom-scrollbar ${isFullHeight ? "flex-1 min-h-0" : ""}`}
         style={!isFullHeight && maxHeight ? { maxHeight } : {}}
       >
-        <table className="w-full min-w-[800px] text-left text-sm relative border-collapse">
+        <table className="relative w-full min-w-[980px] border-collapse text-left text-sm">
           <thead className="sticky top-0 z-10 shadow-[0_1px_0_#f3f4f6]">
-            <tr className="border-b border-gray-100 text-gray-500 bg-[#F9F9F9]">
+            <tr className="border-gray-100 border-b bg-[#FAFAFA] text-[#667085]">
               {columns.map((col, idx) => (
                 <th
                   key={idx}
-                  className={`py-4 font-medium whitespace-nowrap ${idx === 0 ? "pl-4" : "px-4"} ${col.headerClassName || ""}`}
+                  className={`whitespace-nowrap py-5 font-semibold ${idx === 0 ? "pl-6" : "px-4"} ${col.headerClassName || ""}`}
                 >
                   {col.header}
                 </th>
               ))}
               {(onActionClick || actionMenuItems?.length) && (
-                <th className="py-4 pr-4 font-medium text-right"></th>
+                <th className="py-5 pr-6 font-medium text-right"></th>
               )}
             </tr>
           </thead>
@@ -107,12 +102,12 @@ export function DataTable<T>({
               data.map((item, rowIdx) => (
                 <tr
                   key={rowIdx}
-                  className="border-b border-gray-50 last:border-0 even:bg-[#F9F9F9] hover:bg-gray-50/50 transition-colors"
+                  className="border-gray-100 border-b last:border-0 even:bg-[#F8F8F8] hover:bg-gray-50/70 transition-colors"
                 >
                   {columns.map((col, colIdx) => (
                     <td
                       key={colIdx}
-                      className={`py-4 whitespace-nowrap ${colIdx === 0 ? "pl-4 text-gray-900" : "px-4"} ${col.cellClassName || ""}`}
+                      className={`whitespace-nowrap py-6 ${colIdx === 0 ? "pl-6 text-gray-900" : "px-4"} ${col.cellClassName || ""}`}
                     >
                       {typeof col.accessor === "function"
                         ? col.accessor(item)
@@ -120,7 +115,7 @@ export function DataTable<T>({
                     </td>
                   ))}
                   {(onActionClick || actionMenuItems?.length) && (
-                    <td className="py-4 pr-4 text-right relative">
+                    <td className="relative py-4 pr-6 text-right">
                       {actionMenuItems?.length ? (
                         <div ref={openActionRow === rowIdx ? actionMenuRef : null} className="relative inline-block">
                           <button
@@ -169,7 +164,7 @@ export function DataTable<T>({
 
       {/* Pagination — part of the same elevated container */}
       {pagination && pagination.totalItems > pagination.itemsPerPage && (
-        <div className="bg-[#F9F9F9] px-6 py-4 border-t border-gray-100 flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between border-gray-100 border-t bg-white px-6 py-4 text-sm">
           <span className="font-medium text-gray-900">
             Page {pagination.currentPage} of {pagination.totalPages}
           </span>
@@ -181,7 +176,7 @@ export function DataTable<T>({
                 )
               }
               disabled={pagination.currentPage === 1}
-              className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cursor-pointer rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white transition-colors hover:bg-[#0ea800] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
             </button>
@@ -192,7 +187,7 @@ export function DataTable<T>({
                 )
               }
               disabled={pagination.currentPage === pagination.totalPages}
-              className="rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white hover:bg-[#0ea800] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cursor-pointer rounded-lg bg-[#1BAA04] px-4 py-2 font-medium text-white transition-colors hover:bg-[#0ea800] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next
             </button>
