@@ -31,8 +31,8 @@ interface ServerTransaction {
 	};
 	type: "deposit" | "withdrawal" | "payment";
 	payment_method: string;
-	amount: number;
-	balance_after: number;
+	amount: number | null;
+	balance_after: number | null;
 	status: string;
 }
 
@@ -46,7 +46,8 @@ interface ServerTransactionsResponse {
 	};
 }
 
-const formatAmount = (amount: number): string => {
+const formatAmount = (amount: number | null | undefined): string => {
+	if (amount == null) return "₦0";
 	return `₦${amount.toLocaleString("en-NG")}`;
 };
 
@@ -100,7 +101,10 @@ class TransactionService {
 		page?: number;
 		limit?: number;
 		type?: "deposits" | "withdrawals" | "payments";
+		status?: "won" | "pending" | "failed" | "refund";
 		search?: string;
+		fromDate?: string;
+		toDate?: string;
 	}): Promise<{
 		success: boolean;
 		data?: TransactionsResponse;
@@ -110,7 +114,10 @@ class TransactionService {
 		if (params.page) searchParams.set("page", params.page.toString());
 		if (params.limit) searchParams.set("limit", params.limit.toString());
 		if (params.type) searchParams.set("type", params.type);
+		if (params.status) searchParams.set("status", params.status);
 		if (params.search) searchParams.set("search", params.search);
+		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params.toDate) searchParams.set("toDate", params.toDate);
 
 		const response = await fetchApi<ServerTransactionsResponse>(
 			`/admin/wallet-transactions?${searchParams}`,

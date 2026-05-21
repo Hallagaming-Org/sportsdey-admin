@@ -6,6 +6,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { useState } from "react";
+import { Toaster } from "sonner";
 import appCss from "../index.css?url";
 
 export const Route = createRootRoute({
@@ -51,6 +52,7 @@ function RootComponent() {
 
 			<body>
 				<QueryClientProvider client={queryClient}>
+					<Toaster position="top-right" richColors />
 					<Outlet />
 					<Scripts />
 				</QueryClientProvider>

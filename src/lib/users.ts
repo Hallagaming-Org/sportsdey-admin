@@ -9,6 +9,7 @@ export interface User {
 	registeredDate: number;
 	image?: string;
 	photo?: string;
+	suspended?: boolean;
 }
 
 export interface UsersResponse {
@@ -17,6 +18,22 @@ export interface UsersResponse {
 	page: number;
 	limit: number;
 	totalPages: number;
+}
+
+export interface UserProfile {
+	id: string;
+	name: string;
+	email: string;
+	image: string | null;
+	mobileNumber: string | null;
+	country: string | null;
+	verificationStatus: string;
+	suspended: boolean;
+	createdAt: string;
+	wallet: {
+		balance: number;
+	};
+	lastTopUp: string | null;
 }
 
 export interface CreateUserData {
@@ -41,6 +58,8 @@ class UserService {
 		sort?: "asc" | "desc";
 		tab?: "all" | "recent" | "pending";
 		search?: string;
+		fromDate?: string;
+		toDate?: string;
 	}): Promise<{ success: boolean; data?: UsersResponse; error?: string }> {
 		const searchParams = new URLSearchParams();
 		if (params.page) searchParams.set("page", params.page.toString());
@@ -48,6 +67,8 @@ class UserService {
 		if (params.sort) searchParams.set("sort", params.sort);
 		if (params.tab && params.tab !== "all") searchParams.set("tab", params.tab);
 		if (params.search) searchParams.set("search", params.search);
+		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params.toDate) searchParams.set("toDate", params.toDate);
 
 		return fetchApi<UsersResponse>(`/user/all?${searchParams}`);
 	}
@@ -69,6 +90,20 @@ class UserService {
 			success: false,
 			error: response.error,
 		};
+	}
+
+	async toggleUserSuspend(userId: string): Promise<{ success: boolean; error?: string }> {
+		const response = await fetchApi<{ status: string }>(`/user/${userId}/suspended`, {
+			method: "PATCH",
+		});
+		return {
+			success: response.success,
+			error: response.error,
+		};
+	}
+
+	async getUserProfile(userId: string): Promise<{ success: boolean; data?: UserProfile; error?: string }> {
+		return fetchApi<UserProfile>(`/user/${userId}/profile`);
 	}
 }
 

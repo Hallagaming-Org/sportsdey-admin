@@ -1,14 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronDown, Eye, PauseCircle, SlidersHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, Eye, PauseCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { type Column, DataTable } from "#/components/DataTable";
 import { ActionDropdown } from "../../components/ActionDropdown";
 import { SendNoticeModal } from "../../components/SendNoticeModal";
 import { UserProfileModal } from "../../components/UserProfileModal";
-import { type NewUser, type User, userService } from "../../lib/users";
+import { TimePeriodDropdown, type TimePeriodOption } from "../../components/TimePeriodDropdown";
+import { type NewUser, type User, type UserProfile, userService } from "../../lib/users";
+import { notificationService } from "../../lib/notifications";
+import { getDateRangeForPeriod } from "../../lib/time-period";
 
 export const Route = createFileRoute("/app/users")({
 	component: UsersPage,
@@ -21,10 +24,11 @@ function UsersPage() {
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
 	const [sort, setSort] = useState<"asc" | "desc">("asc");
-	const [activeTab, setActiveTab] = useState<Tab>("all");
+const [activeTab, setActiveTab] = useState<Tab>("all");
 	const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
 		"all",
 	);
+	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriodOption>("All");
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [newUser, setNewUser] = useState<NewUser>({
 		name: "",
@@ -38,9 +42,11 @@ function UsersPage() {
 		top: number;
 		right: number;
 	} | null>(null);
-	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
-		null,
-	);
+const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
+	null,
+);
+	const [selectedProfileData, setSelectedProfileData] = useState<UserProfile | null>(null);
+	const [isProfileLoading, setIsProfileLoading] = useState(false);
 	const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 
@@ -49,20 +55,27 @@ function UsersPage() {
 		const handleClickOutside = () => setActionDropdown(null);
 		document.addEventListener("click", handleClickOutside);
 		return () => document.removeEventListener("click", handleClickOutside);
-	}, []);
+}, []);
+
+	const { fromDate, toDate } = useMemo(
+		() => getDateRangeForPeriod(selectedTimePeriod),
+		[selectedTimePeriod],
+	);
 
 	const {
 		data: usersData,
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ["users", page, limit, sort, activeTab],
+		queryKey: ["users", page, limit, sort, activeTab, fromDate, toDate],
 		queryFn: async () => {
 			const result = await userService.listUsers({
 				page,
 				limit,
 				sort,
 				tab: activeTab,
+				fromDate,
+				toDate,
 			});
 			if (!result.success) {
 				throw new Error(result.error || "Failed to fetch users");
@@ -71,11 +84,26 @@ function UsersPage() {
 		},
 	});
 
-	useEffect(() => {
+useEffect(() => {
 		if (error) {
 			toast.error(error.message || "Failed to fetch users");
 		}
 	}, [error]);
+
+	useEffect(() => {
+		if (selectedProfileUser) {
+			setIsProfileLoading(true);
+			userService.getUserProfile(selectedProfileUser.id).then((result) => {
+				setIsProfileLoading(false);
+				if (result.success && result.data) {
+					setSelectedProfileData(result.data);
+				}
+			});
+		} else {
+			setSelectedProfileData(null);
+			setIsProfileLoading(false);
+		}
+	}, [selectedProfileUser]);
 
 	const createUserMutation = useMutation({
 		mutationFn: async (data: NewUser) => {
@@ -93,6 +121,27 @@ function UsersPage() {
 		},
 		onError: (error) => {
 			toast.error(error.message || "Failed to create user");
+		},
+	});
+
+	const toggleSuspendMutation = useMutation({
+		mutationFn: async (userId: string) => {
+			const result = await userService.toggleUserSuspend(userId);
+			if (!result.success) {
+				throw new Error(result.error || "Failed to update user status");
+			}
+			return result;
+		},
+		onSuccess: (_, userId) => {
+			const user = usersData?.users.find((u) => u.id === userId);
+			const isReactivate = user?.suspended;
+			toast.success(
+				isReactivate ? "User reactivated successfully" : "User suspended successfully",
+			);
+			queryClient.invalidateQueries({ queryKey: ["users"] });
+		},
+		onError: (error) => {
+			toast.error(error.message || "Failed to update user status");
 		},
 	});
 
@@ -258,7 +307,7 @@ function UsersPage() {
 							})
 						}
 						className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
-					>
+>
 						{statusFilter === "all"
 							? "Status"
 							: statusFilter === "verified"
@@ -266,10 +315,13 @@ function UsersPage() {
 								: "Pending"}
 						<ChevronDown className="h-3.5 w-3.5" />
 					</button>
-					<div className="inline-flex h-9 items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-						Time periods
-						<SlidersHorizontal className="h-3.5 w-3.5" />
-					</div>
+					<TimePeriodDropdown
+						value={selectedTimePeriod}
+						onChange={(period) => {
+							setSelectedTimePeriod(period);
+							setPage(1);
+						}}
+					/>
 				</form>
 			</div>
 
@@ -429,12 +481,11 @@ function UsersPage() {
 						},
 						{
 							icon: <PauseCircle className="w-4 h-4" />,
-							label:
-								actionDropdown.user.status.toLowerCase() === "suspended"
-									? "Reactivate"
-									: "Suspend",
+							label: actionDropdown.user.suspended ? "Reactivate" : "Suspend",
 							onClick: () => {
-								// Handle suspend logic
+								console.log("Current user status:", actionDropdown.user.status);
+								toggleSuspendMutation.mutate(actionDropdown.user.id);
+								setActionDropdown(null);
 							},
 						},
 					]}
@@ -445,13 +496,18 @@ function UsersPage() {
 			{selectedProfileUser && (
 				<UserProfileModal
 					user={selectedProfileUser}
+					profile={selectedProfileData || undefined}
+					isLoading={isProfileLoading}
 					onClose={() => setSelectedProfileUser(null)}
 					onSendNotice={(user) => {
 						setNoticeModalUser(user);
 						setSelectedProfileUser(null);
 					}}
 					onSuspend={() => {
-						// Handle suspend logic
+						if (selectedProfileUser) {
+							toggleSuspendMutation.mutate(selectedProfileUser.id);
+						}
+						setSelectedProfileUser(null);
 					}}
 				/>
 			)}
@@ -465,13 +521,31 @@ function UsersPage() {
 						setNoticeModalUser(null);
 						setShowGlobalNoticeModal(false);
 					}}
-					onSubmit={(data) => {
-						console.log("Sending notice:", data);
-						toast.success(
-							noticeModalUser
-								? `Notice sent to ${noticeModalUser.name}`
-								: "Notice sent successfully",
-						);
+					onSubmit={async (data) => {
+						if (noticeModalUser) {
+							const result = await notificationService.sendNotification({
+								title: data.title,
+								message: data.message,
+								userId: noticeModalUser.id,
+							});
+							if (result.success) {
+								toast.success(`Notice sent to ${noticeModalUser.name}`);
+							} else {
+								toast.error(result.error || "Failed to send notice");
+							}
+						} else if (showGlobalNoticeModal && usersData?.users) {
+							const userIds = usersData.users.map((u) => u.id);
+							const result = await notificationService.sendNotificationToMultiple(
+								data.title,
+								data.message,
+								userIds
+							);
+							if (result.success) {
+								toast.success("Notice sent to all users");
+							} else {
+								toast.error(`Notice sent with ${result.errors.length} errors`);
+							}
+						}
 					}}
 				/>
 			)}

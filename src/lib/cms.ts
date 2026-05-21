@@ -23,6 +23,22 @@ export interface CmsContentsResponse {
 	totalPages: number;
 }
 
+export interface CmsContentDetail {
+	_id: string;
+	title: string;
+	slug: string | null;
+	message: string;
+	image: string | null;
+	author: {
+		_id: string | null;
+		name: string;
+		image: string | null;
+	};
+	type: "news" | "videos" | "ads";
+	publishedAt: string;
+	status: "pending" | "verified";
+}
+
 export interface CreateCmsContentData {
 	title: string;
 	message: string;
@@ -55,6 +71,8 @@ class CmsService {
 		sortBy?: "title";
 		type?: "all" | "news" | "videos" | "ads";
 		search?: string;
+		fromDate?: string;
+		toDate?: string;
 	}): Promise<{ success: boolean; data?: CmsContentsResponse; error?: string }> {
 		const searchParams = new URLSearchParams();
 		if (params.page) searchParams.set("page", params.page.toString());
@@ -62,6 +80,8 @@ class CmsService {
 		if (params.sortBy) searchParams.set("sortBy", params.sortBy);
 		if (params.type && params.type !== "all") searchParams.set("type", params.type);
 		if (params.search) searchParams.set("search", params.search);
+		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params.toDate) searchParams.set("toDate", params.toDate);
 
 		return fetchApi<CmsContentsResponse>(`/cms/content?${searchParams}`);
 	}
@@ -118,6 +138,35 @@ class CmsService {
 			statusCode: response.statusCode,
 			details: response.details ?? null,
 		};
+	}
+
+	async deleteCmsContent(
+		id: string,
+	): Promise<{ success: boolean; error?: string; statusCode?: number }> {
+		const response = await fetchApi<{ deletedId: string }>(`/cms/content/${id}`, {
+			method: "DELETE",
+		});
+
+		if (response.success) {
+			return { success: true };
+		}
+
+		return {
+			success: false,
+			error: response.error,
+			statusCode: response.statusCode,
+		};
+	}
+
+	async getCmsContentById(
+		id: string,
+	): Promise<{
+		success: boolean;
+		data?: CmsContentDetail;
+		error?: string;
+		statusCode?: number;
+	}> {
+		return fetchApi<CmsContentDetail>(`/cms/content/${id}`);
 	}
 }
 

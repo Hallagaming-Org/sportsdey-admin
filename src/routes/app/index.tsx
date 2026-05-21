@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Gamepad2, Plus, CircleDotDashed } from "lucide-react";
+import { useState } from "react";
 import { StatCard } from "@/components/StatCard";
 import { ActivityChart } from "@/components/ActivityChart";
 import { TopBets } from "@/components/TopBets";
 import { UserAnalyticsTable } from "@/components/UserAnalyticsTable";
-import { TimePeriodFilter } from "@/components/TimePeriodFilter";
+import {
+	TimePeriodDropdown,
+	type TimePeriodOption,
+} from "#/components/TimePeriodDropdown";
 import { FaPeopleGroup } from "react-icons/fa6";
 
 export const Route = createFileRoute("/app/")({
@@ -12,6 +16,9 @@ export const Route = createFileRoute("/app/")({
 });
 
 function DashboardPage() {
+	const [selectedTimePeriod, setSelectedTimePeriod] =
+		useState<TimePeriodOption>("All");
+
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-1 flex-col overflow-hidden px-2 lg:px-4">
 			{/* Header */}
@@ -22,9 +29,10 @@ function DashboardPage() {
 						<Plus className="h-4 w-4" />
 						Add new user
 					</button>
-					<TimePeriodFilter 
+					<TimePeriodDropdown
+						value={selectedTimePeriod}
+						onChange={(period) => setSelectedTimePeriod(period)}
 						buttonClassName="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-						onFilterChange={(period, customRange) => console.log(period, customRange)} 
 					/>
 				</div>
 			</div>

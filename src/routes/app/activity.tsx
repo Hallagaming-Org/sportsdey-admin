@@ -8,7 +8,10 @@ import { DataTable, type Column } from "#/components/DataTable";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import { ActivityChart as ActivityTrendChart } from "@/components/ActivityChart";
 import { TicketsTrendPie } from "@/components/TicketsTrendPie";
-import { TimePeriodFilter } from "@/components/TimePeriodFilter";
+import {
+	TimePeriodDropdown,
+	type TimePeriodOption,
+} from "#/components/TimePeriodDropdown";
 
 export const Route = createFileRoute("/app/activity")({
 	component: ActivityPage,
@@ -75,6 +78,8 @@ function TopBets() {
 
 function ActivityPage() {
 	const [page, setPage] = useState(1);
+	const [selectedTimePeriod, setSelectedTimePeriod] =
+		useState<TimePeriodOption>("All");
 	const [actionDropdown, setActionDropdown] = useState<{ activity: ActivityRecord; top: number; right: number } | null>(null);
 
 	useEffect(() => {
@@ -137,9 +142,10 @@ function ActivityPage() {
 		<div className="flex h-[calc(100vh-120px)] flex-1 flex-col overflow-hidden px-2 lg:px-4">
 			<div className="flex-none mb-6 flex items-center justify-between">
 				<h2 className="text-2xl font-bold text-gray-900">Activity Trends/Reports</h2>
-				<TimePeriodFilter 
+				<TimePeriodDropdown
+					value={selectedTimePeriod}
+					onChange={(period) => setSelectedTimePeriod(period)}
 					buttonClassName="flex items-center gap-2 rounded-lg bg-white border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
-					onFilterChange={(period, customRange) => console.log(period, customRange)} 
 				/>
 			</div>
 

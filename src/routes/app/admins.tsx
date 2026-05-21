@@ -7,8 +7,12 @@ import { ActionDropdown } from "#/components/ActionDropdown";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
+import {
+	TimePeriodDropdown,
+	type TimePeriodOption,
+} from "#/components/TimePeriodDropdown";
 import type { User } from "#/lib/users";
-import { TimePeriodFilter } from "@/components/TimePeriodFilter";
+import { notificationService } from "#/lib/notifications";
 export const Route = createFileRoute("/app/admins")({
 	component: AdminsPage,
 });
@@ -29,6 +33,8 @@ function AdminsPage() {
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
 	const [activeTab, setActiveTab] = useState<Tab>("all");
+	const [selectedTimePeriod, setSelectedTimePeriod] =
+		useState<TimePeriodOption>("All");
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [newAdmin, setNewAdmin] = useState({
 		name: "",
@@ -202,9 +208,12 @@ function AdminsPage() {
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
 					
-					<TimePeriodFilter 
-						buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
-						onFilterChange={(period, customRange) => console.log(period, customRange)} 
+					<TimePeriodDropdown
+						value={selectedTimePeriod}
+						onChange={(period) => {
+							setSelectedTimePeriod(period);
+							setPage(1);
+						}}
 					/>
 				</form>
 			</div>
@@ -374,8 +383,31 @@ function AdminsPage() {
 						setNoticeModalAdmin(null);
 						setShowGlobalNoticeModal(false);
 					}}
-					onSubmit={(data) => {
-						toast.success(noticeModalAdmin ? `Message sent to ${noticeModalAdmin.name}` : "Notice sent successfully");
+					onSubmit={async (data) => {
+						if (noticeModalAdmin) {
+							const result = await notificationService.sendNotification({
+								title: data.title,
+								message: data.message,
+								userId: noticeModalAdmin.id,
+							});
+							if (result.success) {
+								toast.success(`Notice sent to ${noticeModalAdmin.name}`);
+							} else {
+								toast.error(result.error || "Failed to send notice");
+							}
+						} else if (showGlobalNoticeModal) {
+							const adminIds = dummyAdmins.map((a) => a.id);
+							const result = await notificationService.sendNotificationToMultiple(
+								data.title,
+								data.message,
+								adminIds
+							);
+							if (result.success) {
+								toast.success("Notice sent to all admins");
+							} else {
+								toast.error(`Notice sent with ${result.errors.length} errors`);
+							}
+						}
 					}}
 				/>
 			)}

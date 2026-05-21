@@ -1,16 +1,16 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Eye, PauseCircle, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { type Column, DataTable } from "@/components/DataTable";
 import FilterIcon from "@/logo/filter.svg?react";
 import PostIcon from "@/logo/post.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { cmsService } from "../../lib/cms";
-import { IoFilter } from "react-icons/io5";
-import { TimePeriodFilter } from "@/components/TimePeriodFilter";
+import { TimePeriodDropdown, type TimePeriodOption } from "../../components/TimePeriodDropdown";
 import { CmsAddModal } from "../../components/CmsAddModal";
+import { getDateRangeForPeriod } from "../../lib/time-period";
 
 export const Route = createFileRoute("/app/cms")({
 	component: CmsPage,
@@ -26,13 +26,22 @@ function CmsPage() {
 	const [sortBy, setSortBy] = useState<"title" | "">("");
 	const [activeTab, setActiveTab] = useState<ContentType>("all");
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriodOption>("All");
+	const [customDateRange, setCustomDateRange] = useState<{ start: string; end: string } | null>(null);
+	const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
+	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+	const { fromDate, toDate } = useMemo(
+		() => getDateRangeForPeriod(selectedTimePeriod, customDateRange || undefined),
+		[selectedTimePeriod, customDateRange],
+	);
 
 	const {
 		data: cmsData,
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ["cms", page, limit, sortBy, activeTab, search],
+		queryKey: ["cms", page, limit, sortBy, activeTab, search, selectedTimePeriod, customDateRange],
 		queryFn: async () => {
 			const result = await cmsService.listCmsContent({
 				page,
@@ -40,6 +49,8 @@ function CmsPage() {
 				sortBy: sortBy || undefined,
 				type: activeTab,
 				search: search || undefined,
+				fromDate,
+				toDate,
 			});
 			if (!result.success) {
 				throw new Error(result.error || "Failed to fetch cms content");
@@ -54,10 +65,42 @@ function CmsPage() {
 		}
 	}, [error]);
 
+	const deleteMutation = useMutation({
+		mutationFn: (id: string) => cmsService.deleteCmsContent(id),
+		onSuccess: (result) => {
+			if (result.success) {
+				toast.success("Content deleted successfully");
+				queryClient.invalidateQueries({ queryKey: ["cms"] });
+			} else {
+				toast.error(result.error || "Failed to delete content");
+			}
+			setDeleteConfirmId(null);
+		},
+		onError: () => {
+			toast.error("Failed to delete content");
+			setDeleteConfirmId(null);
+		},
+	});
+
+	const {
+		data: selectedContentDetail,
+		isLoading: isLoadingContentDetail,
+		error: contentDetailError,
+	} = useQuery({
+		queryKey: ["cms-content-detail", selectedContentId],
+		queryFn: async () => {
+			if (!selectedContentId) throw new Error("Content id is required");
+			const result = await cmsService.getCmsContentById(selectedContentId);
+			if (!result.success || !result.data) {
+				throw new Error(result.error || "Failed to fetch content details");
+			}
+			return result.data;
+		},
+		enabled: !!selectedContentId,
+	});
+
 	const contents = cmsData?.content || [];
-	const tableData = contents.map((item) => ({
-		...item,
-	}));
+	const tableData = contents;
 	const total = cmsData?.total || 0;
 	const totalPages = Math.ceil(total / limit);
 
@@ -72,6 +115,12 @@ function CmsPage() {
 			default:
 				return type;
 		}
+	};
+
+	const formatPublishedDate = (date: string) => {
+		const parsedDate = new Date(date);
+		if (Number.isNaN(parsedDate.getTime())) return "-";
+		return parsedDate.toLocaleString();
 	};
 
 	const cmsColumns: Column<(typeof tableData)[number]>[] = [
@@ -210,24 +259,36 @@ function CmsPage() {
 
 						{!error && (
 							<form
-								className="relative space-x-4"
+								className="flex items-center gap-3 flex-wrap lg:flex-nowrap"
 								onSubmit={(e) => {
 									e.preventDefault();
 									setPage(1);
 									queryClient.invalidateQueries({ queryKey: ["cms"] });
 								}}
 							>
-								<input
-									type="text"
-									placeholder="Search"
-									value={search}
-									onChange={(e) => setSearch(e.target.value)}
-									className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
-								/>
-								<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
-								<TimePeriodFilter 
+								<div className="relative">
+									<input
+										type="text"
+										placeholder="Search"
+										value={search}
+										onChange={(e) => setSearch(e.target.value)}
+										className="w-64 rounded-full border border-gray-400 bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
+									/>
+									<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+								</div>
+								<TimePeriodDropdown
+									value={selectedTimePeriod}
+									onChange={(period, customRange) => {
+										setSelectedTimePeriod(period);
+										if (period === "Custom" && customRange) {
+											setCustomDateRange(customRange);
+										} else {
+											setCustomDateRange(null);
+										}
+										setPage(1);
+									}}
 									buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
-									onFilterChange={(period, customRange) => console.log(period, customRange)} 
+									showCustomOption
 								/>
 							</form>
 						)}
@@ -264,7 +325,6 @@ function CmsPage() {
 								columns={cmsColumns}
 								isLoading={isLoading}
 								emptyMessage="No cms content found"
-								onActionClick={(item) => console.log("Action for content", item._id)}
 								maxHeight="100%"
 								pagination={{
 									currentPage: page,
@@ -273,6 +333,18 @@ function CmsPage() {
 									totalItems: total,
 									itemsPerPage: limit,
 								}}
+								actionMenuItems={[
+									{
+										icon: <Eye className="w-4 h-4" />,
+										label: "View content",
+										onClick: (item) => setSelectedContentId(item._id),
+									},
+									{
+										icon: <PauseCircle className="w-4 h-4" />,
+										label: "Delete",
+										onClick: (item) => setDeleteConfirmId(item._id),
+									},
+								]}
 							/>
 						)}
 					</div>
@@ -282,6 +354,139 @@ function CmsPage() {
 				isOpen={showAddModal}
 				onClose={() => setShowAddModal(false)}
 			/>
+
+			{selectedContentId && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+					<div className="mx-4 w-full max-w-3xl rounded-xl bg-white p-6 shadow-xl">
+						<div className="flex items-center justify-between mb-4">
+							<h3 className="text-xl font-bold text-gray-900">Content Details</h3>
+							<button
+								onClick={() => setSelectedContentId(null)}
+								className="text-gray-400 hover:text-gray-600 cursor-pointer"
+							>
+								✕
+							</button>
+						</div>
+						{isLoadingContentDetail ? (
+							<div className="py-12 text-center text-gray-600">Loading content...</div>
+						) : contentDetailError ? (
+							<div className="space-y-4 py-6 text-center">
+								<p className="font-medium text-gray-900">
+									Failed to load content details.
+								</p>
+								<button
+									type="button"
+									onClick={() =>
+										queryClient.invalidateQueries({
+											queryKey: ["cms-content-detail", selectedContentId],
+										})
+									}
+									className="rounded-lg bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90 cursor-pointer"
+								>
+									Retry
+								</button>
+							</div>
+						) : selectedContentDetail ? (
+							<div className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
+							{selectedContentDetail.image && (
+								<img
+									src={selectedContentDetail.image}
+									alt={selectedContentDetail.title}
+									className="w-full h-48 object-cover rounded-lg"
+								/>
+							)}
+							<div>
+								<p className="text-sm font-medium text-gray-500">Title</p>
+								<p className="text-lg font-semibold text-gray-900">{selectedContentDetail.title}</p>
+							</div>
+							<div className="flex items-center gap-3">
+								<p className="text-sm font-medium text-gray-500">Author:</p>
+								<div className="flex items-center gap-2">
+									{selectedContentDetail.author.image ? (
+										<img
+											src={selectedContentDetail.author.image}
+											alt={selectedContentDetail.author.name}
+											className="h-6 w-6 rounded-full object-cover"
+										/>
+									) : (
+										<div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center">
+											<span className="text-xs text-gray-600">
+												{selectedContentDetail.author.name.charAt(0).toUpperCase()}
+											</span>
+										</div>
+									)}
+									<span className="text-sm text-gray-900">{selectedContentDetail.author.name}</span>
+								</div>
+							</div>
+							<div>
+								<p className="text-sm font-medium text-gray-500">Type</p>
+								<p className="text-gray-900 capitalize">{selectedContentDetail.type}</p>
+							</div>
+							<div>
+								<p className="text-sm font-medium text-gray-500">Status</p>
+								<span
+									className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
+										selectedContentDetail.status === "verified"
+											? "bg-green-100 text-green-800"
+											: "bg-yellow-100 text-yellow-800"
+									}`}
+								>
+									{selectedContentDetail.status}
+								</span>
+							</div>
+							<div>
+								<p className="text-sm font-medium text-gray-500">Published At</p>
+								<p className="text-gray-900">
+									{formatPublishedDate(selectedContentDetail.publishedAt)}
+								</p>
+							</div>
+							<div>
+								<p className="text-sm font-medium text-gray-500">Content</p>
+								<p className="whitespace-pre-wrap rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-900">
+									{selectedContentDetail.message || "No content body provided"}
+								</p>
+							</div>
+						</div>
+						) : (
+							<div className="py-12 text-center text-gray-600">No content found.</div>
+						)}
+						<div className="mt-6 flex justify-end">
+							<button
+								onClick={() => setSelectedContentId(null)}
+								className="rounded-lg bg-gray-100 px-4 py-2 font-medium text-gray-700 hover:bg-gray-200 cursor-pointer"
+							>
+								Close
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{deleteConfirmId && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+					<div className="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+						<h3 className="text-lg font-bold text-gray-900">Confirm Delete</h3>
+						<p className="mt-2 text-gray-600">
+							Are you sure you want to delete this content? This action cannot be undone.
+						</p>
+						<div className="mt-6 flex justify-end gap-3">
+							<button
+								onClick={() => setDeleteConfirmId(null)}
+								className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+							>
+								Cancel
+							</button>
+							<button
+								onClick={() => deleteMutation.mutate(deleteConfirmId)}
+								disabled={deleteMutation.isPending}
+								className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 disabled:opacity-50 cursor-pointer"
+							>
+								{deleteMutation.isPending ? "Deleting..." : "Delete"}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

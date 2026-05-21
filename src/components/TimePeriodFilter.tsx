@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { IoFilter } from "react-icons/io5";
 
-export type TimePeriod = "Today" | "Yesterday" | "Last week" | "Last month" | "Custom";
+export type TimePeriod = "All" | "Today" | "Yesterday" | "Last week" | "Last month" | "Custom";
 
 interface TimePeriodFilterProps {
 	onFilterChange?: (period: TimePeriod, customRange?: { start: string; end: string }) => void;
@@ -33,6 +33,11 @@ export function TimePeriodFilter({ onFilterChange, buttonClassName }: TimePeriod
 	const handleSelect = (period: TimePeriod) => {
 		if (period === "Custom") {
 			setShowCustom(true);
+		} else if (period === "All") {
+			setSelected(null);
+			setIsOpen(false);
+			setShowCustom(false);
+			onFilterChange?.(period);
 		} else {
 			setSelected(period);
 			setIsOpen(false);
@@ -67,7 +72,7 @@ export function TimePeriodFilter({ onFilterChange, buttonClassName }: TimePeriod
 				<div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 bg-white p-1.5 shadow-[0_4px_20px_0_#0000000F] z-50">
 					{!showCustom ? (
 						<div className="flex flex-col gap-0.5">
-							{(["Today", "Yesterday", "Last week", "Last month", "Custom"] as TimePeriod[]).map((p) => (
+							{(["All", "Today", "Yesterday", "Last week", "Last month", "Custom"] as TimePeriod[]).map((p) => (
 								<button 
 									key={p} 
 									onClick={() => handleSelect(p)}

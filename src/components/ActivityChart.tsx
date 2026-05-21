@@ -1,10 +1,17 @@
-import { TimePeriodFilter } from "./TimePeriodFilter";
+import {
+	TimePeriodDropdown,
+	type TimePeriodOption,
+} from "./TimePeriodDropdown";
+import { useState } from "react";
 
 interface ActivityChartProps {
 	showHeader?: boolean;
 }
 
 export function ActivityChart({ showHeader = true }: ActivityChartProps) {
+	const [selectedTimePeriod, setSelectedTimePeriod] =
+		useState<TimePeriodOption>("All");
+
 	const days = Array.from({ length: 7 }).map((_, i) => {
 		const d = new Date();
 		d.setDate(d.getDate() - (6 - i));
@@ -34,7 +41,10 @@ export function ActivityChart({ showHeader = true }: ActivityChartProps) {
 			{showHeader && (
 				<div className="mb-6 flex items-center justify-between">
 					<h2 className="text-xl font-bold text-gray-900">Activity Trends/Reports</h2>
-					<TimePeriodFilter onFilterChange={(period, customRange) => console.log(period, customRange)} />
+					<TimePeriodDropdown
+						value={selectedTimePeriod}
+						onChange={(period) => setSelectedTimePeriod(period)}
+					/>
 				</div>
 			)}
 

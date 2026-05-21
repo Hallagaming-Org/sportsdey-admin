@@ -2,12 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Eye, PauseCircle, Search, SendHorizonal, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { DataTable, type Column } from "#/components/DataTable";
-import { TimePeriodFilter } from "@/components/TimePeriodFilter";
+import {
+  TimePeriodDropdown,
+  type TimePeriodOption,
+} from "#/components/TimePeriodDropdown";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import { kycService, type KycStatusFilter } from "@/lib/kyc";
+import { notificationService } from "#/lib/notifications";
 
 export const Route = createFileRoute("/app/kyc")({
   component: KycPage,
@@ -95,6 +100,8 @@ function KycPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
+  const [selectedTimePeriod, setSelectedTimePeriod] =
+    useState<TimePeriodOption>("All");
   const [selectedRecord, setSelectedRecord] = useState<KycRecord | null>(null);
   const [showDocumentModal, setShowDocumentModal] = useState(false);
   const [noticeUser, setNoticeUser] = useState<{ id: string; name: string; email?: string } | null>(null);
@@ -293,11 +300,15 @@ function KycPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             </div>
 
-            <TimePeriodFilter
+            <TimePeriodDropdown
+              value={selectedTimePeriod}
+              onChange={(period, range) => {
+                setSelectedTimePeriod(period);
+                setTimeFilter({ period, range });
+                setPage(1);
+              }}
               buttonClassName="px-3 py-2 border rounded-lg text-sm"
-              onFilterChange={(period, range) =>
-                setTimeFilter({ period, range })
-              }
+              showCustomOption
             />
           </div>
         </div>
@@ -385,8 +396,17 @@ function KycPage() {
         <SendNoticeModal
           user={noticeUser}
           onClose={() => setNoticeUser(null)}
-          onSubmit={(data) => {
-            console.log("Sending notice:", data);
+          onSubmit={async (data) => {
+            const result = await notificationService.sendNotification({
+              title: data.title,
+              message: data.message,
+              userId: noticeUser.id,
+            });
+            if (result.success) {
+              toast.success(`Notice sent to ${noticeUser.name}`);
+            } else {
+              toast.error(result.error || "Failed to send notice");
+            }
           }}
         />
       )}
