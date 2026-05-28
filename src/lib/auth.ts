@@ -20,7 +20,7 @@ export interface Admin {
 	name: string;
 	mobileNumber: string | null;
 	image: string | null;
-	role: "super_admin" | "admin";
+	role: "super_admin" | "admin" | "csr-admin";
 	createdAt: string;
 }
 
@@ -147,7 +147,7 @@ class AdminAuth {
 		email: string;
 		password: string;
 		name: string;
-		role: "super_admin" | "admin";
+		role: "super_admin" | "admin" | "csr-admin";
 	}): Promise<Admin> {
 		const response = await fetch(`${this.baseUrl}/admin/admins`, {
 			method: "POST",

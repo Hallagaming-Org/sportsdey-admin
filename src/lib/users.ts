@@ -70,7 +70,9 @@ class UserService {
 		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
 		if (params.toDate) searchParams.set("toDate", params.toDate);
 
-		return fetchApi<UsersResponse>(`/user/all?${searchParams}`);
+		const url = `/user/all?${searchParams.toString()}`;
+		console.log("userService.listUsers URL:", url);
+		return fetchApi<UsersResponse>(url);
 	}
 
 	async createUser(data: CreateUserData): Promise<CreateUserResponse> {

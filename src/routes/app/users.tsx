@@ -29,6 +29,7 @@ const [activeTab, setActiveTab] = useState<Tab>("all");
 		"all",
 	);
 	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriodOption>("All");
+	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [newUser, setNewUser] = useState<NewUser>({
 		name: "",
@@ -58,9 +59,13 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 }, []);
 
 	const { fromDate, toDate } = useMemo(
-		() => getDateRangeForPeriod(selectedTimePeriod),
-		[selectedTimePeriod],
+		() => getDateRangeForPeriod(selectedTimePeriod, customRange, { output: "iso" }),
+		[selectedTimePeriod, customRange],
 	);
+
+	useEffect(() => {
+		console.log("UsersPage: computed date range", { selectedTimePeriod, customRange, fromDate, toDate });
+	}, [selectedTimePeriod, customRange, fromDate, toDate]);
 
 	const {
 		data: usersData,
@@ -69,6 +74,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 	} = useQuery({
 		queryKey: ["users", page, limit, sort, activeTab, fromDate, toDate],
 		queryFn: async () => {
+			console.log("UsersPage: calling listUsers with", { page, limit, sort, tab: activeTab, fromDate, toDate });
 			const result = await userService.listUsers({
 				page,
 				limit,
@@ -315,13 +321,14 @@ useEffect(() => {
 								: "Pending"}
 						<ChevronDown className="h-3.5 w-3.5" />
 					</button>
-					<TimePeriodDropdown
-						value={selectedTimePeriod}
-						onChange={(period) => {
-							setSelectedTimePeriod(period);
-							setPage(1);
-						}}
-					/>
+						<TimePeriodDropdown
+							value={selectedTimePeriod}
+							onChange={(period, range) => {
+								setSelectedTimePeriod(period);
+								setCustomRange(range);
+								setPage(1);
+							}}
+						/>
 				</form>
 			</div>
 

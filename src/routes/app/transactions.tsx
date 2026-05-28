@@ -53,13 +53,14 @@ function WalletPage() {
 	const [page, setPage] = useState(1);
 	const [selectedTimePeriod, setSelectedTimePeriod] =
 		useState<TimePeriodOption>("All");
+	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 
 	const typeParam = activeTab === "all" ? undefined : activeTab;
 	const statusParam = selectedStatus === "all" ? undefined : selectedStatus;
 
 	const { fromDate, toDate } = useMemo(
-		() => getDateRangeForPeriod(selectedTimePeriod),
-		[selectedTimePeriod],
+		() => getDateRangeForPeriod(selectedTimePeriod, customRange),
+		[selectedTimePeriod, customRange],
 	);
 
 	const {
@@ -264,14 +265,15 @@ function WalletPage() {
 							/>
 							<Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
 						</div>
-						<TimePeriodDropdown
-							value={selectedTimePeriod}
-							onChange={(period) => {
-								setSelectedTimePeriod(period);
-								setPage(1);
-							}}
-							buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
-						/>
+							<TimePeriodDropdown
+								value={selectedTimePeriod}
+								onChange={(period, range) => {
+									setSelectedTimePeriod(period);
+									setCustomRange(range);
+									setPage(1);
+								}}
+								buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
+							/>
 					</div>
 				</div>
 

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Search, Eye, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ import {
 } from "#/components/TimePeriodDropdown";
 import type { User } from "#/lib/users";
 import { notificationService } from "#/lib/notifications";
+import { adminAuth } from "#/lib/auth";
 export const Route = createFileRoute("/app/admins")({
 	component: AdminsPage,
 });
@@ -54,19 +56,21 @@ function AdminsPage() {
 		return () => document.removeEventListener("click", handleClickOutside);
 	}, []);
 
-	const dummyAdmins: AdminUser[] = [
-		{ id: "012345", name: "George jones", email: "Georgejones@gmail.com", dateAdded: 1754611200000, role: "Support Admin" },
-		{ id: "012345", name: "Robert Fox", email: "Robertfox@gmail.com", dateAdded: 1754611200000, role: "CSR Admin" },
-		{ id: "012345", name: "Savannah Nguyen", email: "Savannahnguyen@gmail.com", dateAdded: 1754611200000, role: "Support Admin" },
-		{ id: "012345", name: "Leslie Alexander", email: "Lesliealexander@gmail.com", dateAdded: 1754611200000, role: "CSR Admin" },
-		{ id: "012345", name: "Annette Black", email: "Georgejones@gmail.com", dateAdded: 1754611200000, role: "Support Admin" },
-		{ id: "012345", name: "Floyd Miles", email: "Floydmiles@gmail.com", dateAdded: 1754611200000, role: "CSR Admin" },
-		{ id: "012345", name: "Devon Lane", email: "Devonlane@gmail.com", dateAdded: 1754611200000, role: "Support Admin" },
-		{ id: "012345", name: "Leslie Alexander", email: "Lesliealexander@gmail.com", dateAdded: 1754611200000, role: "CSR Admin" },
-		{ id: "012345", name: "Savannah Nguyen", email: "Savannahnguyen@gmail.com", dateAdded: 1754611200000, role: "Support Admin" },
-	];
+	const { data: rawAdmins = [], isLoading, error } = useQuery({
+		queryKey: ["admins-list"],
+		queryFn: () => adminAuth.listAdmins(),
+	});
 
-	const filteredAdmins = dummyAdmins.filter(admin => {
+	const allAdmins: AdminUser[] = rawAdmins.map((admin) => ({
+		id: admin.id,
+		name: admin.name,
+		email: admin.email,
+		dateAdded: admin.createdAt ? new Date(admin.createdAt).getTime() : 0,
+		role: admin.role === "csr-admin" ? "CSR Admin" : "Support Admin",
+		avatar: admin.image || undefined,
+	}));
+
+	const filteredAdmins = allAdmins.filter(admin => {
 		if (activeTab === "support") return admin.role === "Support Admin";
 		if (activeTab === "csr") return admin.role === "CSR Admin";
 		return true;
@@ -222,6 +226,7 @@ function AdminsPage() {
 				data={admins}
 				columns={columns}
 				maxHeight="100%"
+				isLoading={isLoading}
 				onActionClick={(user, e) => {
 					e.stopPropagation();
 					e.nativeEvent.stopImmediatePropagation();
@@ -232,7 +237,7 @@ function AdminsPage() {
 						right: window.innerWidth - rect.right,
 					});
 				}}
-				emptyMessage="No admin found"
+				emptyMessage={error ? "Failed to load admins" : "No admin found"}
 				pagination={{
 					currentPage: page,
 					totalPages,
@@ -378,7 +383,7 @@ function AdminsPage() {
 			{(noticeModalAdmin || showGlobalNoticeModal) && (
 				<SendNoticeModal
 					user={noticeModalAdmin ? mapAdminToUser(noticeModalAdmin) : null}
-					availableUsers={dummyAdmins.map(mapAdminToUser)}
+					availableUsers={allAdmins.map(mapAdminToUser)}
 					onClose={() => {
 						setNoticeModalAdmin(null);
 						setShowGlobalNoticeModal(false);
@@ -396,7 +401,7 @@ function AdminsPage() {
 								toast.error(result.error || "Failed to send notice");
 							}
 						} else if (showGlobalNoticeModal) {
-							const adminIds = dummyAdmins.map((a) => a.id);
+							const adminIds = allAdmins.map((a) => a.id);
 							const result = await notificationService.sendNotificationToMultiple(
 								data.title,
 								data.message,

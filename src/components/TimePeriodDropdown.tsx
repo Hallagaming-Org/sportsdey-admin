@@ -16,7 +16,7 @@ export function TimePeriodDropdown({
 	value,
 	onChange,
 	buttonClassName,
-	showCustomOption = false,
+	showCustomOption = true,
 }: TimePeriodDropdownProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [showCustom, setShowCustom] = useState(false);
@@ -55,6 +55,8 @@ export function TimePeriodDropdown({
 	const handleCustomApply = () => {
 		setSelected("Custom");
 		setIsOpen(false);
+		// debug log to help trace custom range application
+		console.log("TimePeriodDropdown: apply custom range", { start: startDate, end: endDate });
 		onChange("Custom", { start: startDate, end: endDate });
 	};
 
