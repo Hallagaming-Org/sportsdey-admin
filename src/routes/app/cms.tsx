@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Eye, PauseCircle, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { type Column, DataTable } from "@/components/DataTable";
 import FilterIcon from "@/logo/filter.svg?react";
@@ -9,8 +10,11 @@ import PostIcon from "@/logo/post.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { cmsService } from "../../lib/cms";
 import { TimePeriodDropdown, type TimePeriodOption } from "../../components/TimePeriodDropdown";
-import { CmsAddModal } from "../../components/CmsAddModal";
 import { getDateRangeForPeriod } from "../../lib/time-period";
+import { TimePeriodFilter } from "@/components/TimePeriodFilter";
+import { CmsAddModal } from "../../components/CmsAddModal";
+import { ActionDropdown } from "@/components/ActionDropdown";
+
 
 export const Route = createFileRoute("/app/cms")({
 	component: CmsPage,
@@ -35,6 +39,13 @@ function CmsPage() {
 		() => getDateRangeForPeriod(selectedTimePeriod, customDateRange || undefined),
 		[selectedTimePeriod, customDateRange],
 	);
+	const [actionDropdown, setActionDropdown] = useState<{ item: any; top: number; right: number } | null>(null);
+
+	useEffect(() => {
+		const handleClickOutside = () => setActionDropdown(null);
+		document.addEventListener("click", handleClickOutside);
+		return () => document.removeEventListener("click", handleClickOutside);
+	}, []);
 
 	const {
 		data: cmsData,
@@ -325,6 +336,18 @@ function CmsPage() {
 								columns={cmsColumns}
 								isLoading={isLoading}
 								emptyMessage="No cms content found"
+								onActionClick={(item, e) => {
+									if (e) {
+										e.stopPropagation();
+										e.nativeEvent.stopImmediatePropagation();
+										const rect = e.currentTarget.getBoundingClientRect();
+										setActionDropdown({
+											item,
+											top: rect.bottom + window.scrollY,
+											right: window.innerWidth - rect.right,
+										});
+									}
+								}}
 								maxHeight="100%"
 								pagination={{
 									currentPage: page,
