@@ -401,40 +401,54 @@ export function CmsEditModal({ editContentId, onClose }: CmsEditModalProps) {
 								)}
 							</div>
 
-							<div className="rounded-xl border border-dashed border-[#b9bbc5] bg-[#f5f5f6] p-3">
-								<label
-									htmlFor="cms-banner-upload"
-									onDragOver={handleDragOver}
-									onDragLeave={handleDragLeave}
-									onDrop={handleDrop}
-									className={`flex min-h-[84px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 text-center transition-all ${
-										isDragging
-											? "border-[#1baa04] bg-[#eaffea] scale-[1.02]"
-											: "border-transparent hover:bg-[#ececee]"
-									}`}
-								>
-									<Upload className={`mb-1.5 h-5 w-5 ${isDragging ? "text-[#1baa04]" : "text-[#8a8d97]"}`} />
-									<span className={`font-medium text-sm sm:text-base ${isDragging ? "text-[#1baa04]" : "text-[#737680]"}`}>
-										{selectedFileName || (isDragging ? "Drop image here" : "Choose an Image or drag & drop")}
-									</span>
-									<span className="text-[#a7a9b2] text-xs sm:text-sm">
-										Upload supports: JPG, PNG.
-									</span>
+							<div>
+								<label className="mb-1.5 block font-medium text-[#11123f] text-base">
+									Content/Story Image
 								</label>
-								<input
-									id="cms-banner-upload"
-									type="file"
-									accept=".jpg,.jpeg,.png,image/*"
-									className="hidden"
-									onChange={(e) =>
-										handleFileChange(e.target.files?.[0] ?? null)
-									}
-								/>
-								{fieldErrors.bannerImage && (
-									<p className="mt-1 text-red-600 text-xs">
-										{fieldErrors.bannerImage}
-									</p>
-								)}
+								<div className="rounded-xl border border-dashed border-[#b9bbc5] bg-[#f5f5f6] p-3">
+									{(newContent.bannerImage || contentDetail?.image) && (
+										<div className="mb-3">
+											<img
+												src={newContent.bannerImage || contentDetail?.image || undefined}
+												alt="Content Preview"
+												className="h-32 w-full rounded-lg object-cover"
+											/>
+										</div>
+									)}
+									<label
+										htmlFor="cms-banner-upload"
+										onDragOver={handleDragOver}
+										onDragLeave={handleDragLeave}
+										onDrop={handleDrop}
+										className={`flex min-h-[84px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 text-center transition-all ${
+											isDragging
+												? "border-[#1baa04] bg-[#eaffea] scale-[1.02]"
+												: "border-transparent hover:bg-[#ececee]"
+										}`}
+									>
+										<Upload className={`mb-1.5 h-5 w-5 ${isDragging ? "text-[#1baa04]" : "text-[#8a8d97]"}`} />
+										<span className={`font-medium text-sm sm:text-base ${isDragging ? "text-[#1baa04]" : "text-[#737680]"}`}>
+											{selectedFileName || (isDragging ? "Drop image here" : "Choose an Image or drag & drop")}
+										</span>
+										<span className="text-[#a7a9b2] text-xs sm:text-sm">
+											Upload supports: JPG, PNG.
+										</span>
+									</label>
+									<input
+										id="cms-banner-upload"
+										type="file"
+										accept=".jpg,.jpeg,.png,image/*"
+										className="hidden"
+										onChange={(e) =>
+											handleFileChange(e.target.files?.[0] ?? null)
+										}
+									/>
+									{fieldErrors.bannerImage && (
+										<p className="mt-1 text-red-600 text-xs">
+											{fieldErrors.bannerImage}
+										</p>
+									)}
+								</div>
 							</div>
 
 							<div className="mt-auto pt-1">
