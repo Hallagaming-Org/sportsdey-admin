@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { CloudSnow, Copy, Download, Eye, MoreHorizontal, Trash } from "lucide-react";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { IoFilter } from "react-icons/io5";
@@ -217,10 +217,31 @@ function ActivityPage() {
 					onClose={() => setActionDropdown(null)}
 					items={[
 						{
-							icon: <MoreHorizontal className="w-4 h-4" />,
-							label: "View details",
+							icon: <Eye className="w-4 h-4" />,
+							label: "View Details",
 							onClick: () => setActionDropdown(null),
-						}
+						},
+						{
+							icon: <Download className="w-4 h-4" />,
+							label: "Download Activity log",
+							onClick: () => setActionDropdown(null),
+						},
+						{
+							icon: <Copy className="w-4 h-4" />,
+							label: "Copy Log link",
+							onClick: () => setActionDropdown(null),
+						},
+						{
+							icon: <CloudSnow className="w-4 h-4" />,
+							label: "Report this Activity",
+							onClick: () => setActionDropdown(null),
+						},
+						{
+							icon: <Trash className="w-4 h-4" />,
+							label: "Delete Activity log",
+							onClick: () => setActionDropdown(null),
+						},
+
 					]}
 				/>
 			)}
