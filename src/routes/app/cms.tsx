@@ -12,6 +12,7 @@ import { cmsService } from "../../lib/cms";
 import { getDateRangeForPeriod } from "../../lib/time-period";
 import { TimePeriodFilter, type TimePeriod } from "@/components/TimePeriodFilter";
 import { CmsAddModal } from "../../components/CmsAddModal";
+import { CmsEditModal } from "../../components/CmsEditModal";
 import { ActionDropdown } from "@/components/ActionDropdown";
 
 
@@ -32,6 +33,7 @@ function CmsPage() {
 	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
 	const [customDateRange, setCustomDateRange] = useState<{ start: string; end: string } | null>(null);
 	const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
+	const [editContentId, setEditContentId] = useState<string | null>(null);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
 	const { fromDate, toDate } = useMemo(
@@ -373,6 +375,14 @@ function CmsPage() {
 							},
 						},
 						{
+							icon: <Edit2 className="w-4 h-4" />,
+							label: "Edit",
+							onClick: () => {
+								setEditContentId(actionDropdown.item._id);
+								setActionDropdown(null);
+							},
+						},
+						{
 							icon: <Trash className="w-4 h-4" />,
 							label: "Delete",
 							onClick: () => {
@@ -387,6 +397,11 @@ function CmsPage() {
 			<CmsAddModal
 				isOpen={showAddModal}
 				onClose={() => setShowAddModal(false)}
+			/>
+
+			<CmsEditModal
+				editContentId={editContentId}
+				onClose={() => setEditContentId(null)}
 			/>
 
 			{selectedContentId && (
