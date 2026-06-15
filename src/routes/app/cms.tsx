@@ -356,22 +356,36 @@ function CmsPage() {
 									totalItems: total,
 									itemsPerPage: limit,
 								}}
-								actionMenuItems={[
-									{
-										icon: <Eye className="w-4 h-4" />,
-										label: "View content",
-										onClick: (item) => setSelectedContentId(item._id),
-									},
-									{
-										icon: <Trash className="w-4 h-4" />,
-										label: "Delete",
-										onClick: (item) => setDeleteConfirmId(item._id),
-									},
-								]}
 							/>
 						)}
 					</div>
 				</div>
+
+			{actionDropdown && (
+				<ActionDropdown
+					top={actionDropdown.top}
+					right={actionDropdown.right}
+					onClose={() => setActionDropdown(null)}
+					items={[
+						{
+							icon: <Eye className="w-4 h-4" />,
+							label: "View content",
+							onClick: () => {
+								setSelectedContentId(actionDropdown.item._id);
+								setActionDropdown(null);
+							},
+						},
+						{
+							icon: <Trash className="w-4 h-4" />,
+							label: "Delete",
+							onClick: () => {
+								setDeleteConfirmId(actionDropdown.item._id);
+								setActionDropdown(null);
+							},
+						},
+					]}
+				/>
+			)}
 
 			<CmsAddModal
 				isOpen={showAddModal}
