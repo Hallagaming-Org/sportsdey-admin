@@ -30,6 +30,7 @@ export interface Game {
   accentColor: string;
   enabled: boolean;
   image: string;
+  category: string;
 }
 
 interface APIGame {
@@ -37,23 +38,13 @@ interface APIGame {
   name: string;
   code: string;
   imageUrl: string | null;
+  category?: string | null;
   enabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-const GAMES = [
-  { name: "Solitaire", code: "solitaire" },
-  { name: "Blocks", code: "blocks" },
-  { name: "Twenty One", code: "twentyone" },
-  { name: "Blackjack", code: "blackjack" },
-  { name: "Slots", code: "slots" },
-  { name: "Plinko", code: "plinko" },
-  { name: "Xcape", code: "XCAPEHB" },
-  { name: "Eagle", code: "EAGLEHB" },
-  { name: "Lucky Rise", code: "LUCKYRISEHB" },
-  { name: "Lagos Rush", code: "LAGOSRUSH" },
-];
+
 
 const GAME_METADATA: Record<string, { tagline: string, type: string, color: string, accentColor: string, image: string }> = {
   blackjack: { tagline: "Classic card game", type: "Card game", color: "from-green-600 to-green-800", accentColor: "#16A34A", image: ImgBlackjack },
@@ -73,28 +64,24 @@ function GamesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: apiGames = [], isLoading } = useQuery({
+  const { data: apiGames = [], isLoading } = useQuery<APIGame[]>({
     queryKey: ["games"],
     queryFn: async () => {
-      const res = await fetchApi<APIGame[]>("/games");
-      if (!res.success) throw new Error(res.error || "Failed to fetch games");
-      return res.data || [];
+      const res = await fetch("https://staging-api.sportsdey.com/games");
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Failed to fetch games");
+      return json.data || [];
     }
   });
 
-  console.log({apiGames})
-
-  const GameCodes = new Set(GAMES.map(g => g.code));
-
   const games: Game[] = apiGames
-    .filter((g) => GameCodes.has(g.code))
     .map((g) => {
       const meta = GAME_METADATA[g.code] || {
-        tagline: "Sportsdey game",
-        type: "Arcade game",
-        color: "from-gray-500 to-gray-700",
-        accentColor: "#6B7280",
-        image: ImgPlinko,
+        tagline: g.category || "Sportsdey game",
+        type: g.category || "Arcade game",
+        color: "from-blue-500 to-indigo-700",
+        accentColor: "#4F46E5",
+        image: g.imageUrl || ImgPlinko,
       };
       return {
         id: g.id,
@@ -104,7 +91,8 @@ function GamesPage() {
         color: meta.color,
         accentColor: meta.accentColor,
         enabled: g.enabled,
-        image: meta.image,
+        image: g.imageUrl || meta.image,
+        category: g.category || "Others",
       };
     });
 
@@ -112,6 +100,13 @@ function GamesPage() {
     if (sort === "asc") return a.name.localeCompare(b.name);
     return b.name.localeCompare(a.name);
   });
+
+  const gamesByCategory = sortedGames.reduce((acc, game) => {
+    const cat = game.category.toLowerCase();
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(game);
+    return acc;
+  }, {} as Record<string, Game[]>);
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, isCurrentlyEnabled }: { id: string; isCurrentlyEnabled: boolean }) => {
@@ -161,23 +156,30 @@ function GamesPage() {
 
       {/* Scrollable Games Grid */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pb-4 px-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
-          {isLoading ? (
-            Array.from({ length: 10 }).map((_, i) => (
+        {isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
+            {Array.from({ length: 10 }).map((_, i) => (
               <div key={i} className="flex flex-col items-center gap-2">
-                <div className="w-[90%] h-[220px] rounded-2xl bg-gray-200 animate-pulse"></div>
+                <div className="w-full aspect-[4/5] rounded-2xl bg-gray-200 animate-pulse"></div>
               </div>
-            ))
-          ) : sortedGames.length > 0 ? (
-            sortedGames.map((game) => (
-              <GameCard key={game.id} game={game} onToggle={handleToggle} />
-            ))
-          ) : (
-            <div className="col-span-full text-center text-gray-500 py-10">
-              No active games found.
+            ))}
+          </div>
+        ) : Object.keys(gamesByCategory).length > 0 ? (
+          Object.entries(gamesByCategory).map(([category, catGames]) => (
+            <div key={category} className="mb-10">
+              <h3 className="mb-4 text-xl font-bold text-gray-800 capitalize">{category}</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
+                {catGames.map((game) => (
+                  <GameCard key={game.id} game={game} onToggle={handleToggle} />
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+          ))
+        ) : (
+          <div className="col-span-full text-center text-gray-500 py-10">
+            No active games found.
+          </div>
+        )}
       </div>
     </div>
   );
