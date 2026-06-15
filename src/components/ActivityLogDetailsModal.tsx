@@ -71,7 +71,7 @@ export function ActivityLogDetailsModal({ activity, isOpen, onClose }: ActivityL
 								<Row label="Device:" value="Chrome on Windows" />
 								<Row label="Location:" value="Lagos, Nigeria" />
 								
-								<div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
+								<div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100 -mx-5 px-5">
 									<span className="text-sm font-medium text-green-600">Status</span>
 									<span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600 border border-green-200">
 										Completed
