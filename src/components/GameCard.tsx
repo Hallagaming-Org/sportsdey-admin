@@ -19,7 +19,7 @@ function GameCard({
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className="relative w-[90%] h-[220px] rounded-2xl overflow-hidden"
+        className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-[#11123f]/10"
         style={{ opacity: game.enabled ? 1 : 0.5 }}
       >
         <img 
@@ -37,9 +37,9 @@ function GameCard({
           </div>
         )}
         <div className="relative z-5 flex flex-col items-center justify-center h-full p-4">
-          <h3 className="text-white mt-20 font-extrabold text-xl uppercase tracking-wide drop-shadow-lg text-center">
+          {/* <h3 className="text-white mt-20 font-extrabold text-xl uppercase tracking-wide drop-shadow-lg text-center">
             {game.name}
-          </h3>
+          </h3> */}
           {/* <p className="text-white/80 text-sm mt-1 text-center font-medium drop-shadow-md">
             {game.tagline}
           </p> */}
