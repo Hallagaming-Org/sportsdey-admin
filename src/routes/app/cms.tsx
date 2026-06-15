@@ -9,9 +9,8 @@ import FilterIcon from "@/logo/filter.svg?react";
 import PostIcon from "@/logo/post.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { cmsService } from "../../lib/cms";
-import { TimePeriodDropdown, type TimePeriodOption } from "../../components/TimePeriodDropdown";
 import { getDateRangeForPeriod } from "../../lib/time-period";
-import { TimePeriodFilter } from "@/components/TimePeriodFilter";
+import { TimePeriodFilter, type TimePeriod } from "@/components/TimePeriodFilter";
 import { CmsAddModal } from "../../components/CmsAddModal";
 import { ActionDropdown } from "@/components/ActionDropdown";
 
@@ -30,7 +29,7 @@ function CmsPage() {
 	const [sortBy, setSortBy] = useState<"title" | "">("");
 	const [activeTab, setActiveTab] = useState<ContentType>("all");
 	const [showAddModal, setShowAddModal] = useState(false);
-	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriodOption>("All");
+	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
 	const [customDateRange, setCustomDateRange] = useState<{ start: string; end: string } | null>(null);
 	const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -287,9 +286,8 @@ function CmsPage() {
 									/>
 									<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 								</div>
-								<TimePeriodDropdown
-									value={selectedTimePeriod}
-									onChange={(period, customRange) => {
+								<TimePeriodFilter
+									onFilterChange={(period, customRange) => {
 										setSelectedTimePeriod(period);
 										if (period === "Custom" && customRange) {
 											setCustomDateRange(customRange);
@@ -299,7 +297,6 @@ function CmsPage() {
 										setPage(1);
 									}}
 									buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
-									showCustomOption
 								/>
 							</form>
 						)}
