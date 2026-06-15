@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { CloudSnow, Copy, Download, Eye, MoreHorizontal, Trash } from "lucide-react";
+import { CloudSnow, Copy, Download, Eye, Trash } from "lucide-react";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { IoFilter } from "react-icons/io5";
+import { ActivityLogDetailsModal } from "../../components/ActivityLogDetailsModal";
 import { DataTable, type Column } from "#/components/DataTable";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import { ActivityChart as ActivityTrendChart } from "@/components/ActivityChart";
@@ -86,6 +87,7 @@ function ActivityPage() {
 	const [selectedTimePeriod, setSelectedTimePeriod] =
 		useState<TimePeriodOption>("All");
 	const [actionDropdown, setActionDropdown] = useState<{ activity: ActivityRecord; top: number; right: number } | null>(null);
+	const [detailsModalActivity, setDetailsModalActivity] = useState<ActivityRecord | null>(null);
 
 	useEffect(() => {
 		const handleClickOutside = () => setActionDropdown(null);
@@ -219,7 +221,10 @@ function ActivityPage() {
 						{
 							icon: <Eye className="w-4 h-4" />,
 							label: "View Details",
-							onClick: () => setActionDropdown(null),
+							onClick: () => {
+								setDetailsModalActivity(actionDropdown.activity);
+								setActionDropdown(null);
+							},
 						},
 						{
 							icon: <Download className="w-4 h-4" />,
@@ -245,6 +250,12 @@ function ActivityPage() {
 					]}
 				/>
 			)}
+			{/* Activity Details Modal */}
+			<ActivityLogDetailsModal
+				activity={detailsModalActivity}
+				isOpen={!!detailsModalActivity}
+				onClose={() => setDetailsModalActivity(null)}
+			/>
 		</div>
 	);
 }
