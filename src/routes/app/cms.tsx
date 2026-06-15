@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Eye, PauseCircle, Search } from "lucide-react";
+import { Eye, PauseCircle, Search, Trash } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Edit2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -363,7 +363,7 @@ function CmsPage() {
 										onClick: (item) => setSelectedContentId(item._id),
 									},
 									{
-										icon: <PauseCircle className="w-4 h-4" />,
+										icon: <Trash className="w-4 h-4" />,
 										label: "Delete",
 										onClick: (item) => setDeleteConfirmId(item._id),
 									},
