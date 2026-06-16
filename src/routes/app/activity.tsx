@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { CloudSnow, Copy, Download, Eye, Trash } from "lucide-react";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 import { IoFilter } from "react-icons/io5";
+import { ActivityLogDetailsModal } from "../../components/ActivityLogDetailsModal";
 import { DataTable, type Column } from "#/components/DataTable";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import { ActivityChart as ActivityTrendChart } from "@/components/ActivityChart";
@@ -56,18 +57,23 @@ function TopBets() {
 			</div>
 			<div className="flex flex-col gap-4">
 				{TOP_BETS.map((bet) => (
-					<div key={bet.id} className="flex items-center justify-between">
-						<div className="flex items-center gap-3">
+					<div key={bet.id} className="flex flex-wrap sm:flex-nowrap xl:grid xl:grid-cols-[1fr_auto_1fr] items-center justify-between gap-3 w-full overflow-hidden">
+						<div className="flex items-center gap-3 min-w-0 shrink">
 							<img 
 								src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${bet.name}`} 
 								alt="avatar" 
 								className="h-8 w-8 rounded-full bg-[#FEECEB] object-cover shrink-0 p-1" 
 							/>
-							<span className="font-bold text-sm text-gray-900">{bet.name}</span>
+							<span className="font-bold text-sm text-gray-900 truncate" title={bet.name}>{bet.name}</span>
 						</div>
-						<div className="flex items-center justify-between flex-1 ml-10">
-							<span className="text-gray-400 font-medium text-sm w-24">{bet.type}</span>
-							<span className="font-bold text-sm text-gray-900 text-right">{bet.amount}</span>
+						
+						<div className="hidden xl:flex items-center justify-center px-4">
+							<span className="text-gray-400 font-medium text-sm truncate">{bet.type}</span>
+						</div>
+
+						<div className="flex items-center justify-end gap-4 shrink-0 sm:ml-auto">
+							<span className="text-gray-400 font-medium text-sm truncate max-w-[80px] sm:max-w-none xl:hidden">{bet.type}</span>
+							<span className="font-bold text-sm text-gray-900 text-right whitespace-nowrap">{bet.amount}</span>
 						</div>
 					</div>
 				))}
@@ -81,6 +87,7 @@ function ActivityPage() {
 	const [selectedTimePeriod, setSelectedTimePeriod] =
 		useState<TimePeriodOption>("All");
 	const [actionDropdown, setActionDropdown] = useState<{ activity: ActivityRecord; top: number; right: number } | null>(null);
+	const [detailsModalActivity, setDetailsModalActivity] = useState<ActivityRecord | null>(null);
 
 	useEffect(() => {
 		const handleClickOutside = () => setActionDropdown(null);
@@ -212,13 +219,43 @@ function ActivityPage() {
 					onClose={() => setActionDropdown(null)}
 					items={[
 						{
-							icon: <MoreHorizontal className="w-4 h-4" />,
-							label: "View details",
+							icon: <Eye className="w-4 h-4" />,
+							label: "View Details",
+							onClick: () => {
+								setDetailsModalActivity(actionDropdown.activity);
+								setActionDropdown(null);
+							},
+						},
+						{
+							icon: <Download className="w-4 h-4" />,
+							label: "Download Activity log",
 							onClick: () => setActionDropdown(null),
-						}
+						},
+						{
+							icon: <Copy className="w-4 h-4" />,
+							label: "Copy Log link",
+							onClick: () => setActionDropdown(null),
+						},
+						{
+							icon: <CloudSnow className="w-4 h-4" />,
+							label: "Report this Activity",
+							onClick: () => setActionDropdown(null),
+						},
+						{
+							icon: <Trash className="w-4 h-4" />,
+							label: "Delete Activity log",
+							onClick: () => setActionDropdown(null),
+						},
+
 					]}
 				/>
 			)}
+			{/* Activity Details Modal */}
+			<ActivityLogDetailsModal
+				activity={detailsModalActivity}
+				isOpen={!!detailsModalActivity}
+				onClose={() => setDetailsModalActivity(null)}
+			/>
 		</div>
 	);
 }

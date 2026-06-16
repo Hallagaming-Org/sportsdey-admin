@@ -25,19 +25,26 @@ export function ActionDropdown({ top, right, items, onClose }: ActionDropdownPro
 				onClose?.();
 			}}
 		>
-			{items.map((item, idx) => (
-				<button
-					key={idx}
-					className={`w-full px-4 py-2 text-sm text-left flex items-center gap-3 hover:bg-gray-50 text-gray-700 transition-colors cursor-pointer ${item.className || ""}`}
-					onClick={(e) => {
-						e.stopPropagation();
-						item.onClick();
-					}}
-				>
-					{item.icon}
-					{item.label}
-				</button>
-			))}
+			{items.map((item, idx) => {
+				const isDelete = item.label.toLowerCase().includes("delete");
+				const defaultTextClass = isDelete 
+					? "text-[#B00020] hover:bg-red-50" 
+					: "text-gray-700 hover:bg-gray-50";
+
+				return (
+					<button
+						key={idx}
+						className={`w-full px-4 py-2 text-sm text-left flex items-center gap-3 transition-colors cursor-pointer ${defaultTextClass} ${item.className || ""}`}
+						onClick={(e) => {
+							e.stopPropagation();
+							item.onClick();
+						}}
+					>
+						{item.icon}
+						{item.label}
+					</button>
+				);
+			})}
 		</div>
 	);
 }

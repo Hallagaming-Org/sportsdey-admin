@@ -47,6 +47,14 @@ export interface CreateCmsContentData {
 	authorName: string;
 }
 
+export interface UpdateCmsContentData {
+	title?: string;
+	message?: string;
+	contentType?: "news" | "videos" | "ads";
+	bannerImage?: string;
+	authorName?: string;
+}
+
 export interface CreateCmsContentResponse {
 	success: boolean;
 	data?: {
@@ -122,6 +130,34 @@ class CmsService {
 			status: "pending" | "verified";
 		}>("/cms/content", {
 			method: "POST",
+			body: data,
+		});
+
+		if (response.success) {
+			return {
+				success: true,
+				data: response.data,
+			};
+		}
+
+		return {
+			success: false,
+			error: response.error,
+			statusCode: response.statusCode,
+			details: response.details ?? null,
+		};
+	}
+
+	async updateCmsContent(
+		id: string,
+		data: UpdateCmsContentData,
+	): Promise<CreateCmsContentResponse> {
+		const response = await fetchApi<{
+			_id: string;
+			title: string;
+			status: "pending" | "verified";
+		}>(`/cms/content/${id}`, {
+			method: "PUT",
 			body: data,
 		});
 

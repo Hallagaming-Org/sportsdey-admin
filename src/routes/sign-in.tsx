@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { adminAuth } from "../lib/auth";
 import { cn } from "../lib/utils";
+import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/sign-in")({
 	component: SignInPage,
@@ -13,6 +14,7 @@ function SignInPage() {
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState("");
 
 	const signInMutation = useMutation({
@@ -103,17 +105,30 @@ function SignInPage() {
 							Password
 						</label>
 
-						<input
-							id="password"
-							type="password"
-							value={password}
-							onChange={(e) =>
-								setPassword(e.target.value)
-							}
-							required
-							placeholder="Enter your password"
-							className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-						/>
+						<div className="relative mt-1">
+							<input
+								id="password"
+								type={showPassword ? "text" : "password"}
+								value={password}
+								onChange={(e) =>
+									setPassword(e.target.value)
+								}
+								required
+								placeholder="Enter your password"
+								className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowPassword(!showPassword)}
+								className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+							>
+								{showPassword ? (
+									<EyeOff className="h-5 w-5" />
+								) : (
+									<Eye className="h-5 w-5" />
+								)}
+							</button>
+						</div>
 
 						<div className="mt-2 text-right">
 							<a
