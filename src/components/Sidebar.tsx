@@ -40,7 +40,7 @@ const menuItems: NavItem[] = [
 	{ icon: Settings, label: "CMS Controls", to: "/app/cms" },
 	
 	{ icon: Activity, label: "Activity log", to: "/app/activity" },
-	{ icon: AdminPanelIcon as LucideIcon, label: "Admin Panel/Other Admins", to: "/app/admins" },
+	{ icon: AdminPanelIcon as LucideIcon, label: "Admin management", to: "/app/admins" },
 ];
 
 const otherItems: NavItem[] = [
