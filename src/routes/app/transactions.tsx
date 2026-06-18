@@ -5,9 +5,9 @@ import { useMemo, useState } from "react";
 import { FaFileExport } from "react-icons/fa6";
 import { type Column, DataTable } from "#/components/DataTable";
 import {
-	TimePeriodDropdown,
-	type TimePeriodOption,
-} from "#/components/TimePeriodDropdown";
+	TimePeriodFilter,
+	type TimePeriod,
+} from "#/components/TimePeriodFilter";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 import {
 	type Transaction,
@@ -52,7 +52,7 @@ function WalletPage() {
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [selectedTimePeriod, setSelectedTimePeriod] =
-		useState<TimePeriodOption>("All");
+		useState<TimePeriod>("All");
 	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 
 	const typeParam = activeTab === "all" ? undefined : activeTab;
@@ -265,9 +265,8 @@ function WalletPage() {
 							/>
 							<Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
 						</div>
-							<TimePeriodDropdown
-								value={selectedTimePeriod}
-								onChange={(period, range) => {
+							<TimePeriodFilter
+								onFilterChange={(period, range) => {
 									setSelectedTimePeriod(period);
 									setCustomRange(range);
 									setPage(1);
