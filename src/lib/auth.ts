@@ -1,18 +1,6 @@
 const API_BASE =
-	import.meta.env.VITE_API_BASE ||
-	(() => {
-		if (typeof window !== "undefined" && window.location) {
-			const hostname = window.location.hostname;
-			if (hostname === "localhost" || hostname === "127.0.0.1") {
-				return "http://localhost:3000";
-			}
-			if (hostname.includes("staging")) {
-				return "https://staging-api.sportsdey.com";
-			}
-			return "https://api.sportsdey.com";
-		}
-		return "https://staging-api.sportsdey.com";
-	})();
+	import.meta.env.VITE_API_BASE ||"http://localhost:3000"
+
 
 export interface Admin {
 	id: string;
@@ -63,6 +51,7 @@ class AdminAuth {
 
 	async signIn(email: string, password: string): Promise<SignInResponse> {
 		try {
+		  console.log("API_URL",this.baseUrl)
 			const response = await fetch(`${this.baseUrl}/admin/auth/sign-in`, {
 				method: "POST",
 				headers: {
