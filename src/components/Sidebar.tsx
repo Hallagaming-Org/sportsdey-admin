@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import AdminPanelIcon from "#/assets/AdminPanelIcon";
-import NotificationIcon from "#/logo/notifications.svg?react";
+import NotificationIcon from "#/logo/notification.svg?react";
 import {
 	Activity,
 	ChevronLeft,
