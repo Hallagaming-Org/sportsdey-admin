@@ -13,6 +13,48 @@ export interface Transaction {
 	status: TransactionStatus;
 }
 
+export interface DepositSummary {
+	transactionId: string;
+	type: "Deposit";
+	status: string;
+	amount: number;
+	paymentMethod: string;
+	referenceId: string;
+	ipAddress: string;
+	device: string;
+	location: string;
+	transactionChannel: string;
+	fees?: number;
+	date?: string;
+	amountCredited?: number;
+	provider?: string;
+	cardType?: string | null;
+	cardLast4?: string | null;
+	description?: string;
+}
+
+export interface WithdrawalSummary {
+	transactionId: string;
+	type: "Withdrawal";
+	status: string;
+	amount: number;
+	paymentMethod: string;
+	referenceId: string;
+	ipAddress: string;
+	device: string;
+	location: string;
+	transactionChannel: string;
+	feesAmount?: number;
+	requestedOn?: string;
+	processedOn?: string | null;
+	bankName?: string | null;
+	accountNumber?: string;
+	accountName?: string;
+	balanceBefore?: number | null;
+}
+
+export type TransactionSummary = DepositSummary | WithdrawalSummary;
+
 export interface TransactionsResponse {
 	transactions: Transaction[];
 	pagination: {
@@ -137,6 +179,40 @@ class TransactionService {
 			success: false,
 			error: response.error,
 		};
+	}
+
+	async getTransactionSummary(id: string): Promise<{
+		success: boolean;
+		data?: TransactionSummary;
+		error?: string;
+	}> {
+		return fetchApi<TransactionSummary>(
+			`/admin/wallet-transactions/${id}/summary`,
+		);
+	}
+
+	async approveWithdrawal(id: string): Promise<{
+		success: boolean;
+		data?: { message: string; transferReference?: string };
+		error?: string;
+	}> {
+		return fetchApi(`/admin/withdrawals/${id}/approve`, {
+			method: "POST",
+		});
+	}
+
+	async rejectWithdrawal(
+		id: string,
+		reason: string,
+	): Promise<{
+		success: boolean;
+		data?: { message: string };
+		error?: string;
+	}> {
+		return fetchApi(`/admin/withdrawals/${id}/reject`, {
+			method: "POST",
+			body: { reason },
+		});
 	}
 }
 
