@@ -23,6 +23,7 @@ export const Route = createFileRoute("/app/games")({
 
 export interface Game {
   id: string;
+  code: string;
   name: string;
   tagline: string;
   type: string;
@@ -85,6 +86,7 @@ function GamesPage() {
       };
       return {
         id: g.id,
+        code: g.code,
         name: g.name,
         tagline: meta.tagline,
         type: meta.type,
@@ -96,7 +98,29 @@ function GamesPage() {
       };
     });
 
+  const GAME_PRIORITY = [
+    "solitaire",
+    "blocks",
+    "twentyone",
+    "blackjack",
+    "slots",
+    "plinko",
+    "XCAPEHB",
+    "EAGLEHB",
+    "LUCKYRISEHB",
+    "LAGOSRUSH",
+  ];
+
   const sortedGames = [...games].sort((a, b) => {
+    const aIdx = GAME_PRIORITY.indexOf(a.code);
+    const bIdx = GAME_PRIORITY.indexOf(b.code);
+
+    if (aIdx !== -1 && bIdx !== -1) {
+      return sort === "asc" ? aIdx - bIdx : bIdx - aIdx;
+    }
+    if (aIdx !== -1) return -1;
+    if (bIdx !== -1) return 1;
+
     if (sort === "asc") return a.name.localeCompare(b.name);
     return b.name.localeCompare(a.name);
   });
