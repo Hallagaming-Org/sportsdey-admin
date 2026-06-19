@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import AdminPanelIcon from "#/assets/AdminPanelIcon";
+import NotificationIcon from "#/logo/notifications.svg?react";
 import {
 	Activity,
 	ChevronLeft,
@@ -34,11 +35,12 @@ type NavItem = {
 const menuItems: NavItem[] = [
 	{ icon: Home, label: "Dashboard", to: "/app" },
 	{ icon: Users, label: "User management", to: "/app/users" },
+	{ icon: NotificationIcon as LucideIcon, label: "Notifications", to: "/app/notifications" },
 	{ icon: Wallet, label: "Transactions", to: "/app/transactions" },
 	{ icon: Gamepad2, label: "Game management", to: "/app/games" },
 	{ icon: Ticket, label: "Ticket history", to: "/app/tickets" },
 	{ icon: Settings, label: "CMS Controls", to: "/app/cms" },
-	
+
 	{ icon: Activity, label: "Activity log", to: "/app/activity" },
 	{ icon: AdminPanelIcon as LucideIcon, label: "Admin management", to: "/app/admins" },
 ];
