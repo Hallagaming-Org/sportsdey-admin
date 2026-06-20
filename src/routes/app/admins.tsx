@@ -448,6 +448,27 @@ function AdminsPage() {
 						setNoticeModalAdmin(admin);
 						setSelectedProfileAdmin(null);
 					}}
+					onForceLogout={async (id) => {
+						try {
+							await adminAuth.forceLogoutAdmin(id);
+							toast.success(`Forced logout for ${selectedProfileAdmin.name}`);
+						} catch (error) {
+							toast.error(error instanceof Error ? error.message : "Failed to force logout");
+						} finally {
+							setSelectedProfileAdmin(null);
+						}
+					}}
+					onDeleteAdmin={async (id) => {
+						try {
+							await adminAuth.deleteAdmin(id);
+							toast.success(`Admin ${selectedProfileAdmin.name} deleted successfully`);
+							queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+						} catch (error) {
+							toast.error(error instanceof Error ? error.message : "Failed to delete admin");
+						} finally {
+							setSelectedProfileAdmin(null);
+						}
+					}}
 				/>
 			)}
 			{(noticeModalAdmin || showGlobalNoticeModal) && (
