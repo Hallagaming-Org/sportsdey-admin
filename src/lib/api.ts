@@ -1,4 +1,4 @@
-const API_BASE = (import.meta as any)?.env?.VITE_API_BASE as string;
+const API_BASE = import.meta.env.VITE_API_BASE as string;
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
