@@ -22,13 +22,15 @@ export const getFromDateForPeriod = (period: string): Date | undefined => {
 			return d;
 		}
 
-		case "A week ago": {
+		case "A week ago":
+		case "Last week": {
 			const d = new Date(today);
 			d.setUTCDate(d.getUTCDate() - 7);
 			return d;
 		}
 
-		case "A month ago": {
+		case "A month ago":
+		case "Last month": {
 			const d = new Date(today);
 			d.setUTCMonth(d.getUTCMonth() - 1);
 			return d;

@@ -14,6 +14,14 @@ export interface ApiErrorDetail {
 	code: string;
 }
 
+function getCookie(name: string): string | null {
+	if (typeof document === "undefined") return null;
+	const value = `; ${document.cookie}`;
+	const parts = value.split(`; ${name}=`);
+	if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+	return null;
+}
+
 async function fetchApi<T>(
 	endpoint: string,
 	options: FetchOptions = {}
@@ -26,10 +34,14 @@ async function fetchApi<T>(
 }> {
 	const { method = "GET", body, headers = {} } = options;
 
+	// Update the cookie name here if it's different (e.g., 'token', 'admin_session')
+	const token = getCookie("accessToken");
+
 	const fetchOptions: RequestInit = {
 		method,
 		headers: {
 			"Content-Type": "application/json",
+			...(token ? { Authorization: `Bearer ${token}` } : {}),
 			...headers,
 		},
 		credentials: "include",

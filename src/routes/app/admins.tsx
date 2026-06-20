@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Search, Eye, LogOut, Trash2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Search, Eye, EyeOff, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DataTable, type Column } from "#/components/DataTable";
@@ -8,6 +8,7 @@ import { ActionDropdown } from "#/components/ActionDropdown";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
+import { Input } from "#/components/Input";
 import {
 	TimePeriodDropdown,
 	type TimePeriodOption,
@@ -31,6 +32,7 @@ export interface AdminUser {
 }
 
 function AdminsPage() {
+	const queryClient = useQueryClient();
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
@@ -42,14 +44,38 @@ function AdminsPage() {
 		name: "",
 		email: "",
 		role: "Support Admin",
+		password: "",
 	});
+	const [showPassword, setShowPassword] = useState(false);
 
 	const [actionDropdown, setActionDropdown] = useState<{ user: AdminUser; top: number; right: number } | null>(null);
 	const [selectedProfileAdmin, setSelectedProfileAdmin] = useState<AdminUser | null>(null);
 	const [noticeModalAdmin, setNoticeModalAdmin] = useState<AdminUser | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 	
-	// Close dropdown when clicking outside
+	const handleCreateAdmin = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!newAdmin.role) {
+			toast.error("Please select a role");
+			return;
+		}
+		try {
+			await adminAuth.createAdmin({
+				email: newAdmin.email,
+				password: newAdmin.password,
+				name: newAdmin.name,
+				role: newAdmin.role === "CSR Admin" ? "csr-admin" : "super_admin",
+			});
+			
+			toast.success("Admin created successfully");
+			setShowAddModal(false);
+			setNewAdmin({ name: "", email: "", role: "", password: "" });
+			queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to create admin. Please try again.");
+		}
+	};
+	
 	useEffect(() => {
 		const handleClickOutside = () => setActionDropdown(null);
 		document.addEventListener("click", handleClickOutside);
@@ -202,12 +228,12 @@ function AdminsPage() {
 					}}
 				>
 					<div className="relative w-72 lg:w-80">
-						<input
+						<Input
 							type="text"
 							placeholder="Search"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="w-full rounded-full border border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
+							className="rounded-full border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10"
 						/>
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
@@ -261,7 +287,7 @@ function AdminsPage() {
 							<button
 								type="button"
 								onClick={() => setShowAddModal(false)}
-								className="text-gray-500 hover:text-gray-900"
+								className="text-gray-500 w-[39px] h-[39px] flex items-center justify-center hover:text-gray-900 rounded-full border border-[#03002B] cursor-pointer"
 							>
 								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -269,31 +295,27 @@ function AdminsPage() {
 							</button>
 						</div>
 						<form
-							onSubmit={(e) => {
-								e.preventDefault();
-								toast.success("Admin created successfully");
-								setShowAddModal(false);
-							}}
+							onSubmit={handleCreateAdmin}
 							className="space-y-4"
 						>
 							<div>
 								<label className="block font-medium text-gray-900 text-sm">Name</label>
-								<input
+								<Input
 									type="text"
 									value={newAdmin.name}
 									onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
 									required
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+									className="mt-1"
 								/>
 							</div>
 							<div>
 								<label className="block font-medium text-gray-900 text-sm">Email</label>
-								<input
+								<Input
 									type="email"
 									value={newAdmin.email}
 									onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
 									required
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+									className="mt-1"
 								/>
 							</div>
 							<div>
@@ -301,25 +323,39 @@ function AdminsPage() {
 								<select
 									value={newAdmin.role}
 									onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-								>
-									<option value="Support Admin">Support Admin</option>
-									<option value="CSR Admin">CSR Admin</option>
+									className="mt-1 w-full h-13 text-sm rounded-md bg-[#F9F9F9] px-3 pr-10 py-2 text-gray-900 focus:outline-none placeholder:text-gray-500 bg-[position:right_1rem_center]"
+								>	
+									<option value="" className="text-gray-900">choose a role</option>
+									<option value="Support Admin" className="text-gray-900">Support Admin</option>
+									<option value="CSR Admin" className="text-gray-900">CSR Admin</option>
 								</select>
 							</div>
-							<div className="flex justify-end gap-3 pt-2">
-								<button
-									type="button"
-									onClick={() => setShowAddModal(false)}
-									className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-900 hover:bg-gray-50"
-								>
-									Cancel
-								</button>
+							<div>
+								<label className="block font-medium text-gray-900 text-sm">Password</label>
+								<div className="relative mt-1">
+									<Input
+										type={showPassword ? "text" : "password"}
+										value={newAdmin.password}
+										onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+										required
+										className="pr-10"
+									/>
+									<button
+										type="button"
+										onClick={() => setShowPassword(!showPassword)}
+										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none flex items-center justify-center cursor-pointer"
+									>
+										{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+									</button>
+								</div>
+							</div>
+							<div className="flex justify-center gap-3 pt-2">
+								
 								<button
 									type="submit"
-									className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
+									className="w-[240px] h-12 rounded-full text-sm bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
 								>
-									Add user
+									Send invite
 								</button>
 							</div>
 						</form>
