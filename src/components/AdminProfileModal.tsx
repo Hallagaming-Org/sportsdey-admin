@@ -172,7 +172,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 										<div className="relative flex items-center justify-center">
 											<input 
 												type="checkbox" 
-												defaultChecked={perm.defaultChecked}
+												defaultChecked={admin.role === "Super Admin" || perm.defaultChecked}
 												disabled={isAdminLoggedIn()}
 												className={`peer appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#10C300] checked:border-[#10C300] transition-colors cursor-pointer ${
 													isAdminLoggedIn() ? "disabled:opacity-50 disabled:cursor-not-allowed" : ""
