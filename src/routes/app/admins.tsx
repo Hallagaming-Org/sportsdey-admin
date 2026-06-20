@@ -303,7 +303,7 @@ function AdminsPage() {
 								<select
 									value={newAdmin.role}
 									onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+									className="mt-1 w-full rounded-md bg-[#F9F9F9] px-3 py-2 text-gray-900 focus:outline-none placeholder:text-gray-500"
 								>
 									<option value="Support Admin">Support Admin</option>
 									<option value="CSR Admin">CSR Admin</option>
