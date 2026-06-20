@@ -52,7 +52,29 @@ function AdminsPage() {
 	const [noticeModalAdmin, setNoticeModalAdmin] = useState<AdminUser | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 	
-	// Close dropdown when clicking outside
+	const handleCreateAdmin = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!newAdmin.role) {
+			toast.error("Please select a role");
+			return;
+		}
+		try {
+			await adminAuth.createAdmin({
+				email: newAdmin.email,
+				password: newAdmin.password,
+				name: newAdmin.name,
+				role: newAdmin.role === "CSR Admin" ? "csr-admin" : "super_admin",
+			});
+			
+			toast.success("Admin created successfully");
+			setShowAddModal(false);
+			setNewAdmin({ name: "", email: "", role: "", password: "" });
+			queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to create admin. Please try again.");
+		}
+	};
+	
 	useEffect(() => {
 		const handleClickOutside = () => setActionDropdown(null);
 		document.addEventListener("click", handleClickOutside);
@@ -272,41 +294,7 @@ function AdminsPage() {
 							</button>
 						</div>
 						<form
-							onSubmit={async (e) => {
-								e.preventDefault();
-								if (!newAdmin.role) {
-									toast.error("Please select a role");
-									return;
-								}
-								try {
-									const payload = {
-										email: newAdmin.email,
-										password: newAdmin.password,
-										name: newAdmin.name,
-										role: newAdmin.role === "CSR Admin" ? "csr-admin" : "super_admin",
-									};
-									const response = await fetch("https://staging-api.sportsdey.com/admin/admins", {
-										method: "POST",
-										headers: {
-											"Content-Type": "application/json",
-										},
-										body: JSON.stringify(payload),
-										credentials: "include",
-									});
-									
-									const data = await response.json();
-									if (response.ok && data.success !== false) {
-										toast.success("Admin created successfully");
-										setShowAddModal(false);
-										setNewAdmin({ name: "", email: "", role: "", password: "" });
-										queryClient.invalidateQueries({ queryKey: ["admins-list"] });
-									} else {
-										toast.error(data.error || "Failed to create admin");
-									}
-								} catch (error) {
-									toast.error("Failed to create admin. Please try again.");
-								}
-							}}
+							onSubmit={handleCreateAdmin}
 							className="space-y-4"
 						>
 							<div>
