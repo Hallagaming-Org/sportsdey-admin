@@ -21,10 +21,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 		}
 	} catch (e) {}
 	const isAdminLoggedIn = () => {
-		if (loggedInUser.admin.id === admin.id) {
-			return true;
-		}
-		return false;
+		return (loggedInUser?.admin?.id || loggedInUser?.id) === admin.id;
 	}
 
 	console.log({loggedInUser})
@@ -176,6 +173,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 											<input 
 												type="checkbox" 
 												defaultChecked={perm.defaultChecked}
+												disabled={isAdminLoggedIn()}
 												className={`peer appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#10C300] checked:border-[#10C300] transition-colors cursor-pointer ${
 													isAdminLoggedIn() ? "disabled:opacity-50 disabled:cursor-not-allowed" : ""
 												}`}
