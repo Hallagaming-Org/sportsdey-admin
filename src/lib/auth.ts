@@ -1,7 +1,7 @@
 // const API_BASE =
 // 	import.meta.env.VITE_API_BASE ||"http://localhost:3000"
 
-import { API_BASE } from "./api";
+import { API_BASE, getCookie } from "./api";
 
 
 export interface Admin {
@@ -11,6 +11,7 @@ export interface Admin {
 	mobileNumber: string | null;
 	image: string | null;
 	role: "super_admin" | "admin" | "csr-admin";
+	permissions?: string[];
 	createdAt: string;
 }
 
@@ -156,15 +157,52 @@ class AdminAuth {
 		throw new Error(result.error || "Failed to create admin");
 	}
 
+	async getAdmin(id: string): Promise<Admin> {
+		const token = getCookie("admin_session");
+		const response = await fetch(`${this.baseUrl}/admin/admins/${id}`, {
+			method: "GET",
+			headers: {
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			credentials: "include",
+		});
+
+		const result = await response.json();
+		if (result.success) {
+			return result.data;
+		}
+		throw new Error(result.error || "Failed to fetch admin details");
+	}
+
 	async deleteAdmin(id: string): Promise<void> {
+		const token = getCookie("admin_session");
 		const response = await fetch(`${this.baseUrl}/admin/admins/${id}`, {
 			method: "DELETE",
+			headers: {
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
 			credentials: "include",
 		});
 
 		const data = await response.json();
 		if (!data.success) {
 			throw new Error(data.error || "Failed to delete admin");
+		}
+	}
+
+	async forceLogoutAdmin(adminId: string): Promise<void> {
+		const token = getCookie("admin_session");
+		const response = await fetch(`${this.baseUrl}/admin/admins/${adminId}/sessions`, {
+			method: "DELETE",
+			headers: {
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			credentials: "include",
+		});
+
+		const data = await response.json();
+		if (!data.success) {
+			throw new Error(data.error || "Failed to force logout admin");
 		}
 	}
 

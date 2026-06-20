@@ -133,17 +133,17 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 								<div className="grid grid-cols-[140px_1fr] items-center">
 									<span className="text-gray-500 font-medium">Role</span>
 									<span className="inline-flex w-max items-center rounded-full px-2.5 py-1 text-xs font-medium bg-[#E8F8E5] text-[#10C300]">
-										Verified
+										{admin.role}
 									</span>
 								</div>
 								<div className="grid grid-cols-[140px_1fr] items-center">
 									<span className="text-gray-500 font-medium">Mobile number:</span>
-									<span className="font-medium text-gray-900">1234567890</span>
+									<span className="font-medium text-gray-900">{admin.mobileNumber || "N/A"}</span>
 								</div>
 								<div className="grid grid-cols-[140px_1fr] items-center">
 									<span className="text-gray-500 font-medium">Date added</span>
 									<span className="font-medium text-gray-900">
-										{admin.dateAdded ? new Date(admin.dateAdded).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : "15th of February, 2009"}
+										{admin.dateAdded ? new Date(admin.dateAdded).toLocaleString('en-US', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : "15th of February, 2009"}
 									</span>
 								</div>
 							</div>

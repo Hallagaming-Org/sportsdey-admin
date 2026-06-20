@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { DataTable, type Column } from "#/components/DataTable";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import NotificationIcon from "#/assets/NotificationIcon";
+import SuccessIndicator from "#/assets/SuccessIndicator.png";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import { Input } from "#/components/Input";
@@ -29,6 +30,8 @@ export interface AdminUser {
 	dateAdded: number;
 	role: string;
 	avatar?: string;
+	mobileNumber?: string | null;
+	permissions?: string[];
 }
 
 function AdminsPage() {
@@ -40,10 +43,11 @@ function AdminsPage() {
 	const [selectedTimePeriod, setSelectedTimePeriod] =
 		useState<TimePeriodOption>("All");
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [showSuccessModal, setShowSuccessModal] = useState(false);
 	const [newAdmin, setNewAdmin] = useState({
 		name: "",
 		email: "",
-		role: "Support Admin",
+		role: "",
 		password: "",
 	});
 	const [showPassword, setShowPassword] = useState(false);
@@ -69,6 +73,7 @@ function AdminsPage() {
 			
 			toast.success("Admin created successfully");
 			setShowAddModal(false);
+			setShowSuccessModal(true);
 			setNewAdmin({ name: "", email: "", role: "", password: "" });
 			queryClient.invalidateQueries({ queryKey: ["admins-list"] });
 		} catch (error) {
@@ -92,8 +97,9 @@ function AdminsPage() {
 		name: admin.name,
 		email: admin.email,
 		dateAdded: admin.createdAt ? new Date(admin.createdAt).getTime() : 0,
-		role: admin.role === "csr-admin" ? "CSR Admin" : "Support Admin",
+		role: admin.role === "super_admin" ? "Super Admin" : admin.role === "csr-admin" ? "CSR Admin" : "Support Admin",
 		avatar: admin.image || undefined,
+		mobileNumber: admin.mobileNumber,
 	}));
 
 	const filteredAdmins = allAdmins.filter(admin => {
@@ -372,9 +378,24 @@ function AdminsPage() {
 						{
 							icon: <Eye className="w-4 h-4" />,
 							label: "View admin",
-							onClick: () => {
-								setSelectedProfileAdmin(actionDropdown.user);
-								setActionDropdown(null);
+							onClick: async () => {
+								try {
+									const adminDetails = await adminAuth.getAdmin(actionDropdown.user.id);
+									setSelectedProfileAdmin({
+										id: adminDetails.id,
+										name: adminDetails.name,
+										email: adminDetails.email,
+										dateAdded: adminDetails.createdAt ? new Date(adminDetails.createdAt).getTime() : 0,
+										role: adminDetails.role === "super_admin" ? "Super Admin" : adminDetails.role === "csr-admin" ? "CSR Admin" : "Support Admin",
+										avatar: adminDetails.image || undefined,
+										mobileNumber: adminDetails.mobileNumber,
+										permissions: adminDetails.permissions || [],
+									});
+								} catch (error) {
+									toast.error(error instanceof Error ? error.message : "Failed to fetch admin details");
+								} finally {
+									setActionDropdown(null);
+								}
 							},
 						},
 						{
@@ -388,18 +409,31 @@ function AdminsPage() {
 						{
 							icon: <LogOut className="w-4 h-4" />,
 							label: "Force Log out",
-							onClick: () => {
-								toast.success(`Forced logout for ${actionDropdown.user.name}`);
-								setActionDropdown(null);
+							onClick: async () => {
+								try {
+									await adminAuth.forceLogoutAdmin(actionDropdown.user.id);
+									toast.success(`Forced logout for ${actionDropdown.user.name}`);
+								} catch (error) {
+									toast.error(error instanceof Error ? error.message : "Failed to force logout admin");
+								} finally {
+									setActionDropdown(null);
+								}
 							},
 						},
 						{
 							icon: <Trash2 className="w-4 h-4 text-red-500" />,
 							label: "Delete admin",
 							className: "text-red-500 hover:bg-red-50",
-							onClick: () => {
-								toast.success(`Admin ${actionDropdown.user.name} deleted`);
-								setActionDropdown(null);
+							onClick: async () => {
+								try {
+									await adminAuth.deleteAdmin(actionDropdown.user.id);
+									toast.success(`Admin ${actionDropdown.user.name} deleted successfully`);
+									queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+								} catch (error) {
+									toast.error(error instanceof Error ? error.message : "Failed to delete admin");
+								} finally {
+									setActionDropdown(null);
+								}
 							},
 						},
 					]}
@@ -451,6 +485,43 @@ function AdminsPage() {
 						}
 					}}
 				/>
+			)}
+			{showSuccessModal && (
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+					onClick={() => setShowSuccessModal(false)}
+				>
+					<div
+						className="w-[344px] max-w-[90vw] rounded-[16px] bg-white p-6 shadow-xl relative flex flex-col items-center"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<button
+							type="button"
+							onClick={() => setShowSuccessModal(false)}
+							className="absolute right-4 top-4 text-gray-500 w-[30px] h-[30px] flex items-center justify-center hover:text-gray-900 rounded-full border border-[#03002B] cursor-pointer"
+						>
+							<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						</button>
+
+						<img src={SuccessIndicator} alt="Success" className="w-[74px] h-[70px] object-contain mb-4 mt-6" />
+						
+						<h3 className="font-bold text-[28px] text-[#03002B] mb-2">Success!</h3>
+						
+						<p className="text-[#4F4F4F] text-center text-[15px] mb-8 px-4 leading-[22px]">
+							The admin user ${newAdmin.name} has been<br/>successfully added to the system.
+						</p>
+
+						<button
+							type="button"
+							onClick={() => setShowSuccessModal(false)}
+							className="w-full h-[48px] rounded-full text-[15px] bg-[#1BAA04] text-white font-medium hover:bg-[#158f03] transition-colors"
+						>
+							Done
+						</button>
+					</div>
+				</div>
 			)}
 		</div>
 	);
