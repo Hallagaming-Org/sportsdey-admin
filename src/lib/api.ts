@@ -38,6 +38,17 @@ export function getCookie(name: string): string | null {
 	return null;
 }
 
+export function setCookie(name: string, value: string, days: number = 7): void {
+	if (typeof document === "undefined") return;
+	let expires = "";
+	if (days) {
+		const date = new Date();
+		date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+		expires = "; expires=" + date.toUTCString();
+	}
+	document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+
 async function fetchApi<T>(
 	endpoint: string,
 	options: FetchOptions = {}
