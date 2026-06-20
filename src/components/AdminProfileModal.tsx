@@ -2,6 +2,7 @@ import { X, AlertTriangle, MessageCircle } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { useState } from "react";
 import type { AdminUser } from "../routes/app/admins";
+import { getCookie } from "../lib/api";
 
 interface AdminProfileModalProps {
 	admin: AdminUser;
@@ -12,6 +13,21 @@ interface AdminProfileModalProps {
 }
 
 export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout, onDeleteAdmin }: AdminProfileModalProps) {
+	const cookieData = getCookie("admin_user_details");
+	let loggedInUser = null;
+	try {
+		if (cookieData) {
+			loggedInUser = JSON.parse(decodeURIComponent(cookieData));
+		}
+	} catch (e) {}
+	const isAdminLoggedIn = () => {
+		if (loggedInUser.admin.id === admin.id) {
+			return true;
+		}
+		return false;
+	}
+
+	console.log({loggedInUser})
 	const [activeTab, setActiveTab] = useState<"details" | "permissions">("details");
 
 	const permissionsList = [
@@ -87,13 +103,13 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 
 						{/* Action Buttons */}
 						<div className="flex items-center gap-3 mt-6">
-							<button 
+							{ !isAdminLoggedIn() && (<button 
 								onClick={() => onSendMessage(admin)}
 								className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#F4F5F7] px-4 py-2 font-medium text-gray-600 text-sm hover:bg-gray-200"
 							>
 								<MessageCircle className="h-4 w-4 text-gray-400" />
 								Send a message
-							</button>
+							</button>)}
 							
 							<button 
 								onClick={() => setActiveTab("details")}
@@ -173,7 +189,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 						</div>
 					)}
 
-					<div className="mt-8 space-y-3">
+					{!isAdminLoggedIn() && <div className="mt-8 space-y-3">
 						<button className="w-full bg-[#E8F8E5] hover:bg-[#d7f0d3] text-[#10C300] font-medium py-3 rounded-full transition-colors cursor-pointer">
 							Save changes
 						</button>
@@ -191,7 +207,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 								Delete admin
 							</button>
 						</div>
-					</div>
+					</div>}
 				</div>
 			</div>
 		</div>
