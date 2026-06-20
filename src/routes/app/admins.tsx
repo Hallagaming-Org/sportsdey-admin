@@ -42,6 +42,7 @@ function AdminsPage() {
 		name: "",
 		email: "",
 		role: "Support Admin",
+		password: "",
 	});
 
 	const [actionDropdown, setActionDropdown] = useState<{ user: AdminUser; top: number; right: number } | null>(null);
@@ -307,19 +308,23 @@ function AdminsPage() {
 									<option value="CSR Admin">CSR Admin</option>
 								</select>
 							</div>
-							<div className="flex justify-end gap-3 pt-2">
-								<button
-									type="button"
-									onClick={() => setShowAddModal(false)}
-									className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-900 hover:bg-gray-50"
-								>
-									Cancel
-								</button>
+							<div>
+								<label className="block font-medium text-gray-900 text-sm">Password</label>
+								<input
+									type="password"
+									value={newAdmin.password}
+									onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+									required
+									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+								/>
+							</div>
+							<div className="flex justify-center gap-3 pt-2">
+								
 								<button
 									type="submit"
-									className="rounded-md bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
+									className="w-[240px] h-12 rounded-full text-sm bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
 								>
-									Add user
+									Send invite
 								</button>
 							</div>
 						</form>
