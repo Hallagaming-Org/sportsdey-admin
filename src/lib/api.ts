@@ -1,7 +1,5 @@
 const API_BASE = (() => {
-	const envBase = (import.meta as any)?.env?.VITE_API_BASE as
-		| string
-		| undefined;
+	const envBase = import.meta.env.VITE_API_BASE;
 	if (envBase) return envBase;
 
 	if (typeof window !== "undefined" && window.location) {
