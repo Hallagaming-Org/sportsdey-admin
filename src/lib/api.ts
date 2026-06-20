@@ -5,7 +5,7 @@ const API_BASE = (() => {
 	if (typeof window !== "undefined" && window.location) {
 		const hostname = window.location.hostname;
 		if (hostname === "localhost" || hostname === "127.0.0.1") {
-			return "http://localhost:3000";
+			return "https://staging-api.sportsdey.com";
 		}
 		if (hostname.includes("staging")) {
 			return "https://staging-api.sportsdey.com";
@@ -30,7 +30,7 @@ export interface ApiErrorDetail {
 	code: string;
 }
 
-function getCookie(name: string): string | null {
+export function getCookie(name: string): string | null {
 	if (typeof document === "undefined") return null;
 	const value = `; ${document.cookie}`;
 	const parts = value.split(`; ${name}=`);
