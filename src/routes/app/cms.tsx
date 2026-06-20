@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Eye, PauseCircle, Search, Trash } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Edit2, Trash2 } from "lucide-react";
@@ -24,6 +24,7 @@ type ContentType = "all" | "news" | "videos" | "ads";
 
 function CmsPage() {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
@@ -83,6 +84,7 @@ function CmsPage() {
 			if (result.success) {
 				toast.success("Content deleted successfully");
 				queryClient.invalidateQueries({ queryKey: ["cms"] });
+				router.invalidate();
 			} else {
 				toast.error(result.error || "Failed to delete content");
 			}

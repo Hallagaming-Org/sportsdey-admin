@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import AdminPanelIcon from "#/assets/AdminPanelIcon";
@@ -17,7 +18,8 @@ import {
 	Wallet,
 } from "lucide-react";
 import type { Admin } from "../lib/auth";
-	import { FaSun, FaMoon } from "react-icons/fa";
+import { fetchApi } from "../lib/api";
+import { FaSun, FaMoon } from "react-icons/fa";
 
 type SidebarProps = {
 	admin?: Admin | null;
@@ -57,6 +59,16 @@ export default function Sidebar({
 	onToggleCollapse,
 }: SidebarProps) {
 	const { location } = useRouterState();
+
+	const { data: unreadData } = useQuery({
+		queryKey: ["admin-notifications-unread-count"],
+		queryFn: async () => {
+			const res = await fetchApi<{ count: number }>("/admin/notifications/unread-count");
+			if (!res.success) throw new Error(res.error || "Failed to fetch unread count");
+			return res.data!;
+		},
+		refetchInterval: 30_000,
+	});
 
 	return (
 		<motion.aside
@@ -120,6 +132,7 @@ export default function Sidebar({
 								to={item.to}
 								active={isActive}
 								collapsed={collapsed}
+								badge={item.label === "Notifications" ? unreadData?.count : undefined}
 							/>
 						);
 					})}
@@ -223,12 +236,14 @@ function SidebarItem({
 	active = false,
 	to,
 	collapsed = false,
+	badge,
 }: {
 	icon?: LucideIcon;
 	label: string;
 	active?: boolean;
 	to?: string;
 	collapsed?: boolean;
+	badge?: number;
 }) {
 	const className = `flex items-center gap-3 py-2.5 px-3.5 rounded-xl text-sm font-medium text-white no-underline cursor-pointer transition-all duration-180 hover:bg-white/07 hover:text-white/85 ${active ? "bg-accent text-white hover:bg-green-600" : ""}`;
 
@@ -237,6 +252,11 @@ function SidebarItem({
 			<Link to={to} className={className} title={collapsed ? label : undefined}>
 				{Icon ? <Icon size={18} /> : null}
 				{!collapsed && <span>{label}</span>}
+				{!collapsed && badge != null && badge > 0 && (
+					<span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white">
+						{badge > 99 ? "99+" : badge}
+					</span>
+				)}
 			</Link>
 		);
 	}
@@ -245,6 +265,11 @@ function SidebarItem({
 		<div className={className} title={collapsed ? label : undefined}>
 			{Icon ? <Icon size={18} /> : null}
 			{!collapsed && <span>{label}</span>}
+			{!collapsed && badge != null && badge > 0 && (
+				<span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white">
+					{badge > 99 ? "99+" : badge}
+				</span>
+			)}
 		</div>
 	);
 }

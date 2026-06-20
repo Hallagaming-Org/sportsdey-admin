@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { ChevronDown, Eye, PauseCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ type Tab = "all" | "recent" | "pending";
 
 function UsersPage() {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
 	const [sort, setSort] = useState<"asc" | "desc">("asc");
@@ -124,6 +125,7 @@ useEffect(() => {
 			setShowAddModal(false);
 			setNewUser({ name: "", email: "", country: "", mobileNumber: "" });
 			queryClient.invalidateQueries({ queryKey: ["users"] });
+			router.invalidate();
 		},
 		onError: (error) => {
 			toast.error(error.message || "Failed to create user");
@@ -145,6 +147,7 @@ useEffect(() => {
 				isReactivate ? "User reactivated successfully" : "User suspended successfully",
 			);
 			queryClient.invalidateQueries({ queryKey: ["users"] });
+			router.invalidate();
 		},
 		onError: (error) => {
 			toast.error(error.message || "Failed to update user status");

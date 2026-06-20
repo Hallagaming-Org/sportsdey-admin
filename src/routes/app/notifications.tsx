@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import NotificationIcon from "#/assets/NotificationIcon";
-import { SendNoticeModal } from "../../components/SendNoticeModal";
 import { fetchApi } from "../../lib/api";
 
 export const Route = createFileRoute("/app/notifications")({
@@ -20,11 +19,19 @@ type AdminNotification = {
     createdAt: string;
 };
 
+function formatNotificationType(type: string) {
+    return type
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+}
+
 function NotificationsPage() {
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const router = useRouter();
     const [page] = useState(1);
     const [limit] = useState(20);
-    const [showSendModal, setShowSendModal] = useState(false);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["admin-notifications", page, limit],
@@ -46,7 +53,8 @@ function NotificationsPage() {
         },
         onSuccess: () => {
             toast.success("Marked as read");
-            queryClient.invalidateQueries(["admin-notifications"]);
+            queryClient.invalidateQueries({ queryKey: ["admin-notifications"] });
+            router.invalidate();
         },
         onError: (err: any) => {
             toast.error(err?.message || "Failed to mark read");
@@ -60,20 +68,6 @@ function NotificationsPage() {
                     <h1 className="text-2xl font-semibold">Notification</h1>
                     <div className="text-sm text-gray-500">Dashboard &gt; Notifications</div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        className="rounded-full bg-white border px-4 py-2"
-                        onClick={() => setShowSendModal(false)}
-                    >
-                        Add new user
-                    </button>
-                    <button
-                        className="rounded-full bg-accent px-4 py-2 text-white"
-                        onClick={() => setShowSendModal(true)}
-                    >
-                        Send a Notice
-                    </button>
-                </div>
             </div>
 
             <div className="space-y-4">
@@ -83,9 +77,12 @@ function NotificationsPage() {
                 {data?.notifications?.map((n) => (
                     <div
                         key={n.id}
-                        className="flex items-center gap-4 rounded-xl bg-[#F9F9F9] p-4 shadow-sm"
+                        className="flex items-center gap-4 rounded-xl bg-[#F9F9F9] p-4 shadow-sm cursor-pointer"
                         onClick={() => {
                             if (!n.isRead) markReadMutation.mutate(n.id);
+                            if (n.type === "withdrawal_request" && n.referenceId) {
+                                navigate({ to: "/app/transactions", state: { viewTransaction: n.referenceId } });
+                            }
                         }}
                     >
                         <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
@@ -95,7 +92,7 @@ function NotificationsPage() {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <div className="font-semibold text-gray-900">{n.title}</div>
-                                    <div className="text-sm text-gray-500">{n.type}</div>
+                                    <div className="text-sm text-gray-500">{formatNotificationType(n.type)}</div>
                                 </div>
                                 <div className="text-xs text-gray-400">{new Date(n.createdAt).toLocaleString()}</div>
                             </div>
@@ -104,27 +101,6 @@ function NotificationsPage() {
                     </div>
                 ))}
             </div>
-
-            {showSendModal && (
-                <SendNoticeModal
-                    user={null as any}
-                    availableUsers={[]}
-                    onClose={() => setShowSendModal(false)}
-                    onSubmit={async (payload: any) => {
-                        // Send via existing notificationService used elsewhere; fallback to API
-                        const result = await fetchApi("/notifications/send", {
-                            method: "POST",
-                            body: payload,
-                        });
-                        if (result.success) {
-                            toast.success("Notice sent");
-                            setShowSendModal(false);
-                        } else {
-                            toast.error(result.error || "Failed to send notice");
-                        }
-                    }}
-                />
-            )}
         </div>
     );
 }

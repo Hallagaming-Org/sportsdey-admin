@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter, useRouterState } from "@tanstack/react-router";
 import { ChevronDown, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { FaFileExport } from "react-icons/fa6";
@@ -47,6 +47,7 @@ const STATUS_OPTIONS: { key: StatusFilter; label: string }[] = [
 
 function WalletPage() {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [activeTab, setActiveTab] = useState<TabKey>("all");
 	const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("all");
 	const [showTypeMenu, setShowTypeMenu] = useState(false);
@@ -148,8 +149,11 @@ function WalletPage() {
 		},
 	];
 
-	const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
-	const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+	const { location } = useRouterState();
+	const initialViewTxn = (location.state as Record<string, unknown>)?.viewTransaction as string | undefined;
+
+	const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(initialViewTxn ?? null);
+	const [isDetailsOpen, setIsDetailsOpen] = useState(!!initialViewTxn);
 
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-6">
@@ -316,6 +320,7 @@ function WalletPage() {
 							onClose={() => setIsDetailsOpen(false)}
 							onActionSuccess={() => {
 								queryClient.invalidateQueries({ queryKey: ["transactions"] });
+								router.invalidate();
 							}}
 						/>
 					)}
