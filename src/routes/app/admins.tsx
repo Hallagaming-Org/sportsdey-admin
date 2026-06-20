@@ -303,7 +303,7 @@ function AdminsPage() {
 								<select
 									value={newAdmin.role}
 									onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
-									className="mt-1 w-full h-13 text-sm rounded-md bg-[#F9F9F9] px-3 pr-10 py-2 text-gray-900 focus:outline-none placeholder:text-gray-500 bg-[position:right_3rem_center]"
+									className="mt-1 w-full h-13 text-sm rounded-md bg-[#F9F9F9] px-3 pr-10 py-2 text-gray-900 focus:outline-none placeholder:text-gray-500 bg-[position:right_1rem_center]"
 								>	
 									<option value="" className="text-gray-900">choose a role</option>
 									<option value="Support Admin" className="text-gray-900">Support Admin</option>
