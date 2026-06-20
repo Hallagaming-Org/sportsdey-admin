@@ -26,6 +26,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 
 	console.log({loggedInUser})
 	const [activeTab, setActiveTab] = useState<"details" | "permissions">("details");
+	const [hasChanges, setHasChanges] = useState(false);
 
 	const permissionsList = [
 		{ id: "user_management_1", label: "User management", defaultChecked: true },
@@ -174,6 +175,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 												type="checkbox" 
 												defaultChecked={admin.role === "Super Admin" || perm.defaultChecked}
 												disabled={isAdminLoggedIn()}
+												onChange={() => setHasChanges(true)}
 												className={`peer appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#10C300] checked:border-[#10C300] transition-colors cursor-pointer ${
 													isAdminLoggedIn() ? "disabled:opacity-50 disabled:cursor-not-allowed" : ""
 												}`}
@@ -190,7 +192,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 					)}
 
 					{!isAdminLoggedIn() && <div className="mt-8 space-y-3">
-						<button className="w-full bg-[#E8F8E5] hover:bg-[#d7f0d3] text-[#10C300] font-medium py-3 rounded-full transition-colors cursor-pointer">
+						<button className={`w-full font-medium py-3 rounded-full transition-colors cursor-pointer ${hasChanges ? "bg-[#10C300] hover:bg-[#0ea800] text-white" : "bg-[#E8F8E5] hover:bg-[#d7f0d3] text-[#10C300]"}`}>
 							Save changes
 						</button>
 						<div className="flex gap-3">
