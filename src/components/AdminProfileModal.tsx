@@ -7,9 +7,11 @@ interface AdminProfileModalProps {
 	admin: AdminUser;
 	onClose: () => void;
 	onSendMessage: (admin: AdminUser) => void;
+	onForceLogout?: (adminId: string) => void;
+	onDeleteAdmin?: (adminId: string) => void;
 }
 
-export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfileModalProps) {
+export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout, onDeleteAdmin }: AdminProfileModalProps) {
 	const [activeTab, setActiveTab] = useState<"details" | "permissions">("details");
 
 	const permissionsList = [
@@ -168,22 +170,28 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 									</label>
 								))}
 							</div>
-
-							<div className="mt-8 space-y-3">
-								<button className="w-full bg-[#C8DDC5] hover:bg-[#d7f0d3] text-[#0D4F03] font-medium py-3 rounded-full transition-colors">
-									Save changes
-								</button>
-								<div className="flex gap-3">
-									<button className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#03002B] font-medium py-3 rounded-full transition-colors">
-										Force Log out
-									</button>
-									<button className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#03002B] font-medium py-3 rounded-full transition-colors">
-										Delete admin
-									</button>
-								</div>
-							</div>
 						</div>
 					)}
+
+					<div className="mt-8 space-y-3">
+						<button className="w-full bg-[#E8F8E5] hover:bg-[#d7f0d3] text-[#10C300] font-medium py-3 rounded-full transition-colors cursor-pointer">
+							Save changes
+						</button>
+						<div className="flex gap-3">
+							<button 
+								onClick={() => onForceLogout?.(admin.id)}
+								className="flex-1 bg-[#FFEEEE] hover:bg-[#ffdddd] text-[#FF0000] font-medium py-3 rounded-full transition-colors border-none cursor-pointer"
+							>
+								Force Log out
+							</button>
+							<button 
+								onClick={() => onDeleteAdmin?.(admin.id)}
+								className="flex-1 bg-[#F4F5F7] hover:bg-[#e2e4e9] text-[#03002B] font-medium py-3 rounded-full transition-colors border-none cursor-pointer"
+							>
+								Delete admin
+							</button>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
