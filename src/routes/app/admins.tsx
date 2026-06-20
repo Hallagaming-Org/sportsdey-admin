@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Eye, LogOut, Trash2 } from "lucide-react";
+import { Search, Eye, EyeOff, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DataTable, type Column } from "#/components/DataTable";
@@ -46,6 +46,7 @@ function AdminsPage() {
 		role: "Support Admin",
 		password: "",
 	});
+	const [showPassword, setShowPassword] = useState(false);
 
 	const [actionDropdown, setActionDropdown] = useState<{ user: AdminUser; top: number; right: number } | null>(null);
 	const [selectedProfileAdmin, setSelectedProfileAdmin] = useState<AdminUser | null>(null);
@@ -331,13 +332,22 @@ function AdminsPage() {
 							</div>
 							<div>
 								<label className="block font-medium text-gray-900 text-sm">Password</label>
-								<Input
-									type="password"
-									value={newAdmin.password}
-									onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
-									required
-									className="mt-1"
-								/>
+								<div className="relative mt-1">
+									<Input
+										type={showPassword ? "text" : "password"}
+										value={newAdmin.password}
+										onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+										required
+										className="pr-10"
+									/>
+									<button
+										type="button"
+										onClick={() => setShowPassword(!showPassword)}
+										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none flex items-center justify-center cursor-pointer"
+									>
+										{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+									</button>
+								</div>
 							</div>
 							<div className="flex justify-center gap-3 pt-2">
 								
