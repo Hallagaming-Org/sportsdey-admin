@@ -225,13 +225,13 @@ function AdminsPage() {
 						setPage(1);
 					}}
 				>
-					<div className="relative w-72 lg:w-80">
+					<div className="flex items-center relative w-[354px] h-11">
 						<Input
 							type="text"
 							placeholder="Search"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="rounded-full border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10"
+							className="rounded-full border border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10 placeholder:text-[#667085] text-gray-700"
 						/>
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
@@ -242,6 +242,7 @@ function AdminsPage() {
 							setSelectedTimePeriod(period);
 							setPage(1);
 						}}
+						buttonClassName="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
 					/>
 				</form>
 			</div>
