@@ -176,7 +176,9 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 											<input 
 												type="checkbox" 
 												defaultChecked={perm.defaultChecked}
-												className="peer appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#10C300] checked:border-[#10C300] transition-colors cursor-pointer"
+												className={`peer appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#10C300] checked:border-[#10C300] transition-colors cursor-pointer ${
+													isAdminLoggedIn() ? "disabled:opacity-50 disabled:cursor-not-allowed" : ""
+												}`}
 											/>
 											<svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" viewBox="0 0 14 10" fill="none">
 												<path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
