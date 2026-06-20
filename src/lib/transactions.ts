@@ -1,7 +1,7 @@
 import { fetchApi } from "./api";
 
 export type TransactionStatus = "Won" | "Pending" | "Failed" | "Refund";
-export type TransactionType = "Deposit" | "Withdrawal" | "Payments";
+export type TransactionType = "deposit" | "withdrawal" | "payments";
 
 export interface Transaction {
 	id: string;
@@ -15,7 +15,7 @@ export interface Transaction {
 
 export interface DepositSummary {
 	transactionId: string;
-	type: "Deposit";
+	type: "deposit";
 	status: string;
 	amount: number;
 	paymentMethod: string;
@@ -35,7 +35,7 @@ export interface DepositSummary {
 
 export interface WithdrawalSummary {
 	transactionId: string;
-	type: "Withdrawal";
+	type: "withdrawal";
 	status: string;
 	amount: number;
 	paymentMethod: string;
@@ -116,13 +116,13 @@ const mapTypeToUiType = (
 ): TransactionType => {
 	switch (type) {
 		case "deposit":
-			return "Deposit";
+			return "deposit";
 		case "withdrawal":
-			return "Withdrawal";
+			return "withdrawal";
 		case "payment":
-			return "Payments";
+			return "payments";
 		default:
-			return "Payments";
+			return "payments";
 	}
 };
 
