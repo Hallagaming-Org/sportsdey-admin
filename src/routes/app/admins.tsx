@@ -168,14 +168,6 @@ function AdminsPage() {
 					<p className="text-gray-600">Manage all admin access and activities</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
-					<button 
-						onClick={() => setShowGlobalNoticeModal(true)}
-						className="cursor-pointer flex items-center justify-center rounded-full text-[#053209] bg-[#F1F1F1] gap-x-3 w-[159px] h-11"
-					>
-						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
-						<span className="text-base">Send a Notice</span>
-					</button>
-					
 					<button
 						type="button"
 						onClick={() => setShowAddModal(true)}
