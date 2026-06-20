@@ -1,7 +1,7 @@
 import { fetchApi } from "./api";
 
 export type TransactionStatus = "Won" | "Pending" | "Failed" | "Refund";
-export type TransactionType = "Deposit" | "Withdrawal" | "Payments";
+export type TransactionType = "deposit" | "withdrawal" | "payments";
 
 export interface Transaction {
 	id: string;
@@ -12,6 +12,48 @@ export interface Transaction {
 	balanceAfter: string;
 	status: TransactionStatus;
 }
+
+export interface DepositSummary {
+	transactionId: string;
+	type: "deposit";
+	status: string;
+	amount: number;
+	paymentMethod: string;
+	referenceId: string;
+	ipAddress: string;
+	device: string;
+	location: string;
+	transactionChannel: string;
+	fees?: number;
+	date?: string;
+	amountCredited?: number;
+	provider?: string;
+	cardType?: string | null;
+	cardLast4?: string | null;
+	description?: string;
+}
+
+export interface WithdrawalSummary {
+	transactionId: string;
+	type: "withdrawal";
+	status: string;
+	amount: number;
+	paymentMethod: string;
+	referenceId: string;
+	ipAddress: string;
+	device: string;
+	location: string;
+	transactionChannel: string;
+	feesAmount?: number;
+	requestedOn?: string;
+	processedOn?: string | null;
+	bankName?: string | null;
+	accountNumber?: string;
+	accountName?: string;
+	balanceBefore?: number | null;
+}
+
+export type TransactionSummary = DepositSummary | WithdrawalSummary;
 
 export interface TransactionsResponse {
 	transactions: Transaction[];
@@ -74,13 +116,13 @@ const mapTypeToUiType = (
 ): TransactionType => {
 	switch (type) {
 		case "deposit":
-			return "Deposit";
+			return "deposit";
 		case "withdrawal":
-			return "Withdrawal";
+			return "withdrawal";
 		case "payment":
-			return "Payments";
+			return "payments";
 		default:
-			return "Payments";
+			return "payments";
 	}
 };
 
@@ -137,6 +179,40 @@ class TransactionService {
 			success: false,
 			error: response.error,
 		};
+	}
+
+	async getTransactionSummary(id: string): Promise<{
+		success: boolean;
+		data?: TransactionSummary;
+		error?: string;
+	}> {
+		return fetchApi<TransactionSummary>(
+			`/admin/wallet-transactions/${id}/summary`,
+		);
+	}
+
+	async approveWithdrawal(id: string): Promise<{
+		success: boolean;
+		data?: { message: string; transferReference?: string };
+		error?: string;
+	}> {
+		return fetchApi(`/admin/withdrawals/${id}/approve`, {
+			method: "POST",
+		});
+	}
+
+	async rejectWithdrawal(
+		id: string,
+		reason: string,
+	): Promise<{
+		success: boolean;
+		data?: { message: string };
+		error?: string;
+	}> {
+		return fetchApi(`/admin/withdrawals/${id}/reject`, {
+			method: "POST",
+			body: { reason },
+		});
 	}
 }
 

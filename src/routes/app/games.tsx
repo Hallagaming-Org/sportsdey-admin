@@ -1,10 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SortIcon from "@/logo/sort.svg?react";
 import GameCard from "#/components/GameCard";
-import { fetchApi } from "#/lib/api";
+import { gamesService, type ApiGame } from "#/lib/games";
 
 import Img21 from "#/assets/21.png";
 import Img777 from "#/assets/777.png";
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/app/games")({
 
 export interface Game {
   id: string;
+  code: string;
   name: string;
   tagline: string;
   type: string;
@@ -32,19 +33,6 @@ export interface Game {
   image: string;
   category: string;
 }
-
-interface APIGame {
-  id: string;
-  name: string;
-  code: string;
-  imageUrl: string | null;
-  category?: string | null;
-  enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-
 
 const GAME_METADATA: Record<string, { tagline: string, type: string, color: string, accentColor: string, image: string }> = {
   blackjack: { tagline: "Classic card game", type: "Card game", color: "from-green-600 to-green-800", accentColor: "#16A34A", image: ImgBlackjack },
@@ -63,14 +51,14 @@ function GamesPage() {
   const [sort, setSort] = useState<"asc" | "desc">("asc");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
-  const { data: apiGames = [], isLoading } = useQuery<APIGame[]>({
+  const { data: apiGames = [], isLoading } = useQuery<ApiGame[]>({
     queryKey: ["games"],
     queryFn: async () => {
-      const res = await fetch("https://staging-api.sportsdey.com/games");
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error || "Failed to fetch games");
-      return json.data || [];
+      const res = await gamesService.listGames();
+      if (!res.success) throw new Error(res.error || "Failed to fetch games");
+      return res.data || [];
     }
   });
 
@@ -85,6 +73,7 @@ function GamesPage() {
       };
       return {
         id: g.id,
+        code: g.code,
         name: g.name,
         tagline: meta.tagline,
         type: meta.type,
@@ -96,7 +85,29 @@ function GamesPage() {
       };
     });
 
+  const GAME_PRIORITY = [
+    "solitaire",
+    "blocks",
+    "twentyone",
+    "blackjack",
+    "slots",
+    "plinko",
+    "XCAPEHB",
+    "EAGLEHB",
+    "LUCKYRISEHB",
+    "LAGOSRUSH",
+  ];
+
   const sortedGames = [...games].sort((a, b) => {
+    const aIdx = GAME_PRIORITY.indexOf(a.code);
+    const bIdx = GAME_PRIORITY.indexOf(b.code);
+
+    if (aIdx !== -1 && bIdx !== -1) {
+      return sort === "asc" ? aIdx - bIdx : bIdx - aIdx;
+    }
+    if (aIdx !== -1) return -1;
+    if (bIdx !== -1) return 1;
+
     if (sort === "asc") return a.name.localeCompare(b.name);
     return b.name.localeCompare(a.name);
   });
@@ -110,13 +121,13 @@ function GamesPage() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, isCurrentlyEnabled }: { id: string; isCurrentlyEnabled: boolean }) => {
-      const action = isCurrentlyEnabled ? "disable" : "enable";
-      const res = await fetchApi(`/games/${id}/${action}`, { method: "PATCH" });
-      if (!res.success) throw new Error(res.error || `Failed to ${action} game`);
+      const res = await gamesService.toggleGame(id, !isCurrentlyEnabled);
+      if (!res.success) throw new Error(res.error || "Failed to update game");
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
+      router.invalidate();
       toast.success("Game status updated successfully");
     },
     onError: (error) => {
@@ -137,7 +148,7 @@ function GamesPage() {
         <div>
           <h2 className="font-bold text-2xl text-gray-900">All Games</h2>
           <p className="text-sm text-gray-500 mt-0.5">
-            <span 
+            <span
               className="relative font-medium cursor-pointer text-[#001A26] after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-[#001A26] after:transition-all after:duration-500 hover:after:w-full"
               onClick={() => navigate({ to: "/app" })}
             >Dashboard</span> &rsaquo; Games management

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { ChevronDown, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { type UpdateCmsContentData, cmsService } from "../lib/cms";
@@ -29,6 +30,7 @@ interface CmsEditModalProps {
 export function CmsEditModal({ editContentId, onClose }: CmsEditModalProps) {
 	const isOpen = !!editContentId;
 	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [selectedFileName, setSelectedFileName] = useState("");
 	const [fieldErrors, setFieldErrors] = useState<
 		Partial<Record<CmsFieldName, string>>
@@ -180,6 +182,7 @@ export function CmsEditModal({ editContentId, onClose }: CmsEditModalProps) {
 			setSelectedFileName("");
 			queryClient.invalidateQueries({ queryKey: ["cms"] });
 			queryClient.invalidateQueries({ queryKey: ["cms-content-detail", editContentId] });
+			router.invalidate();
 		},
 		onError: (error) => {
 			const apiError = error as CmsMutationError;

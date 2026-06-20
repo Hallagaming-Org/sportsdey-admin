@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useRouter, useRouterState } from "@tanstack/react-router";
 import { ChevronDown, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { FaFileExport } from "react-icons/fa6";
@@ -12,8 +12,9 @@ import { getDateRangeForPeriod } from "#/lib/time-period";
 import {
 	type Transaction,
 	type TransactionStatus,
-	transactionService,
+ 	transactionService,
 } from "#/lib/transactions";
+import { TransactionDetailsModal } from "#/components/TransactionDetailsModal";
 export const Route = createFileRoute("/app/transactions")({
 	component: WalletPage,
 });
@@ -45,6 +46,8 @@ const STATUS_OPTIONS: { key: StatusFilter; label: string }[] = [
 ];
 
 function WalletPage() {
+	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [activeTab, setActiveTab] = useState<TabKey>("all");
 	const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("all");
 	const [showTypeMenu, setShowTypeMenu] = useState(false);
@@ -145,6 +148,12 @@ function WalletPage() {
 			),
 		},
 	];
+
+	const { location } = useRouterState();
+	const initialViewTxn = (location.state as Record<string, unknown>)?.viewTransaction as string | undefined;
+
+	const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(initialViewTxn ?? null);
+	const [isDetailsOpen, setIsDetailsOpen] = useState(!!initialViewTxn);
 
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-6">
@@ -284,6 +293,15 @@ function WalletPage() {
 						maxHeight="100%"
 						isLoading={isLoading}
 						onActionClick={(t) => console.log("Action for transaction", t.id)}
+						actionMenuItems={[
+							{
+								label: "View transaction info",
+								onClick: (t: Transaction) => {
+									setSelectedTransactionId(t.id);
+									setIsDetailsOpen(true);
+								},
+							},
+						]}
 						emptyMessage={error ? error.message : "No transactions found"}
 						pagination={{
 							currentPage: page,
@@ -293,6 +311,18 @@ function WalletPage() {
 							itemsPerPage: ITEMS_PER_PAGE,
 						}}
 					/>
+
+					{selectedTransactionId && (
+						<TransactionDetailsModal
+							transactionId={selectedTransactionId}
+							open={isDetailsOpen}
+							onClose={() => setIsDetailsOpen(false)}
+							onActionSuccess={() => {
+								queryClient.invalidateQueries({ queryKey: ["transactions"] });
+								router.invalidate();
+							}}
+						/>
+					)}
 				</div>
 			</div>
 		</div>

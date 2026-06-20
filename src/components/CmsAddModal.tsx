@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { ChevronDown, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { type CreateCmsContentData, cmsService } from "../lib/cms";
@@ -28,6 +29,7 @@ interface CmsAddModalProps {
 
 export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 	const queryClient = useQueryClient();
+	const router = useRouter();
 	const [selectedFileName, setSelectedFileName] = useState("");
 	const [fieldErrors, setFieldErrors] = useState<
 		Partial<Record<CmsFieldName, string>>
@@ -149,6 +151,7 @@ export function CmsAddModal({ isOpen, onClose }: CmsAddModalProps) {
 			});
 			setSelectedFileName("");
 			queryClient.invalidateQueries({ queryKey: ["cms"] });
+			router.invalidate();
 		},
 		onError: (error) => {
 			const apiError = error as CmsMutationError;
