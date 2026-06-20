@@ -263,7 +263,7 @@ function AdminsPage() {
 							<button
 								type="button"
 								onClick={() => setShowAddModal(false)}
-								className="text-gray-500 hover:text-gray-900"
+								className="text-gray-500 w-[39px] h-[39px] flex items-center justify-center hover:text-gray-900 rounded-full border border-[#03002B] cursor-pointer"
 							>
 								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
