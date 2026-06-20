@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, Eye, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ export interface AdminUser {
 }
 
 function AdminsPage() {
+	const queryClient = useQueryClient();
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
@@ -271,10 +272,40 @@ function AdminsPage() {
 							</button>
 						</div>
 						<form
-							onSubmit={(e) => {
+							onSubmit={async (e) => {
 								e.preventDefault();
-								toast.success("Admin created successfully");
-								setShowAddModal(false);
+								if (!newAdmin.role) {
+									toast.error("Please select a role");
+									return;
+								}
+								try {
+									const payload = {
+										email: newAdmin.email,
+										password: newAdmin.password,
+										name: newAdmin.name,
+										role: newAdmin.role === "CSR Admin" ? "csr-admin" : "super_admin",
+									};
+									const response = await fetch("https://staging-api.sportsdey.com/admin/admins", {
+										method: "POST",
+										headers: {
+											"Content-Type": "application/json",
+										},
+										body: JSON.stringify(payload),
+										credentials: "include",
+									});
+									
+									const data = await response.json();
+									if (response.ok && data.success !== false) {
+										toast.success("Admin created successfully");
+										setShowAddModal(false);
+										setNewAdmin({ name: "", email: "", role: "", password: "" });
+										queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+									} else {
+										toast.error(data.error || "Failed to create admin");
+									}
+								} catch (error) {
+									toast.error("Failed to create admin. Please try again.");
+								}
 							}}
 							className="space-y-4"
 						>
