@@ -127,7 +127,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 								className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-5 py-2 font-medium text-sm transition-colors ${
 									activeTab === "permissions" 
 										? "bg-[#10C300] text-white" 
-										: "bg-[#E8F8E5] text-[#10C300] hover:bg-[#d7f0d3]"
+										: "bg-[#E4FFEEB2] text-[#10C300] hover:bg-[#d7f0d3]"
 								}`}
 							>
 								Permissions
