@@ -105,7 +105,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 						<div className="flex items-center gap-3 mt-6">
 							{ !isAdminLoggedIn() && (<button 
 								onClick={() => onSendMessage(admin)}
-								className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#F4F5F7] px-4 py-2 font-medium text-gray-600 text-sm hover:bg-gray-200"
+								className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#E0E8F980] px-4 py-2 font-medium text-gray-600 text-sm hover:bg-gray-200"
 							>
 								<MessageCircle className="h-4 w-4 text-gray-400" />
 								Send a message
