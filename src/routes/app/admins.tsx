@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { DataTable, type Column } from "#/components/DataTable";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import NotificationIcon from "#/assets/NotificationIcon";
+import SuccessIndicator from "#/assets/SuccessIndicator.png";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import { Input } from "#/components/Input";
@@ -40,10 +41,11 @@ function AdminsPage() {
 	const [selectedTimePeriod, setSelectedTimePeriod] =
 		useState<TimePeriodOption>("All");
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [showSuccessModal, setShowSuccessModal] = useState(false);
 	const [newAdmin, setNewAdmin] = useState({
 		name: "",
 		email: "",
-		role: "Support Admin",
+		role: "",
 		password: "",
 	});
 	const [showPassword, setShowPassword] = useState(false);
@@ -69,6 +71,7 @@ function AdminsPage() {
 			
 			toast.success("Admin created successfully");
 			setShowAddModal(false);
+			setShowSuccessModal(true);
 			setNewAdmin({ name: "", email: "", role: "", password: "" });
 			queryClient.invalidateQueries({ queryKey: ["admins-list"] });
 		} catch (error) {
@@ -451,6 +454,43 @@ function AdminsPage() {
 						}
 					}}
 				/>
+			)}
+			{showSuccessModal && (
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+					onClick={() => setShowSuccessModal(false)}
+				>
+					<div
+						className="w-[344px] max-w-[90vw] rounded-[16px] bg-white p-6 shadow-xl relative flex flex-col items-center"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<button
+							type="button"
+							onClick={() => setShowSuccessModal(false)}
+							className="absolute right-4 top-4 text-gray-500 w-[30px] h-[30px] flex items-center justify-center hover:text-gray-900 rounded-full border border-[#03002B] cursor-pointer"
+						>
+							<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						</button>
+
+						<img src={SuccessIndicator} alt="Success" className="w-[74px] h-[70px] object-contain mb-4 mt-6" />
+						
+						<h3 className="font-bold text-[28px] text-[#03002B] mb-2">Success!</h3>
+						
+						<p className="text-[#4F4F4F] text-center text-[15px] mb-8 px-4 leading-[22px]">
+							The admin user ${newAdmin.name} has been<br/>successfully added to the system.
+						</p>
+
+						<button
+							type="button"
+							onClick={() => setShowSuccessModal(false)}
+							className="w-full h-[48px] rounded-full text-[15px] bg-[#1BAA04] text-white font-medium hover:bg-[#158f03] transition-colors"
+						>
+							Done
+						</button>
+					</div>
+				</div>
 			)}
 		</div>
 	);
