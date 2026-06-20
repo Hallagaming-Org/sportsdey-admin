@@ -8,6 +8,7 @@ import { ActionDropdown } from "#/components/ActionDropdown";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
+import { Input } from "#/components/Input";
 import {
 	TimePeriodDropdown,
 	type TimePeriodOption,
@@ -203,12 +204,12 @@ function AdminsPage() {
 					}}
 				>
 					<div className="relative w-72 lg:w-80">
-						<input
+						<Input
 							type="text"
 							placeholder="Search"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="w-full rounded-full border border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10 shadow-md focus:border-primary focus:outline-none focus:ring-primary"
+							className="rounded-full border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10"
 						/>
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
@@ -279,22 +280,22 @@ function AdminsPage() {
 						>
 							<div>
 								<label className="block font-medium text-gray-900 text-sm">Name</label>
-								<input
+								<Input
 									type="text"
 									value={newAdmin.name}
 									onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
 									required
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+									className="mt-1"
 								/>
 							</div>
 							<div>
 								<label className="block font-medium text-gray-900 text-sm">Email</label>
-								<input
+								<Input
 									type="email"
 									value={newAdmin.email}
 									onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
 									required
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+									className="mt-1"
 								/>
 							</div>
 							<div>
@@ -310,12 +311,12 @@ function AdminsPage() {
 							</div>
 							<div>
 								<label className="block font-medium text-gray-900 text-sm">Password</label>
-								<input
+								<Input
 									type="password"
 									value={newAdmin.password}
 									onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
 									required
-									className="mt-1 w-full rounded-md border border-gray-400 px-3 py-2 text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+									className="mt-1"
 								/>
 							</div>
 							<div className="flex justify-center gap-3 pt-2">
