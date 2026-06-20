@@ -29,6 +29,7 @@ export interface SignInResponse {
 	success: boolean;
 	data?: {
 		admin: Admin;
+		token?: string;
 	};
 	error?: string;
 }
