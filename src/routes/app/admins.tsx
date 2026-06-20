@@ -30,6 +30,8 @@ export interface AdminUser {
 	dateAdded: number;
 	role: string;
 	avatar?: string;
+	mobileNumber?: string | null;
+	permissions?: string[];
 }
 
 function AdminsPage() {
@@ -95,8 +97,9 @@ function AdminsPage() {
 		name: admin.name,
 		email: admin.email,
 		dateAdded: admin.createdAt ? new Date(admin.createdAt).getTime() : 0,
-		role: admin.role === "csr-admin" ? "CSR Admin" : "Support Admin",
+		role: admin.role === "super_admin" ? "Super Admin" : admin.role === "csr-admin" ? "CSR Admin" : "Support Admin",
 		avatar: admin.image || undefined,
+		mobileNumber: admin.mobileNumber,
 	}));
 
 	const filteredAdmins = allAdmins.filter(admin => {
@@ -375,9 +378,24 @@ function AdminsPage() {
 						{
 							icon: <Eye className="w-4 h-4" />,
 							label: "View admin",
-							onClick: () => {
-								setSelectedProfileAdmin(actionDropdown.user);
-								setActionDropdown(null);
+							onClick: async () => {
+								try {
+									const adminDetails = await adminAuth.getAdmin(actionDropdown.user.id);
+									setSelectedProfileAdmin({
+										id: adminDetails.id,
+										name: adminDetails.name,
+										email: adminDetails.email,
+										dateAdded: adminDetails.createdAt ? new Date(adminDetails.createdAt).getTime() : 0,
+										role: adminDetails.role === "super_admin" ? "Super Admin" : adminDetails.role === "csr-admin" ? "CSR Admin" : "Support Admin",
+										avatar: adminDetails.image || undefined,
+										mobileNumber: adminDetails.mobileNumber,
+										permissions: adminDetails.permissions || [],
+									});
+								} catch (error) {
+									toast.error(error instanceof Error ? error.message : "Failed to fetch admin details");
+								} finally {
+									setActionDropdown(null);
+								}
 							},
 						},
 						{
@@ -391,18 +409,31 @@ function AdminsPage() {
 						{
 							icon: <LogOut className="w-4 h-4" />,
 							label: "Force Log out",
-							onClick: () => {
-								toast.success(`Forced logout for ${actionDropdown.user.name}`);
-								setActionDropdown(null);
+							onClick: async () => {
+								try {
+									await adminAuth.forceLogoutAdmin(actionDropdown.user.id);
+									toast.success(`Forced logout for ${actionDropdown.user.name}`);
+								} catch (error) {
+									toast.error(error instanceof Error ? error.message : "Failed to force logout admin");
+								} finally {
+									setActionDropdown(null);
+								}
 							},
 						},
 						{
 							icon: <Trash2 className="w-4 h-4 text-red-500" />,
 							label: "Delete admin",
 							className: "text-red-500 hover:bg-red-50",
-							onClick: () => {
-								toast.success(`Admin ${actionDropdown.user.name} deleted`);
-								setActionDropdown(null);
+							onClick: async () => {
+								try {
+									await adminAuth.deleteAdmin(actionDropdown.user.id);
+									toast.success(`Admin ${actionDropdown.user.name} deleted successfully`);
+									queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+								} catch (error) {
+									toast.error(error instanceof Error ? error.message : "Failed to delete admin");
+								} finally {
+									setActionDropdown(null);
+								}
 							},
 						},
 					]}
