@@ -1,21 +1,4 @@
-const API_BASE = (() => {
-	const envBase = (import.meta as any)?.env?.VITE_API_BASE as
-		| string
-		| undefined;
-	if (envBase) return envBase;
-
-	if (typeof window !== "undefined" && window.location) {
-		const hostname = window.location.hostname;
-		if (hostname === "localhost" || hostname === "127.0.0.1") {
-			return "http://localhost:3000";
-		}
-		if (hostname.includes("staging")) {
-			return "https://staging-api.sportsdey.com";
-		}
-		return "https://api.sportsdey.com";
-	}
-	return "https://api.sportsdey.com";
-})();
+const API_BASE = (import.meta as any)?.env?.VITE_API_BASE as string;
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -56,17 +39,7 @@ async function fetchApi<T>(
 		fetchOptions.body = JSON.stringify(body);
 	}
 
-	let baseUrl = API_BASE;
-	if (endpoint.startsWith("/games")) {
-		if (typeof window !== "undefined" && window.location) {
-			const hostname = window.location.hostname;
-			if (hostname === "localhost" || hostname === "127.0.0.1") {
-				baseUrl = "https://staging-api.sportsdey.com";
-			}
-		}
-	}
-
-	const response = await fetch(`${baseUrl}${endpoint}`, fetchOptions);
+	const response = await fetch(`${API_BASE}${endpoint}`, fetchOptions);
 
 	let result;
 	try {
