@@ -10,13 +10,10 @@ import SuccessIndicator from "#/assets/SuccessIndicator.png";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import { Input } from "#/components/Input";
-import {
-	TimePeriodDropdown,
-	type TimePeriodOption,
-} from "#/components/TimePeriodDropdown";
 import type { User } from "#/lib/users";
 import { notificationService } from "#/lib/notifications";
 import { adminAuth } from "#/lib/auth";
+import { TimePeriodFilter, type TimePeriod } from "#/components/TimePeriodFilter";
 export const Route = createFileRoute("/app/admins")({
 	component: AdminsPage,
 });
@@ -41,7 +38,8 @@ function AdminsPage() {
 	const [limit] = useState(10);
 	const [activeTab, setActiveTab] = useState<Tab>("all");
 	const [selectedTimePeriod, setSelectedTimePeriod] =
-		useState<TimePeriodOption>("All");
+		useState<TimePeriod>("All");
+	const [customRange, setCustomRange] = useState<any>();
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [showSuccessModal, setShowSuccessModal] = useState(false);
 	const [newAdmin, setNewAdmin] = useState({
@@ -236,14 +234,14 @@ function AdminsPage() {
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
 					
-					<TimePeriodDropdown
-						value={selectedTimePeriod}
-						onChange={(period) => {
-							setSelectedTimePeriod(period);
-							setPage(1);
-						}}
-						buttonClassName="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
-					/>
+					<TimePeriodFilter
+								onFilterChange={(period, range) => {
+									setSelectedTimePeriod(period);
+									setCustomRange(range);
+									setPage(1);
+								}}
+								buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
+							/>
 				</form>
 			</div>
 
