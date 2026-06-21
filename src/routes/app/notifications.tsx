@@ -1,11 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { fetchApi } from "../../lib/api";
 
 export const Route = createFileRoute("/app/notifications")({
+    beforeLoad: ({ context }) => {
+        const admin = (context as any).admin;
+        if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("send_notifications")) {
+            throw redirect({ to: "/app", replace: true });
+        }
+    },
     component: NotificationsPage,
 });
 
@@ -81,7 +87,7 @@ function NotificationsPage() {
                         onClick={() => {
                             if (!n.isRead) markReadMutation.mutate(n.id);
                             if (n.type === "withdrawal_request" && n.referenceId) {
-                                navigate({ to: "/app/transactions", state: { viewTransaction: n.referenceId } });
+                                navigate({ to: "/app/transactions", state: { viewTransaction: n.referenceId } as any });
                             }
                         }}
                     >
