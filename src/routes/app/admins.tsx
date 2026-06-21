@@ -572,7 +572,7 @@ function AdminsPage() {
 						<h3 className="font-bold text-[28px] text-[#03002B] mb-2">Success!</h3>
 						
 						<p className="text-[#4F4F4F] text-center text-[15px] mb-8 px-4 leading-[22px]">
-							The admin user ${newAdmin.name} has been<br/>successfully added to the system.
+							The admin user {newAdmin.name} has been<br/>successfully added to the system.
 						</p>
 
 						<button
