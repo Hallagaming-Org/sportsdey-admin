@@ -25,6 +25,7 @@ export interface UserProfile {
 	name: string;
 	email: string;
 	image: string | null;
+	photo?: string | null;
 	mobileNumber: string | null;
 	country: string | null;
 	verificationStatus: string;
