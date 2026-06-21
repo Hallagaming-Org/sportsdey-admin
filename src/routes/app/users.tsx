@@ -76,7 +76,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 	);
 
 	useEffect(() => {
-		console.log("UsersPage: computed date range", { selectedTimePeriod, customRange, fromDate, toDate });
+		// console.log("UsersPage: computed date range", { selectedTimePeriod, customRange, fromDate, toDate });
 	}, [selectedTimePeriod, customRange, fromDate, toDate]);
 
 	const {
@@ -86,7 +86,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 	} = useQuery({
 		queryKey: ["users", page, limit, sort, activeTab, fromDate, toDate],
 		queryFn: async () => {
-			console.log("UsersPage: calling listUsers with", { page, limit, sort, tab: activeTab, fromDate, toDate });
+			// console.log("UsersPage: calling listUsers with", { page, limit, sort, tab: activeTab, fromDate, toDate });
 			const result = await userService.listUsers({
 				page,
 				limit,
@@ -504,7 +504,7 @@ useEffect(() => {
 							icon: <PauseCircle className="w-4 h-4" />,
 							label: actionDropdown.user.suspended ? "Reactivate" : "Suspend",
 							onClick: () => {
-								console.log("Current user status:", actionDropdown.user.status);
+								// console.log("Current user status:", actionDropdown.user.status);
 								toggleSuspendMutation.mutate(actionDropdown.user.id);
 								setActionDropdown(null);
 							},
