@@ -38,9 +38,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 	}
 	
 	const [activeTab, setActiveTab] = useState<"details" | "permissions">("details");
-	const [selectedPermissions, setSelectedPermissions] = useState<string[]>(
-		admin.role === "Super Admin" ? PERMISSIONS_LIST.map(p => p.id) : (admin.permissions || [])
-	);
+	const [selectedPermissions, setSelectedPermissions] = useState<string[]>(admin.permissions || []);
 	const [hasChanges, setHasChanges] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 
