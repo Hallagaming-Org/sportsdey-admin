@@ -37,24 +37,21 @@ type NavItem = {
 	permission?: string; // required permission key to access this item; omit if always visible
 };
 
-// NOTE: permission keys below are placeholders for items not shown in your
-// sample payload (transactions, games, tickets, cms, activity, admins).
-// Replace with whatever your backend actually issues for each.
 const menuItems: NavItem[] = [
-	{ icon: Home, label: "Dashboard", to: "/app" },
+	{ icon: Home, label: "Dashboard", to: "/app", permission: "general" },
 	{ icon: Users, label: "User management", to: "/app/users", permission: "user_management" },
-	{ icon: NotificationIcon as LucideIcon, label: "Notifications", to: "/app/notifications", permission: "view_notifications" },
-	{ icon: Wallet, label: "Transactions", to: "/app/transactions", permission: "view_transactions" },
-	{ icon: Gamepad2, label: "Game management", to: "/app/games", permission: "manage_games" },
-	{ icon: Ticket, label: "Ticket history", to: "/app/tickets", permission: "view_tickets" },
-	{ icon: Settings, label: "CMS Controls", to: "/app/cms", permission: "manage_cms" },
-	{ icon: Activity, label: "Activity log", to: "/app/activity", permission: "view_activity_log" },
-	{ icon: AdminPanelIcon as LucideIcon, label: "Admin management", to: "/app/admins", permission: "manage_admins" },
+	{ icon: NotificationIcon as LucideIcon, label: "Notifications", to: "/app/notifications", permission: "send_notifications" },
+	{ icon: Wallet, label: "Transactions", to: "/app/transactions", permission: "transaction_read" },
+	{ icon: Gamepad2, label: "Game management", to: "/app/games", permission: "general" },
+	{ icon: Ticket, label: "Ticket history", to: "/app/tickets", permission: "view_ticket_history" },
+	{ icon: Settings, label: "CMS Controls", to: "/app/cms", permission: "post_upload_content" },
+	{ icon: Activity, label: "Activity log", to: "/app/activity", permission: "reports_issues" },
+	{ icon: AdminPanelIcon as LucideIcon, label: "Admin management", to: "/app/admins", permission: "view_other_admins" },
 ];
 
 const otherItems: NavItem[] = [
 	{ icon: FileText, label: "KYC & Document Uploads", to: "/app/kyc", permission: "view_kyc_document" },
-	{ icon: Settings, label: "General setting", to: "/app/settings" },
+	{ icon: Settings, label: "General setting", to: "/app/settings", permission: "general" },
 ];
 
 function hasAccess(admin: Admin | null | undefined, item: NavItem): boolean {
