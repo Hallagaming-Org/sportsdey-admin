@@ -33,6 +33,7 @@ export interface AdminUser {
 
 function AdminsPage() {
 	const queryClient = useQueryClient();
+	const { admin: currentUser } = Route.useRouteContext() as any;
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
@@ -423,44 +424,48 @@ function AdminsPage() {
 								}
 							},
 						},
-						{
-							icon: <NotificationIcon className="w-4 h-4" />,
-							label: "Send a message",
-							onClick: () => {
-								setNoticeModalAdmin(actionDropdown.user);
-								setActionDropdown(null);
-							},
-						},
-						{
-							icon: <LogOut className="w-4 h-4" />,
-							label: "Force Log out",
-							onClick: async () => {
-								try {
-									await adminAuth.forceLogoutAdmin(actionDropdown.user.id);
-									toast.success(`Forced logout for ${actionDropdown.user.name}`);
-								} catch (error) {
-									toast.error(error instanceof Error ? error.message : "Failed to force logout admin");
-								} finally {
-									setActionDropdown(null);
-								}
-							},
-						},
-						{
-							icon: <Trash2 className="w-4 h-4 text-red-500" />,
-							label: "Delete admin",
-							className: "text-red-500 hover:bg-red-50",
-							onClick: async () => {
-								try {
-									await adminAuth.deleteAdmin(actionDropdown.user.id);
-									toast.success(`Admin ${actionDropdown.user.name} deleted successfully`);
-									queryClient.invalidateQueries({ queryKey: ["admins-list"] });
-								} catch (error) {
-									toast.error(error instanceof Error ? error.message : "Failed to delete admin");
-								} finally {
-									setActionDropdown(null);
-								}
-							},
-						},
+						...(actionDropdown.user.id !== currentUser?.id
+							? [
+									{
+										icon: <NotificationIcon className="w-4 h-4" />,
+										label: "Send a message",
+										onClick: () => {
+											setNoticeModalAdmin(actionDropdown.user);
+											setActionDropdown(null);
+										},
+									},
+									{
+										icon: <LogOut className="w-4 h-4" />,
+										label: "Force Log out",
+										onClick: async () => {
+											try {
+												await adminAuth.forceLogoutAdmin(actionDropdown.user.id);
+												toast.success(`Forced logout for ${actionDropdown.user.name}`);
+											} catch (error) {
+												toast.error(error instanceof Error ? error.message : "Failed to force logout admin");
+											} finally {
+												setActionDropdown(null);
+											}
+										},
+									},
+									{
+										icon: <Trash2 className="w-4 h-4 text-red-500" />,
+										label: "Delete admin",
+										className: "text-red-500 hover:bg-red-50",
+										onClick: async () => {
+											try {
+												await adminAuth.deleteAdmin(actionDropdown.user.id);
+												toast.success(`Admin ${actionDropdown.user.name} deleted successfully`);
+												queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+											} catch (error) {
+												toast.error(error instanceof Error ? error.message : "Failed to delete admin");
+											} finally {
+												setActionDropdown(null);
+											}
+										},
+									},
+							  ]
+							: []),
 					]}
 				/>
 			)}
