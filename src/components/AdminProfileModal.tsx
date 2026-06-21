@@ -38,7 +38,13 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 	}
 	
 	const [activeTab, setActiveTab] = useState<"details" | "permissions">("details");
-	const [selectedPermissions, setSelectedPermissions] = useState<string[]>(admin.permissions || []);
+	
+	const allPermissionIds = PERMISSIONS_LIST.map(p => p.id);
+	const isSuperAdmin = admin.role === "Super Admin";
+	
+	const [selectedPermissions, setSelectedPermissions] = useState<string[]>(
+		isSuperAdmin ? allPermissionIds : (admin.permissions || [])
+	);
 	const [hasChanges, setHasChanges] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -190,11 +196,11 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 										<div className="relative flex items-center justify-center">
 											<input 
 												type="checkbox" 
-												checked={selectedPermissions.includes(perm.id)}
-												disabled={isAdminLoggedIn()}
+												checked={isSuperAdmin || selectedPermissions.includes(perm.id)}
+												disabled={isSuperAdmin || isAdminLoggedIn()}
 												onChange={() => handlePermissionChange(perm.id)}
 												className={`peer appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#10C300] checked:border-[#10C300] transition-colors cursor-pointer ${
-													isAdminLoggedIn() ? "disabled:opacity-50 disabled:cursor-not-allowed" : ""
+													(isSuperAdmin || isAdminLoggedIn()) ? "disabled:opacity-50 disabled:cursor-not-allowed" : ""
 												}`}
 											/>
 											<svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" viewBox="0 0 14 10" fill="none">
