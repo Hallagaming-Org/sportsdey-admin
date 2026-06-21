@@ -1,18 +1,23 @@
 const API_BASE = (() => {
-	const envBase = import.meta.env.VITE_API_BASE;
-	if (envBase) return envBase;
-
 	if (typeof window !== "undefined" && window.location) {
 		const hostname = window.location.hostname;
-		if (hostname === "localhost" || hostname === "127.0.0.1") {
-			return "https://staging-api.sportsdey.com";
-		}
+		
+		// If we are deployed to staging, force the staging API
 		if (hostname.includes("staging")) {
 			return "https://staging-api.sportsdey.com";
 		}
-		return "https://api.sportsdey.com";
+		
+		// If we are deployed to production, force production API
+		if (hostname === "admin.sportsdey.com" || hostname === "sportsdey-admin.pages.dev" || hostname === "sportsdey.com") {
+			return "https://api.sportsdey.com";
+		}
 	}
-	return "https://api.sportsdey.com";
+
+	// Otherwise (like local development), use the env variable
+	const envBase = import.meta.env.VITE_API_BASE;
+	if (envBase) return envBase;
+
+	return "http://localhost:3000";
 })();
 // const API_BASE = (import.meta as any)?.env?.VITE_API_BASE as string;
 
