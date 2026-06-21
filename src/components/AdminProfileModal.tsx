@@ -2,7 +2,7 @@ import { X, AlertTriangle, MessageCircle } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { useState } from "react";
 import type { AdminUser } from "../routes/app/admins";
-import { getCookie } from "../lib/api";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 
 interface AdminProfileModalProps {
 	admin: AdminUser;
@@ -13,18 +13,11 @@ interface AdminProfileModalProps {
 }
 
 export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout, onDeleteAdmin }: AdminProfileModalProps) {
-	const cookieData = getCookie("admin_user_details");
-	let loggedInUser = null;
-	try {
-		if (cookieData) {
-			loggedInUser = JSON.parse(decodeURIComponent(cookieData));
-		}
-	} catch (e) {}
+	const currentUser = useCurrentUser();
 	const isAdminLoggedIn = () => {
-		return (loggedInUser?.admin?.id || loggedInUser?.id) === admin.id;
+		return currentUser?.id === admin.id;
 	}
-
-	console.log({loggedInUser})
+	
 	const [activeTab, setActiveTab] = useState<"details" | "permissions">("details");
 	const [hasChanges, setHasChanges] = useState(false);
 
