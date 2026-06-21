@@ -214,13 +214,13 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 						<button 
 							onClick={handleSaveChanges}
 							disabled={!hasChanges || isSaving}
-							className={`w-full font-medium py-3 rounded-full transition-colors ${hasChanges ? "bg-[#10C300] hover:bg-[#0ea800] text-white cursor-pointer" : "bg-[#E8F8E5] text-[#10C300] opacity-70 cursor-not-allowed"}`}>
+							className={`w-full font-medium py-3 rounded-full transition-colors ${hasChanges ? "bg-[#10C300] hover:bg-[#0ea800] text-white cursor-pointer" : "bg-[#C8DDC5] text-[#0D4F03] opacity-70 cursor-not-allowed"}`}>
 							{isSaving ? "Saving..." : "Save changes"}
 						</button>
 						<div className="flex gap-3">
 							<button 
 								onClick={() => onForceLogout?.(admin.id)}
-								className="flex-1 bg-[#FFEEEE] hover:bg-[#ffdddd] text-[#FF0000] font-medium py-3 rounded-full transition-colors border-none cursor-pointer"
+								className="flex-1 bg-[#FFEEEE] hover:bg-[#ffdddd] text-[#D10404] font-medium py-3 rounded-full transition-colors border-none cursor-pointer"
 							>
 								Force Log out
 							</button>
