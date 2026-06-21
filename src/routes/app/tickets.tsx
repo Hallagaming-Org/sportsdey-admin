@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
   TimePeriodDropdown,
@@ -19,6 +19,12 @@ import { toast } from "sonner";
 
 
 export const Route = createFileRoute("/app/tickets")({
+  beforeLoad: ({ context }) => {
+    const admin = (context as any).admin;
+    if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("view_ticket_history")) {
+      throw redirect({ to: "/app", replace: true });
+    }
+  },
   component: TicketsPage,
 });
 

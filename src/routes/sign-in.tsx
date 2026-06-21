@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { adminAuth } from "../lib/auth";
+import { setCookie } from "../lib/api";
 import { cn } from "../lib/utils";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -29,6 +30,10 @@ function SignInPage() {
 		onSuccess: (result) => {
 
 			if (result.success && result.data) {
+				setCookie("admin_user_details", encodeURIComponent(JSON.stringify(result.data)), 7);
+				if (result.data.token) {
+					setCookie("admin_session", result.data.token, 7);
+				}
 				navigate({
 					to: "/app",
 					replace: true,

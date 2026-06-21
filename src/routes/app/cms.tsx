@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter, redirect } from "@tanstack/react-router";
 import { Eye, PauseCircle, Search, Trash } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Edit2, Trash2 } from "lucide-react";
@@ -17,6 +17,12 @@ import { ActionDropdown } from "@/components/ActionDropdown";
 
 
 export const Route = createFileRoute("/app/cms")({
+	beforeLoad: ({ context }) => {
+		const admin = (context as any).admin;
+		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("post_upload_content")) {
+			throw redirect({ to: "/app", replace: true });
+		}
+	},
 	component: CmsPage,
 });
 

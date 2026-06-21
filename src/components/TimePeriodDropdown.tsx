@@ -56,7 +56,7 @@ export function TimePeriodDropdown({
 		setSelected("Custom");
 		setIsOpen(false);
 		// debug log to help trace custom range application
-		console.log("TimePeriodDropdown: apply custom range", { start: startDate, end: endDate });
+		// console.log("TimePeriodDropdown: apply custom range", { start: startDate, end: endDate });
 		onChange("Custom", { start: startDate, end: endDate });
 	};
 

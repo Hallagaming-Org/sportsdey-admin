@@ -2,36 +2,75 @@ import { X, AlertTriangle, MessageCircle } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { useState } from "react";
 import type { AdminUser } from "../routes/app/admins";
+import { useCurrentUser } from "../hooks/useCurrentUser";
+import { adminAuth } from "../lib/auth";
+import { toast } from "sonner";
+
+export const PERMISSIONS_LIST = [
+	{ id: "user_management", label: "User management" },
+	{ id: "transaction_read", label: "Transactions" },
+	{ id: "general", label: "General" },
+	{ id: "view_player_details", label: "View player details" },
+	{ id: "view_payouts", label: "View payouts" },
+	{ id: "send_notifications", label: "Send notifications" },
+	{ id: "deactivate_account", label: "Deactivate account" },
+	{ id: "post_upload_content", label: "Post/Upload Content" },
+	{ id: "view_other_admins", label: "View Other admins" },
+	{ id: "view_ticket_history", label: "View Ticket history" },
+	{ id: "reports_issues", label: "Reports & issues" },
+	{ id: "payments", label: "Payments" },
+	{ id: "view_kyc_document", label: "View KYC document" },
+];
 
 interface AdminProfileModalProps {
 	admin: AdminUser;
 	onClose: () => void;
 	onSendMessage: (admin: AdminUser) => void;
+	onForceLogout?: (adminId: string) => void;
+	onDeleteAdmin?: (adminId: string) => void;
+	onPermissionsUpdated?: () => void;
 }
 
-export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfileModalProps) {
+export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout, onDeleteAdmin, onPermissionsUpdated }: AdminProfileModalProps) {
+	const currentUser = useCurrentUser();
+	const isAdminLoggedIn = () => {
+		return currentUser?.id === admin.id;
+	}
+	
 	const [activeTab, setActiveTab] = useState<"details" | "permissions">("details");
+	
+	const allPermissionIds = PERMISSIONS_LIST.map(p => p.id);
+	const isSuperAdmin = admin.role === "Super Admin";
+	
+	const [selectedPermissions, setSelectedPermissions] = useState<string[]>(
+		isSuperAdmin ? allPermissionIds : (admin.permissions || [])
+	);
+	const [hasChanges, setHasChanges] = useState(false);
+	const [isSaving, setIsSaving] = useState(false);
 
-	const permissionsList = [
-		{ id: "user_management_1", label: "User management", defaultChecked: true },
-		{ id: "transactions", label: "Transactions", defaultChecked: true },
-		{ id: "general", label: "General", defaultChecked: true },
-		{ id: "view_player_details", label: "View player details", defaultChecked: false },
-		{ id: "view_payouts", label: "View payouts", defaultChecked: false },
-		{ id: "send_notifications", label: "Send notifications", defaultChecked: false },
-		{ id: "deactivate_acct", label: "Deactivate acct", defaultChecked: true },
-		{ id: "user_management_2", label: "User management", defaultChecked: true },
-		{ id: "post_upload_content", label: "Post/Upload Content", defaultChecked: true },
-		{ id: "view_other_admins", label: "View Other admns", defaultChecked: false },
-		{ id: "view_ticket_history", label: "View Ticket history", defaultChecked: false },
-		{ id: "reports_issues", label: "Reports & issues", defaultChecked: false },
-		{ id: "user_management_3", label: "User management", defaultChecked: true },
-		{ id: "payments", label: "Payments", defaultChecked: true },
-		{ id: "view_kyc", label: "View KYC document", defaultChecked: true },
-		{ id: "user_management_4", label: "User management", defaultChecked: false },
-		{ id: "user_management_5", label: "User management", defaultChecked: false },
-		{ id: "user_management_6", label: "User management", defaultChecked: false },
-	];
+	const handlePermissionChange = (permId: string) => {
+		setHasChanges(true);
+		setSelectedPermissions((prev) => 
+			prev.includes(permId) 
+				? prev.filter((id) => id !== permId) 
+				: [...prev, permId]
+		);
+	};
+
+	const handleSaveChanges = async () => {
+		if (!hasChanges) return;
+		try {
+			setIsSaving(true);
+			await adminAuth.updateAdminPermissions(admin.id, selectedPermissions);
+			toast.success("Permissions updated successfully");
+			setHasChanges(false);
+			onPermissionsUpdated?.();
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to update permissions");
+		} finally {
+			setIsSaving(false);
+		}
+	};
 
 	return (
 		<div
@@ -61,12 +100,14 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 				
 				<div className="overflow-y-auto custom-scrollbar px-8 pb-8 space-y-6 flex-1">
 					{/* Warning */}
-					<div className="w-full mt-2 flex justify-center text-[#B00020] text-sm font-medium">
-						<div className="flex items-center gap-2">
-							<AlertTriangle className="w-4 h-4" />
-							<p>This user has limited access or is requesting access to some features.</p>
+					{!isSuperAdmin && (
+						<div className="w-full mt-2 flex justify-center text-[#B00020] text-sm font-medium">
+							<div className="flex items-center gap-2">
+								<AlertTriangle className="w-4 h-4" />
+								<p>This user has limited access.</p>
+							</div>
 						</div>
-					</div>
+					)}
 
 					{/* Profile Info */}
 					<div className="flex flex-col items-center justify-center pt-2">
@@ -85,13 +126,13 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 
 						{/* Action Buttons */}
 						<div className="flex items-center gap-3 mt-6">
-							<button 
+							{ !isAdminLoggedIn() && (<button 
 								onClick={() => onSendMessage(admin)}
-								className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#F4F5F7] px-4 py-2 font-medium text-gray-600 text-sm hover:bg-gray-200"
+								className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#E0E8F980] px-4 py-2 font-medium text-gray-600 text-sm hover:bg-gray-200"
 							>
 								<MessageCircle className="h-4 w-4 text-gray-400" />
 								Send a message
-							</button>
+							</button>)}
 							
 							<button 
 								onClick={() => setActiveTab("details")}
@@ -109,7 +150,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 								className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-5 py-2 font-medium text-sm transition-colors ${
 									activeTab === "permissions" 
 										? "bg-[#10C300] text-white" 
-										: "bg-[#E8F8E5] text-[#10C300] hover:bg-[#d7f0d3]"
+										: "bg-[#E4FFEEB2] text-[#10C300] hover:bg-[#d7f0d3]"
 								}`}
 							>
 								Permissions
@@ -152,13 +193,17 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 						<div className="bg-[#F9FAFB] border border-gray-100 rounded-2xl p-6 mt-4">
 							<h4 className="font-bold text-gray-900 text-lg mb-6">Permissions</h4>
 							<div className="grid grid-cols-3 gap-y-5 gap-x-2">
-								{permissionsList.map((perm) => (
+								{PERMISSIONS_LIST.map((perm) => (
 									<label key={perm.id} className="flex items-center gap-2 cursor-pointer">
 										<div className="relative flex items-center justify-center">
 											<input 
 												type="checkbox" 
-												defaultChecked={perm.defaultChecked}
-												className="peer appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#10C300] checked:border-[#10C300] transition-colors cursor-pointer"
+												checked={isSuperAdmin || selectedPermissions.includes(perm.id)}
+												disabled={isSuperAdmin || isAdminLoggedIn()}
+												onChange={() => handlePermissionChange(perm.id)}
+												className={`peer appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#10C300] checked:border-[#10C300] transition-colors cursor-pointer ${
+													(isSuperAdmin || isAdminLoggedIn()) ? "disabled:opacity-50 disabled:cursor-not-allowed" : ""
+												}`}
 											/>
 											<svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" viewBox="0 0 14 10" fill="none">
 												<path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -168,22 +213,31 @@ export function AdminProfileModal({ admin, onClose, onSendMessage }: AdminProfil
 									</label>
 								))}
 							</div>
-
-							<div className="mt-8 space-y-3">
-								<button className="w-full bg-[#C8DDC5] hover:bg-[#d7f0d3] text-[#0D4F03] font-medium py-3 rounded-full transition-colors">
-									Save changes
-								</button>
-								<div className="flex gap-3">
-									<button className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#03002B] font-medium py-3 rounded-full transition-colors">
-										Force Log out
-									</button>
-									<button className="flex-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#03002B] font-medium py-3 rounded-full transition-colors">
-										Delete admin
-									</button>
-								</div>
-							</div>
 						</div>
 					)}
+
+					{!isAdminLoggedIn() && <div className="mt-8 space-y-3">
+						<button 
+							onClick={handleSaveChanges}
+							disabled={!hasChanges || isSaving}
+							className={`w-full cursor-pointer font-medium py-3 rounded-full transition-colors ${hasChanges ? "bg-[#10C300] hover:bg-[#0ea800] text-white" : "bg-[#C8DDC5] text-[#0D4F03] opacity-70 cursor-not-allowed"}`}>
+							{isSaving ? "Saving..." : "Save changes"}
+						</button>
+						<div className="flex gap-3">
+							<button 
+								onClick={() => onForceLogout?.(admin.id)}
+								className="flex-1 bg-[#FFEEEE] hover:bg-[#ffdddd] text-[#D10404] font-medium py-3 rounded-full transition-colors border-none cursor-pointer"
+							>
+								Force Log out
+							</button>
+							<button 
+								onClick={() => onDeleteAdmin?.(admin.id)}
+								className="flex-1 bg-[#F4F5F7] hover:bg-[#e2e4e9] text-[#03002B] font-medium py-3 rounded-full transition-colors border-none cursor-pointer"
+							>
+								Delete admin
+							</button>
+						</div>
+					</div>}
 				</div>
 			</div>
 		</div>

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter, redirect } from "@tanstack/react-router";
 import { ChevronDown, Eye, PauseCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -13,7 +13,15 @@ import { type NewUser, type User, type UserProfile, userService } from "../../li
 import { notificationService } from "../../lib/notifications";
 import { getDateRangeForPeriod } from "../../lib/time-period";
 
+import { useHasPermission } from "../../hooks/useCurrentUser";
+
 export const Route = createFileRoute("/app/users")({
+	beforeLoad: ({ context }) => {
+		const admin = (context as any).admin;
+		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("user_management")) {
+			throw redirect({ to: "/app", replace: true });
+		}
+	},
 	component: UsersPage,
 });
 
@@ -22,6 +30,9 @@ type Tab = "all" | "recent" | "pending";
 function UsersPage() {
 	const queryClient = useQueryClient();
 	const router = useRouter();
+	const hasSendNoticePerm = useHasPermission("send_notifications");
+	const hasViewPlayerPerm = useHasPermission("view_player_details");
+	const hasDeactivatePerm = useHasPermission("deactivate_account");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
 	const [sort, setSort] = useState<"asc" | "desc">("asc");
@@ -65,7 +76,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 	);
 
 	useEffect(() => {
-		console.log("UsersPage: computed date range", { selectedTimePeriod, customRange, fromDate, toDate });
+		// console.log("UsersPage: computed date range", { selectedTimePeriod, customRange, fromDate, toDate });
 	}, [selectedTimePeriod, customRange, fromDate, toDate]);
 
 	const {
@@ -75,7 +86,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 	} = useQuery({
 		queryKey: ["users", page, limit, sort, activeTab, fromDate, toDate],
 		queryFn: async () => {
-			console.log("UsersPage: calling listUsers with", { page, limit, sort, tab: activeTab, fromDate, toDate });
+			// console.log("UsersPage: calling listUsers with", { page, limit, sort, tab: activeTab, fromDate, toDate });
 			const result = await userService.listUsers({
 				page,
 				limit,
@@ -239,13 +250,13 @@ useEffect(() => {
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
-					<button
+					{hasSendNoticePerm && <button
 						onClick={() => setShowGlobalNoticeModal(true)}
 						className="cursor-pointer flex h-12 items-center justify-center gap-x-3 rounded-full bg-[#F5F6F7] px-6 text-[#1A1A1A]"
 					>
 						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
 						<span className="text-base">Send a Notice</span>
-					</button>
+					</button>}
 
 					<button
 						type="button"
@@ -479,25 +490,25 @@ useEffect(() => {
 					right={actionDropdown.right}
 					onClose={() => setActionDropdown(null)}
 					items={[
-						{
+						...(hasViewPlayerPerm ? [{
 							icon: <Eye className="w-4 h-4" />,
 							label: "View profile",
 							onClick: () => setSelectedProfileUser(actionDropdown.user),
-						},
-						{
+						}] : []),
+						...(hasSendNoticePerm ? [{
 							icon: <NotificationIcon height={"14"} width={"14"} />,
 							label: "Send a notification",
 							onClick: () => setNoticeModalUser(actionDropdown.user),
-						},
-						{
+						}] : []),
+						...(hasDeactivatePerm ? [{
 							icon: <PauseCircle className="w-4 h-4" />,
 							label: actionDropdown.user.suspended ? "Reactivate" : "Suspend",
 							onClick: () => {
-								console.log("Current user status:", actionDropdown.user.status);
+								// console.log("Current user status:", actionDropdown.user.status);
 								toggleSuspendMutation.mutate(actionDropdown.user.id);
 								setActionDropdown(null);
 							},
-						},
+						}] : []),
 					]}
 				/>
 			)}

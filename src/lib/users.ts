@@ -25,6 +25,7 @@ export interface UserProfile {
 	name: string;
 	email: string;
 	image: string | null;
+	photo?: string | null;
 	mobileNumber: string | null;
 	country: string | null;
 	verificationStatus: string;
@@ -71,7 +72,7 @@ class UserService {
 		if (params.toDate) searchParams.set("toDate", params.toDate);
 
 		const url = `/user/all?${searchParams.toString()}`;
-		console.log("userService.listUsers URL:", url);
+		// console.log("userService.listUsers URL:", url);
 		return fetchApi<UsersResponse>(url);
 	}
 

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, Eye, EyeOff, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -10,14 +10,18 @@ import SuccessIndicator from "#/assets/SuccessIndicator.png";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import { Input } from "#/components/Input";
-import {
-	TimePeriodDropdown,
-	type TimePeriodOption,
-} from "#/components/TimePeriodDropdown";
 import type { User } from "#/lib/users";
 import { notificationService } from "#/lib/notifications";
 import { adminAuth } from "#/lib/auth";
+import { TimePeriodFilter, type TimePeriod } from "#/components/TimePeriodFilter";
+import { useCurrentUser } from "#/hooks/useCurrentUser";
 export const Route = createFileRoute("/app/admins")({
+	beforeLoad: ({ context }) => {
+		const admin = (context as any).admin;
+		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("view_other_admins")) {
+			throw redirect({ to: "/app", replace: true });
+		}
+	},
 	component: AdminsPage,
 });
 
@@ -36,12 +40,14 @@ export interface AdminUser {
 
 function AdminsPage() {
 	const queryClient = useQueryClient();
+	const currentUser = useCurrentUser();
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
 	const [activeTab, setActiveTab] = useState<Tab>("all");
 	const [selectedTimePeriod, setSelectedTimePeriod] =
-		useState<TimePeriodOption>("All");
+		useState<TimePeriod>("All");
+	const [customRange, setCustomRange] = useState<any>();
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [showSuccessModal, setShowSuccessModal] = useState(false);
 	const [newAdmin, setNewAdmin] = useState({
@@ -74,11 +80,15 @@ function AdminsPage() {
 			toast.success("Admin created successfully");
 			setShowAddModal(false);
 			setShowSuccessModal(true);
-			setNewAdmin({ name: "", email: "", role: "", password: "" });
 			queryClient.invalidateQueries({ queryKey: ["admins-list"] });
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Failed to create admin. Please try again.");
 		}
+	};
+	
+	const handleCloseSuccessModal = () => {
+		setShowSuccessModal(false);
+		setNewAdmin({ name: "", email: "", role: "", password: "" });
 	};
 
 	useEffect(() => {
@@ -100,6 +110,7 @@ function AdminsPage() {
 		role: admin.role === "super_admin" ? "Super Admin" : admin.role === "csr-admin" ? "CSR Admin" : "Support Admin",
 		avatar: admin.image || undefined,
 		mobileNumber: admin.mobileNumber,
+		permissions: admin.permissions,
 	}));
 
 	const filteredAdmins = allAdmins.filter(admin => {
@@ -108,7 +119,41 @@ function AdminsPage() {
 		return true;
 	}).filter(admin =>
 		search ? admin.name.toLowerCase().includes(search.toLowerCase()) || admin.email.toLowerCase().includes(search.toLowerCase()) : true
-	);
+	).filter(admin => {
+		if (selectedTimePeriod === "All") return true;
+		
+		const adminDate = new Date(admin.dateAdded);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		if (selectedTimePeriod === "Today") {
+			return adminDate >= today;
+		}
+		if (selectedTimePeriod === "Yesterday") {
+			const yesterday = new Date(today);
+			yesterday.setDate(yesterday.getDate() - 1);
+			return adminDate >= yesterday && adminDate < today;
+		}
+		if (selectedTimePeriod === "Last week") {
+			const lastWeek = new Date(today);
+			lastWeek.setDate(lastWeek.getDate() - 7);
+			return adminDate >= lastWeek;
+		}
+		if (selectedTimePeriod === "Last month") {
+			const lastMonth = new Date(today);
+			lastMonth.setMonth(lastMonth.getMonth() - 1);
+			return adminDate >= lastMonth;
+		}
+		if (selectedTimePeriod === "Custom" && customRange?.start && customRange?.end) {
+			const start = new Date(customRange.start);
+			start.setHours(0, 0, 0, 0);
+			const end = new Date(customRange.end);
+			end.setHours(23, 59, 59, 999);
+			return adminDate >= start && adminDate <= end;
+		}
+
+		return true;
+	});
 
 	const admins = filteredAdmins.slice((page - 1) * limit, page * limit);
 	const total = filteredAdmins.length;
@@ -169,14 +214,6 @@ function AdminsPage() {
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
 					<button
-						onClick={() => setShowGlobalNoticeModal(true)}
-						className="cursor-pointer flex items-center justify-center rounded-full text-[#053209] bg-[#F1F1F1] gap-x-3 w-[159px] h-11"
-					>
-						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
-						<span className="text-base">Send a Notice</span>
-					</button>
-
-					<button
 						type="button"
 						onClick={() => setShowAddModal(true)}
 						className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-accent px-4 py-2 font-medium text-white text-sm hover:bg-accent/90"
@@ -233,24 +270,25 @@ function AdminsPage() {
 						setPage(1);
 					}}
 				>
-					<div className="relative w-72 lg:w-80">
+					<div className="flex items-center relative w-[354px] h-11">
 						<Input
 							type="text"
 							placeholder="Search"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="rounded-full border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10"
+							className="rounded-full border border-[#D0D5DD] bg-gray-50 py-2 pr-4 pl-10 placeholder:text-[#667085] text-gray-700"
 						/>
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
-
-					<TimePeriodDropdown
-						value={selectedTimePeriod}
-						onChange={(period) => {
-							setSelectedTimePeriod(period);
-							setPage(1);
-						}}
-					/>
+					
+					<TimePeriodFilter
+								onFilterChange={(period, range) => {
+									setSelectedTimePeriod(period);
+									setCustomRange(range);
+									setPage(1);
+								}}
+								buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
+							/>
 				</form>
 			</div>
 
@@ -398,44 +436,48 @@ function AdminsPage() {
 								}
 							},
 						},
-						{
-							icon: <NotificationIcon className="w-4 h-4" />,
-							label: "Send a message",
-							onClick: () => {
-								setNoticeModalAdmin(actionDropdown.user);
-								setActionDropdown(null);
-							},
-						},
-						{
-							icon: <LogOut className="w-4 h-4" />,
-							label: "Force Log out",
-							onClick: async () => {
-								try {
-									await adminAuth.forceLogoutAdmin(actionDropdown.user.id);
-									toast.success(`Forced logout for ${actionDropdown.user.name}`);
-								} catch (error) {
-									toast.error(error instanceof Error ? error.message : "Failed to force logout admin");
-								} finally {
-									setActionDropdown(null);
-								}
-							},
-						},
-						{
-							icon: <Trash2 className="w-4 h-4 text-red-500" />,
-							label: "Delete admin",
-							className: "text-red-500 hover:bg-red-50",
-							onClick: async () => {
-								try {
-									await adminAuth.deleteAdmin(actionDropdown.user.id);
-									toast.success(`Admin ${actionDropdown.user.name} deleted successfully`);
-									queryClient.invalidateQueries({ queryKey: ["admins-list"] });
-								} catch (error) {
-									toast.error(error instanceof Error ? error.message : "Failed to delete admin");
-								} finally {
-									setActionDropdown(null);
-								}
-							},
-						},
+						...(actionDropdown.user.id !== currentUser?.id
+							? [
+									{
+										icon: <NotificationIcon className="w-4 h-4" />,
+										label: "Send a message",
+										onClick: () => {
+											setNoticeModalAdmin(actionDropdown.user);
+											setActionDropdown(null);
+										},
+									},
+									{
+										icon: <LogOut className="w-4 h-4" />,
+										label: "Force Log out",
+										onClick: async () => {
+											try {
+												await adminAuth.forceLogoutAdmin(actionDropdown.user.id);
+												toast.success(`Forced logout for ${actionDropdown.user.name}`);
+											} catch (error) {
+												toast.error(error instanceof Error ? error.message : "Failed to force logout admin");
+											} finally {
+												setActionDropdown(null);
+											}
+										},
+									},
+									{
+										icon: <Trash2 className="w-4 h-4 text-red-500" />,
+										label: "Delete admin",
+										className: "text-red-500 hover:bg-red-50",
+										onClick: async () => {
+											try {
+												await adminAuth.deleteAdmin(actionDropdown.user.id);
+												toast.success(`Admin ${actionDropdown.user.name} deleted successfully`);
+												queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+											} catch (error) {
+												toast.error(error instanceof Error ? error.message : "Failed to delete admin");
+											} finally {
+												setActionDropdown(null);
+											}
+										},
+									},
+							  ]
+							: []),
 					]}
 				/>
 			)}
@@ -447,6 +489,30 @@ function AdminsPage() {
 					onSendMessage={(admin) => {
 						setNoticeModalAdmin(admin);
 						setSelectedProfileAdmin(null);
+					}}
+					onForceLogout={async (id) => {
+						try {
+							await adminAuth.forceLogoutAdmin(id);
+							toast.success(`Forced logout for ${selectedProfileAdmin.name}`);
+						} catch (error) {
+							toast.error(error instanceof Error ? error.message : "Failed to force logout");
+						} finally {
+							setSelectedProfileAdmin(null);
+						}
+					}}
+					onDeleteAdmin={async (id) => {
+						try {
+							await adminAuth.deleteAdmin(id);
+							toast.success(`Admin ${selectedProfileAdmin.name} deleted successfully`);
+							queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+						} catch (error) {
+							toast.error(error instanceof Error ? error.message : "Failed to delete admin");
+						} finally {
+							setSelectedProfileAdmin(null);
+						}
+					}}
+					onPermissionsUpdated={() => {
+						queryClient.invalidateQueries({ queryKey: ["admins-list"] });
 					}}
 				/>
 			)}
@@ -497,7 +563,7 @@ function AdminsPage() {
 					>
 						<button
 							type="button"
-							onClick={() => setShowSuccessModal(false)}
+							onClick={handleCloseSuccessModal}
 							className="absolute right-4 top-4 text-gray-500 w-[30px] h-[30px] flex items-center justify-center hover:text-gray-900 rounded-full border border-[#03002B] cursor-pointer"
 						>
 							<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -510,12 +576,12 @@ function AdminsPage() {
 						<h3 className="font-bold text-[28px] text-[#03002B] mb-2">Success!</h3>
 
 						<p className="text-[#4F4F4F] text-center text-[15px] mb-8 px-4 leading-[22px]">
-							The admin user ${newAdmin.name} has been<br/>successfully added to the system.
+							The admin user {newAdmin.name} has been<br/>successfully added to the system.
 						</p>
 
 						<button
 							type="button"
-							onClick={() => setShowSuccessModal(false)}
+							onClick={handleCloseSuccessModal}
 							className="w-full h-[48px] rounded-full text-[15px] bg-[#1BAA04] text-white font-medium hover:bg-[#158f03] transition-colors"
 						>
 							Done

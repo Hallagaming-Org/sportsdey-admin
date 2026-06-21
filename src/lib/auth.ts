@@ -29,6 +29,7 @@ export interface SignInResponse {
 	success: boolean;
 	data?: {
 		admin: Admin;
+		token?: string;
 	};
 	error?: string;
 }
@@ -54,7 +55,7 @@ class AdminAuth {
 
 	async signIn(email: string, password: string): Promise<SignInResponse> {
 		try {
-		  console.log("API_URL",this.baseUrl)
+		//   console.log("API_URL",this.baseUrl)
 			const response = await fetch(`${this.baseUrl}/admin/auth/sign-in`, {
 				method: "POST",
 				headers: {
@@ -115,7 +116,7 @@ class AdminAuth {
 
 			const data = await response.json();
 			if (data.success && data.data) {
-				return data.data;
+				return data.data.admin || data.data;
 			}
 			return null;
 		} catch {
@@ -187,6 +188,24 @@ class AdminAuth {
 		const data = await response.json();
 		if (!data.success) {
 			throw new Error(data.error || "Failed to delete admin");
+		}
+	}
+
+	async updateAdminPermissions(id: string, permissions: string[]): Promise<void> {
+		const token = getCookie("admin_session");
+		const response = await fetch(`${this.baseUrl}/admin/admins/${id}/permissions`, {
+			method: "PATCH",
+			headers: {
+				"Content-Type": "application/json",
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			body: JSON.stringify({ permissions }),
+			credentials: "include",
+		});
+
+		const data = await response.json();
+		if (!data.success) {
+			throw new Error(data.error || "Failed to update admin permissions");
 		}
 	}
 

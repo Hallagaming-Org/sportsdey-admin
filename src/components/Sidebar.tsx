@@ -20,6 +20,8 @@ import {
 import type { Admin } from "../lib/auth";
 import { fetchApi } from "../lib/api";
 import { FaSun, FaMoon } from "react-icons/fa";
+import { toast } from "sonner";
+
 
 type SidebarProps = {
 	admin?: Admin | null;
@@ -32,25 +34,32 @@ type NavItem = {
 	label: string;
 	icon?: LucideIcon;
 	to?: string;
+	permission?: string; // required permission key to access this item; omit if always visible
 };
 
 const menuItems: NavItem[] = [
-	{ icon: Home, label: "Dashboard", to: "/app" },
-	{ icon: Users, label: "User management", to: "/app/users" },
-	{ icon: NotificationIcon as LucideIcon, label: "Notifications", to: "/app/notifications" },
-	{ icon: Wallet, label: "Transactions", to: "/app/transactions" },
-	{ icon: Gamepad2, label: "Game management", to: "/app/games" },
-	{ icon: Ticket, label: "Ticket history", to: "/app/tickets" },
-	{ icon: Settings, label: "CMS Controls", to: "/app/cms" },
-
-	{ icon: Activity, label: "Activity log", to: "/app/activity" },
-	{ icon: AdminPanelIcon as LucideIcon, label: "Admin management", to: "/app/admins" },
+	{ icon: Home, label: "Dashboard", to: "/app", permission: "general" },
+	{ icon: Users, label: "User management", to: "/app/users", permission: "user_management" },
+	{ icon: NotificationIcon as LucideIcon, label: "Notifications", to: "/app/notifications", permission: "send_notifications" },
+	{ icon: Wallet, label: "Transactions", to: "/app/transactions", permission: "transaction_read" },
+	{ icon: Gamepad2, label: "Game management", to: "/app/games", permission: "general" },
+	{ icon: Ticket, label: "Ticket history", to: "/app/tickets", permission: "view_ticket_history" },
+	{ icon: Settings, label: "CMS Controls", to: "/app/cms", permission: "post_upload_content" },
+	{ icon: Activity, label: "Activity log", to: "/app/activity", permission: "reports_issues" },
+	{ icon: AdminPanelIcon as LucideIcon, label: "Admin management", to: "/app/admins", permission: "view_other_admins" },
 ];
 
 const otherItems: NavItem[] = [
-	{ icon: FileText, label: "KYC & Document Uploads", to: "/app/kyc" },
-	{ icon: Settings, label: "General setting", to: "/app/settings" },
+	{ icon: FileText, label: "KYC & Document Uploads", to: "/app/kyc", permission: "view_kyc_document" },
+	{ icon: Settings, label: "General setting", to: "/app/settings", permission: "general" },
 ];
+
+function hasAccess(admin: Admin | null | undefined, item: NavItem): boolean {
+	if (!item.permission) return true;
+	if (!admin) return false;
+	if (admin.role === "super_admin") return true;
+	return admin.permissions?.includes(item.permission) ?? false;
+}
 
 export default function Sidebar({
 	admin,
@@ -123,6 +132,7 @@ export default function Sidebar({
 							? location.pathname === item.to ||
 							  (item.to !== "/app" && location.pathname.startsWith(item.to))
 							: false;
+						const allowed = hasAccess(admin, item);
 
 						return (
 							<SidebarItem
@@ -132,6 +142,7 @@ export default function Sidebar({
 								to={item.to}
 								active={isActive}
 								collapsed={collapsed}
+								disabled={!allowed}
 								badge={item.label === "Notifications" ? unreadData?.count : undefined}
 							/>
 						);
@@ -155,6 +166,7 @@ export default function Sidebar({
 						const isActive = item.to
 							? location.pathname === item.to || location.pathname.startsWith(item.to)
 							: false;
+						const allowed = hasAccess(admin, item);
 
 						return (
 							<SidebarItem
@@ -164,6 +176,7 @@ export default function Sidebar({
 								to={item.to}
 								active={isActive}
 								collapsed={collapsed}
+								disabled={!allowed}
 							/>
 						);
 					})}
@@ -237,6 +250,7 @@ function SidebarItem({
 	to,
 	collapsed = false,
 	badge,
+	disabled = false,
 }: {
 	icon?: LucideIcon;
 	label: string;
@@ -244,25 +258,18 @@ function SidebarItem({
 	to?: string;
 	collapsed?: boolean;
 	badge?: number;
+	disabled?: boolean;
 }) {
-	const className = `flex items-center gap-3 py-2.5 px-3.5 rounded-xl text-sm font-medium text-white no-underline cursor-pointer transition-all duration-180 hover:bg-white/07 hover:text-white/85 ${active ? "bg-accent text-white hover:bg-green-600" : ""}`;
+	const baseClassName = `flex items-center gap-3 py-2.5 px-3.5 rounded-xl text-sm font-medium no-underline transition-all duration-180 ${
+		disabled
+			? "cursor-not-allowed text-white/30 hover:bg-transparent"
+			: `cursor-pointer text-white hover:bg-white/07 hover:text-white/85 ${
+					active ? "bg-accent text-white hover:bg-green-600" : ""
+			  }`
+	}`;
 
-	if (to) {
-		return (
-			<Link to={to} className={className} title={collapsed ? label : undefined}>
-				{Icon ? <Icon size={18} /> : null}
-				{!collapsed && <span>{label}</span>}
-				{!collapsed && badge != null && badge > 0 && (
-					<span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white">
-						{badge > 99 ? "99+" : badge}
-					</span>
-				)}
-			</Link>
-		);
-	}
-
-	return (
-		<div className={className} title={collapsed ? label : undefined}>
+	const content = (
+		<>
 			{Icon ? <Icon size={18} /> : null}
 			{!collapsed && <span>{label}</span>}
 			{!collapsed && badge != null && badge > 0 && (
@@ -270,6 +277,33 @@ function SidebarItem({
 					{badge > 99 ? "99+" : badge}
 				</span>
 			)}
+		</>
+	);
+
+	if (disabled) {
+		return (
+			<button
+				type="button"
+				onClick={() => toast.error(`You don't have permission to access ${label}`)}
+				className={baseClassName}
+				title={collapsed ? `${label} (no access)` : "You don't have permission to access this"}
+			>
+				{content}
+			</button>
+		);
+	}
+
+	if (to) {
+		return (
+			<Link to={to} className={baseClassName} title={collapsed ? label : undefined}>
+				{content}
+			</Link>
+		);
+	}
+
+	return (
+		<div className={baseClassName} title={collapsed ? label : undefined}>
+			{content}
 		</div>
 	);
 }
