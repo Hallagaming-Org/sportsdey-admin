@@ -116,7 +116,7 @@ export function UserAnalyticsTable() {
         data={displayedUsers}
         columns={columns}
         maxHeight="400px"
-        onActionClick={(user) => console.log("Action clicked for", user.name)}
+        // onActionClick={(user) => console.log("Action clicked for", user.name)}
       />
 
       {allUsers.length > itemsPerPage && (
