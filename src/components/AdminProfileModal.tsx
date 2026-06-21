@@ -214,7 +214,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 						<button 
 							onClick={handleSaveChanges}
 							disabled={!hasChanges || isSaving}
-							className={`w-full font-medium py-3 rounded-full transition-colors ${hasChanges ? "bg-[#10C300] hover:bg-[#0ea800] text-white cursor-pointer" : "bg-[#C8DDC5] text-[#0D4F03] opacity-70 cursor-not-allowed"}`}>
+							className={`w-full cursor-pointer font-medium py-3 rounded-full transition-colors ${hasChanges ? "bg-[#10C300] hover:bg-[#0ea800] text-white" : "bg-[#C8DDC5] text-[#0D4F03] opacity-70 cursor-not-allowed"}`}>
 							{isSaving ? "Saving..." : "Save changes"}
 						</button>
 						<div className="flex gap-3">
