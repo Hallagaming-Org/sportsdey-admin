@@ -193,10 +193,10 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 											<input 
 												type="checkbox" 
 												checked={selectedPermissions.includes(perm.id)}
-												disabled={isAdminLoggedIn() || admin.role === "Super Admin"}
+												disabled={isAdminLoggedIn()}
 												onChange={() => handlePermissionChange(perm.id)}
 												className={`peer appearance-none w-4 h-4 rounded-sm border border-gray-300 checked:bg-[#10C300] checked:border-[#10C300] transition-colors cursor-pointer ${
-													(isAdminLoggedIn() || admin.role === "Super Admin") ? "disabled:opacity-50 disabled:cursor-not-allowed" : ""
+													isAdminLoggedIn() ? "disabled:opacity-50 disabled:cursor-not-allowed" : ""
 												}`}
 											/>
 											<svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" viewBox="0 0 14 10" fill="none">
