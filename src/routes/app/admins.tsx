@@ -56,7 +56,7 @@ function AdminsPage() {
 	const [selectedProfileAdmin, setSelectedProfileAdmin] = useState<AdminUser | null>(null);
 	const [noticeModalAdmin, setNoticeModalAdmin] = useState<AdminUser | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
-	
+
 	const handleCreateAdmin = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!newAdmin.role) {
@@ -68,9 +68,9 @@ function AdminsPage() {
 				email: newAdmin.email,
 				password: newAdmin.password,
 				name: newAdmin.name,
-				role: newAdmin.role === "CSR Admin" ? "csr-admin" : "super_admin",
+				role: newAdmin.role === "CSR Admin" ? "csr-admin" : "admin",
 			});
-			
+
 			toast.success("Admin created successfully");
 			setShowAddModal(false);
 			setShowSuccessModal(true);
@@ -80,7 +80,7 @@ function AdminsPage() {
 			toast.error(error instanceof Error ? error.message : "Failed to create admin. Please try again.");
 		}
 	};
-	
+
 	useEffect(() => {
 		const handleClickOutside = () => setActionDropdown(null);
 		document.addEventListener("click", handleClickOutside);
@@ -106,7 +106,7 @@ function AdminsPage() {
 		if (activeTab === "support") return admin.role === "Support Admin";
 		if (activeTab === "csr") return admin.role === "CSR Admin";
 		return true;
-	}).filter(admin => 
+	}).filter(admin =>
 		search ? admin.name.toLowerCase().includes(search.toLowerCase()) || admin.email.toLowerCase().includes(search.toLowerCase()) : true
 	);
 
@@ -124,37 +124,37 @@ function AdminsPage() {
 	});
 
 	const columns: Column<AdminUser>[] = [
-		{ 
-			header: "User ID", 
-			accessor: "id" 
+		{
+			header: "User ID",
+			accessor: "id"
 		},
-		{ 
-			header: "Admin Name", 
+		{
+			header: "Admin Name",
 			accessor: (admin) => (
-				<div 
+				<div
 					className="flex items-center gap-3 min-w-0 cursor-pointer"
 				>
-					<img 
-						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${admin.name}`} 
-						alt="avatar" 
-						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0" 
+					<img
+						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${admin.name}`}
+						alt="avatar"
+						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0"
 					/>
 					<span className="font-medium text-sm text-gray-900 hover:text-primary transition-colors truncate" title={admin.name}>{admin.name}</span>
 				</div>
 			)
 		},
-		{ 
-			header: "Email address", 
+		{
+			header: "Email address",
 			accessor: "email",
 			cellClassName: "text-gray-500"
 		},
-		{ 
-			header: "Date added", 
+		{
+			header: "Date added",
 			accessor: (admin) => admin.dateAdded ? new Date(admin.dateAdded).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-",
 			cellClassName: "text-gray-500"
 		},
-		{ 
-			header: "Role", 
+		{
+			header: "Role",
 			accessor: "role",
 			cellClassName: "text-gray-500"
 		}
@@ -168,14 +168,14 @@ function AdminsPage() {
 					<p className="text-gray-600">Manage all admin access and activities</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
-					<button 
+					<button
 						onClick={() => setShowGlobalNoticeModal(true)}
 						className="cursor-pointer flex items-center justify-center rounded-full text-[#053209] bg-[#F1F1F1] gap-x-3 w-[159px] h-11"
 					>
 						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
 						<span className="text-base">Send a Notice</span>
 					</button>
-					
+
 					<button
 						type="button"
 						onClick={() => setShowAddModal(true)}
@@ -243,7 +243,7 @@ function AdminsPage() {
 						/>
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
-					
+
 					<TimePeriodDropdown
 						value={selectedTimePeriod}
 						onChange={(period) => {
@@ -330,7 +330,7 @@ function AdminsPage() {
 									value={newAdmin.role}
 									onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
 									className="mt-1 w-full h-13 text-sm rounded-md bg-[#F9F9F9] px-3 pr-10 py-2 text-gray-900 focus:outline-none placeholder:text-gray-500 bg-[position:right_1rem_center]"
-								>	
+								>
 									<option value="" className="text-gray-900">choose a role</option>
 									<option value="Support Admin" className="text-gray-900">Support Admin</option>
 									<option value="CSR Admin" className="text-gray-900">CSR Admin</option>
@@ -356,7 +356,7 @@ function AdminsPage() {
 								</div>
 							</div>
 							<div className="flex justify-center gap-3 pt-2">
-								
+
 								<button
 									type="submit"
 									className="w-[240px] h-12 rounded-full text-sm bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
@@ -506,9 +506,9 @@ function AdminsPage() {
 						</button>
 
 						<img src={SuccessIndicator} alt="Success" className="w-[74px] h-[70px] object-contain mb-4 mt-6" />
-						
+
 						<h3 className="font-bold text-[28px] text-[#03002B] mb-2">Success!</h3>
-						
+
 						<p className="text-[#4F4F4F] text-center text-[15px] mb-8 px-4 leading-[22px]">
 							The admin user ${newAdmin.name} has been<br/>successfully added to the system.
 						</p>
