@@ -191,6 +191,24 @@ class AdminAuth {
 		}
 	}
 
+	async updateAdminPermissions(id: string, permissions: string[]): Promise<void> {
+		const token = getCookie("admin_session");
+		const response = await fetch(`${this.baseUrl}/admin/admins/${id}/permissions`, {
+			method: "PATCH",
+			headers: {
+				"Content-Type": "application/json",
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			body: JSON.stringify({ permissions }),
+			credentials: "include",
+		});
+
+		const data = await response.json();
+		if (!data.success) {
+			throw new Error(data.error || "Failed to update admin permissions");
+		}
+	}
+
 	async forceLogoutAdmin(adminId: string): Promise<void> {
 		const token = getCookie("admin_session");
 		const response = await fetch(`${this.baseUrl}/admin/admins/${adminId}/sessions`, {
