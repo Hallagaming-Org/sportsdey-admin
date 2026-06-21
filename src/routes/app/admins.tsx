@@ -500,6 +500,9 @@ function AdminsPage() {
 							setSelectedProfileAdmin(null);
 						}
 					}}
+					onPermissionsUpdated={() => {
+						queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+					}}
 				/>
 			)}
 			{(noticeModalAdmin || showGlobalNoticeModal) && (
