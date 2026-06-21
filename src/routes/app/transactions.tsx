@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useRouter, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, useRouter, useRouterState, redirect } from "@tanstack/react-router";
 import { ChevronDown, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { FaFileExport } from "react-icons/fa6";
@@ -16,6 +16,12 @@ import {
 } from "#/lib/transactions";
 import { TransactionDetailsModal } from "#/components/TransactionDetailsModal";
 export const Route = createFileRoute("/app/transactions")({
+	beforeLoad: ({ context }) => {
+		const admin = (context as any).admin;
+		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("transaction_read")) {
+			throw redirect({ to: "/app", replace: true });
+		}
+	},
 	component: WalletPage,
 });
 
