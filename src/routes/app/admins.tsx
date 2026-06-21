@@ -14,6 +14,7 @@ import type { User } from "#/lib/users";
 import { notificationService } from "#/lib/notifications";
 import { adminAuth } from "#/lib/auth";
 import { TimePeriodFilter, type TimePeriod } from "#/components/TimePeriodFilter";
+import { useCurrentUser } from "#/hooks/useCurrentUser";
 export const Route = createFileRoute("/app/admins")({
 	component: AdminsPage,
 });
@@ -33,7 +34,7 @@ export interface AdminUser {
 
 function AdminsPage() {
 	const queryClient = useQueryClient();
-	const { admin: currentUser } = Route.useRouteContext() as any;
+	const currentUser = useCurrentUser();
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
