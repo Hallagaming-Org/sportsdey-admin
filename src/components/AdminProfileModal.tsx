@@ -100,12 +100,12 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 				
 				<div className="overflow-y-auto custom-scrollbar px-8 pb-8 space-y-6 flex-1">
 					{/* Warning */}
-					<div className="w-full mt-2 flex justify-center text-[#B00020] text-sm font-medium">
+					{<div className="w-full mt-2 flex justify-center text-[#B00020] text-sm font-medium">
 						<div className="flex items-center gap-2">
 							<AlertTriangle className="w-4 h-4" />
-							<p>This user has limited access or is requesting access to some features.</p>
+							<p>This user has limited access.</p>
 						</div>
-					</div>
+					</div>}
 
 					{/* Profile Info */}
 					<div className="flex flex-col items-center justify-center pt-2">
