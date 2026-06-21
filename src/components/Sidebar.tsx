@@ -57,7 +57,6 @@ const otherItems: NavItem[] = [
 	{ icon: Settings, label: "General setting", to: "/app/settings" },
 ];
 
-// Adjust "super-admin" to whatever your actual all-access role string is.
 function hasAccess(admin: Admin | null | undefined, item: NavItem): boolean {
 	if (!item.permission) return true;
 	if (!admin) return false;
