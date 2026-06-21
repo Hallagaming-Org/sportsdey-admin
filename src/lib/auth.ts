@@ -55,7 +55,7 @@ class AdminAuth {
 
 	async signIn(email: string, password: string): Promise<SignInResponse> {
 		try {
-		  console.log("API_URL",this.baseUrl)
+		//   console.log("API_URL",this.baseUrl)
 			const response = await fetch(`${this.baseUrl}/admin/auth/sign-in`, {
 				method: "POST",
 				headers: {
