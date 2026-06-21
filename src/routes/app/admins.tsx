@@ -80,13 +80,17 @@ function AdminsPage() {
 			toast.success("Admin created successfully");
 			setShowAddModal(false);
 			setShowSuccessModal(true);
-			setNewAdmin({ name: "", email: "", role: "", password: "" });
 			queryClient.invalidateQueries({ queryKey: ["admins-list"] });
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Failed to create admin. Please try again.");
 		}
 	};
 	
+	const handleCloseSuccessModal = () => {
+		setShowSuccessModal(false);
+		setNewAdmin({ name: "", email: "", role: "", password: "" });
+	};
+
 	useEffect(() => {
 		const handleClickOutside = () => setActionDropdown(null);
 		document.addEventListener("click", handleClickOutside);
@@ -559,7 +563,7 @@ function AdminsPage() {
 					>
 						<button
 							type="button"
-							onClick={() => setShowSuccessModal(false)}
+							onClick={handleCloseSuccessModal}
 							className="absolute right-4 top-4 text-gray-500 w-[30px] h-[30px] flex items-center justify-center hover:text-gray-900 rounded-full border border-[#03002B] cursor-pointer"
 						>
 							<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -577,7 +581,7 @@ function AdminsPage() {
 
 						<button
 							type="button"
-							onClick={() => setShowSuccessModal(false)}
+							onClick={handleCloseSuccessModal}
 							className="w-full h-[48px] rounded-full text-[15px] bg-[#1BAA04] text-white font-medium hover:bg-[#158f03] transition-colors"
 						>
 							Done
