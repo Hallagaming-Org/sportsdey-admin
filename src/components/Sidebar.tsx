@@ -43,7 +43,7 @@ type NavItem = {
 const menuItems: NavItem[] = [
 	{ icon: Home, label: "Dashboard", to: "/app" },
 	{ icon: Users, label: "User management", to: "/app/users", permission: "user_management" },
-	{ icon: NotificationIcon as LucideIcon, label: "Notifications", to: "/app/notifications" },
+	{ icon: NotificationIcon as LucideIcon, label: "Notifications", to: "/app/notifications", permission: "view_notifications" },
 	{ icon: Wallet, label: "Transactions", to: "/app/transactions", permission: "view_transactions" },
 	{ icon: Gamepad2, label: "Game management", to: "/app/games", permission: "manage_games" },
 	{ icon: Ticket, label: "Ticket history", to: "/app/tickets", permission: "view_tickets" },
