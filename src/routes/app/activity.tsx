@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { CloudSnow, Copy, Download, Eye, Trash } from "lucide-react";
 import FilterIcon from "@/logo/filter.svg?react";
@@ -15,6 +15,12 @@ import {
 } from "#/components/TimePeriodDropdown";
 
 export const Route = createFileRoute("/app/activity")({
+	beforeLoad: ({ context }) => {
+		const admin = (context as any).admin;
+		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("reports_issues")) {
+			throw redirect({ to: "/app", replace: true });
+		}
+	},
 	component: ActivityPage,
 });
 
