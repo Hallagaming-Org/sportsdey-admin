@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Eye, PauseCircle, Search, SendHorizonal, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -15,6 +15,12 @@ import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
 
 export const Route = createFileRoute("/app/kyc")({
+	beforeLoad: ({ context }) => {
+		const admin = (context as any).admin;
+		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("view_kyc_document")) {
+			throw redirect({ to: "/app", replace: true });
+		}
+	},
 	component: KycPage,
 });
 
@@ -41,7 +47,7 @@ const STATUS_API_TO_UI: Record<string, KycStatus> = {
 	not_verified: "not_verified",
 };
 
-const TAB_OPTIONS = [
+const TAB_OPTIONS: { key: KycTab; label: string }[] = [
 	{ key: "all", label: "All Documents" },
 	{ key: "verified", label: "Verified" },
 	{ key: "in_review", label: "In review" },
@@ -60,7 +66,7 @@ const STATUS_STYLES = {
 	not_verified: "bg-[#FEECEB] text-[#EE201C]",
 };
 
-const MIME_TO_EXTENSION: Record<string, string> = {
+const MIME_TO_EXTENSION: Record<string, DocumentType> = {
 	"image/jpeg": "JPG",
 	"image/png": "PNG",
 	"application/pdf": "PDF",
@@ -119,7 +125,7 @@ function KycPage() {
 			verified: "approved",
 			in_review: "pending_review",
 			not_verified: "not_verified",
-		}[activeTab];
+		}[activeTab] as KycStatusFilter;
 	}, [activeTab]);
 
 	const { data, isLoading, error } = useQuery({
@@ -390,7 +396,7 @@ function KycPage() {
 			{/* Send Notice Modal */}
 			{noticeUser && (
 				<SendNoticeModal
-					user={noticeUser}
+					user={noticeUser as unknown as import("../../lib/users").User}
 					onClose={() => setNoticeUser(null)}
 					onSubmit={async (data) => {
 						const result = await notificationService.sendNotification({
