@@ -116,7 +116,7 @@ class AdminAuth {
 
 			const data = await response.json();
 			if (data.success && data.data) {
-				return data.data;
+				return data.data.admin || data.data;
 			}
 			return null;
 		} catch {
