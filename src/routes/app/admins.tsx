@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, Eye, EyeOff, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -16,6 +16,12 @@ import { adminAuth } from "#/lib/auth";
 import { TimePeriodFilter, type TimePeriod } from "#/components/TimePeriodFilter";
 import { useCurrentUser } from "#/hooks/useCurrentUser";
 export const Route = createFileRoute("/app/admins")({
+	beforeLoad: ({ context }) => {
+		const admin = (context as any).admin;
+		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("view_other_admins")) {
+			throw redirect({ to: "/app", replace: true });
+		}
+	},
 	component: AdminsPage,
 });
 
