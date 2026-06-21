@@ -106,6 +106,7 @@ function AdminsPage() {
 		role: admin.role === "super_admin" ? "Super Admin" : admin.role === "csr-admin" ? "CSR Admin" : "Support Admin",
 		avatar: admin.image || undefined,
 		mobileNumber: admin.mobileNumber,
+		permissions: admin.permissions,
 	}));
 
 	const filteredAdmins = allAdmins.filter(admin => {
