@@ -106,7 +106,41 @@ function AdminsPage() {
 		return true;
 	}).filter(admin => 
 		search ? admin.name.toLowerCase().includes(search.toLowerCase()) || admin.email.toLowerCase().includes(search.toLowerCase()) : true
-	);
+	).filter(admin => {
+		if (selectedTimePeriod === "All") return true;
+		
+		const adminDate = new Date(admin.dateAdded);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		if (selectedTimePeriod === "Today") {
+			return adminDate >= today;
+		}
+		if (selectedTimePeriod === "Yesterday") {
+			const yesterday = new Date(today);
+			yesterday.setDate(yesterday.getDate() - 1);
+			return adminDate >= yesterday && adminDate < today;
+		}
+		if (selectedTimePeriod === "Last week") {
+			const lastWeek = new Date(today);
+			lastWeek.setDate(lastWeek.getDate() - 7);
+			return adminDate >= lastWeek;
+		}
+		if (selectedTimePeriod === "Last month") {
+			const lastMonth = new Date(today);
+			lastMonth.setMonth(lastMonth.getMonth() - 1);
+			return adminDate >= lastMonth;
+		}
+		if (selectedTimePeriod === "Custom" && customRange?.start && customRange?.end) {
+			const start = new Date(customRange.start);
+			start.setHours(0, 0, 0, 0);
+			const end = new Date(customRange.end);
+			end.setHours(23, 59, 59, 999);
+			return adminDate >= start && adminDate <= end;
+		}
+
+		return true;
+	});
 
 	const admins = filteredAdmins.slice((page - 1) * limit, page * limit);
 	const total = filteredAdmins.length;
