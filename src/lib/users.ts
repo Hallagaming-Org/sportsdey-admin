@@ -72,7 +72,7 @@ class UserService {
 		if (params.toDate) searchParams.set("toDate", params.toDate);
 
 		const url = `/user/all?${searchParams.toString()}`;
-		console.log("userService.listUsers URL:", url);
+		// console.log("userService.listUsers URL:", url);
 		return fetchApi<UsersResponse>(url);
 	}
 
