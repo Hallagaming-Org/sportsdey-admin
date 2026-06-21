@@ -14,3 +14,10 @@ export function useCurrentUser(): Admin | null {
 		}
 	}, []);
 }
+
+export function useHasPermission(permission: string): boolean {
+	const currentUser = useCurrentUser();
+	if (!currentUser) return false;
+	if (currentUser.role === "super_admin") return true;
+	return currentUser.permissions?.includes(permission) ?? false;
+}
