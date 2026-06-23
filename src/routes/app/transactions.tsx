@@ -45,7 +45,7 @@ const TABS: { key: TabKey; label: string }[] = [
 const ITEMS_PER_PAGE = 10;
 const STATUS_OPTIONS: { key: StatusFilter; label: string }[] = [
 	{ key: "all", label: "All Statuses" },
-	{ key: "won", label: "Won" },
+	{ key: "won", label: "Success" },
 	{ key: "pending", label: "Pending" },
 	{ key: "failed", label: "Failed" },
 	{ key: "refund", label: "Refund" },
