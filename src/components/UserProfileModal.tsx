@@ -25,7 +25,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 	const status = profile?.verificationStatus || user.status;
 	const registeredDate = profile?.createdAt ? new Date(profile.createdAt).getTime() : user.registeredDate;
 	const walletBalance = profile?.wallet?.balance ?? user.wallet;
-	const lastTopUp = profile?.lastTopUp ? new Date(profile.lastTopUp) : null;
+	// const lastTopUp = profile?.lastTopUp ? new Date(profile.lastTopUp) : null;
 	const country = profile?.country || "Nigeria";
 	const mobileNumber = profile?.mobileNumber || "1234567890";
 	const isUserSuspended = user?.suspended
@@ -84,9 +84,9 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 					</button>
 				</div>
 				
-				<div className="overflow-y-auto custom-scrollbar p-8 space-y-6 flex-1">
+				<div className="flex-none p-8 pb-6 bg-[#F2F4F7]">
 					{isUserSuspended && (
-						<div className="w-max mx-auto flex -mt-4 items-center gap-2 px-3 py-2 text-[#B00020] bg-[#FEECEB] rounded-full text-sm">
+						<div className="w-max mx-auto flex -mt-4 items-center gap-2 px-3 py-2 text-[#B00020] bg-[#FEECEB] rounded-full text-sm mb-4">
 							<AlertTriangle className="w-4 h-4" />
 							<p>This account has been suspended due to violation of the system rules and regulations.</p>
 						</div>
@@ -136,7 +136,9 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 							))}
 						</div>
 					</div>
+				</div>
 
+				<div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8">
 					{activeView === "personal" ? (
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full min-h-[360px]">
