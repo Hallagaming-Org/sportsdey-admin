@@ -36,25 +36,25 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 			label: user.suspended ? "Suspended" : "Suspend", 
 			icon: <PauseCircle className={`w-4 h-4 ${user.suspended ? 'text-[#B00020]' : 'text-[#B00020]'}`} />, 
 			onClick: () => onSuspend?.(user),
-			className: `border ${user.suspended ? 'border-[#B00020] text-[#B00020] bg-[#FEECEB]' : 'border-[#B00020] text-[#B00020] bg-[#FEECEB] hover:bg-[#fddcd9]'}`
+			className: `${user.suspended ? 'border-[#B00020] text-[#B00020] bg-[#FEECEB]' : 'border-[#B00020] text-[#B00020] bg-[#FEECEB] hover:bg-[#fddcd9]'}`
 		},
 		{ 
 			label: "Contact User Info", 
 			icon: <LuMessageSquareDot className={`w-4 h-4 ${activeView === 'personal' ? 'text-white' : 'text-gray-500'}`} />, 
 			onClick: () => setActiveView("personal"),
-			className: activeView === "personal" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white border border-gray-300 text-gray-500 hover:bg-gray-50"
+			className: activeView === "personal" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white text-gray-500 hover:bg-gray-50"
 		},
 		{ 
 			label: "Wallet Info", 
 			icon: <Wallet className={`w-4 h-4 ${activeView === 'wallet' ? 'text-white' : 'text-gray-500'}`} />, 
 			onClick: () => setActiveView("wallet"),
-			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white border border-gray-300 text-gray-500 hover:bg-gray-50"
+			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white text-gray-500 hover:bg-gray-50"
 		},
 		{ 
 			label: "Send a notice", 
 			icon: <MessageCircle className="w-4 h-4 text-gray-500" />, 
 			onClick: () => onSendNotice(user),
-			className: "bg-white border border-gray-300 text-gray-500 hover:bg-gray-50"
+			className: "bg-white text-gray-500 hover:bg-gray-50"
 		}
 	];
 	const loading = isLoading && !profile;
