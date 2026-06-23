@@ -344,7 +344,7 @@ useEffect(() => {
 								setCustomRange(range);
 								setPage(1);
 							}}
-							buttonClassName="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
+							buttonClassName="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
 						/>
 				</form>
 			</div>
