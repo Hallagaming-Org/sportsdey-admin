@@ -25,6 +25,8 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 	const lastTopUp = profile?.lastTopUp ? new Date(profile.lastTopUp) : null;
 	const country = profile?.country || "Nigeria";
 	const mobileNumber = profile?.mobileNumber || "1234567890";
+	const isUserSuspended = user?.suspended
+	console.log({user})
 	const buttonItems = [
 		{ 
 			label: "Send a notice", 
@@ -73,7 +75,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 				</div>
 				
 				<div className="overflow-y-auto custom-scrollbar p-8 space-y-6 flex-1">
-					{status === 'not_verified' && (
+					{isUserSuspended && (
 						<div className="w-max mx-auto flex -mt-4 items-center gap-2 px-3 py-2 text-[#B00020] bg-[#FEECEB] rounded-full text-sm">
 							<AlertTriangle className="w-4 h-4" />
 							<p>This account has been suspended due to violation of the system rules and regulations.</p>
@@ -85,7 +87,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 							<Skeleton className="h-24 w-24 rounded-full mb-3" />
 						) : displayData.image || displayData.photo ? (
 							<img 
-								src={displayData.image || displayData.photo} 
+								src={displayData.image || displayData.photo || undefined} 
 								alt="avatar" 
 								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3" 
 							/>
