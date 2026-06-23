@@ -29,7 +29,6 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 	const country = profile?.country || "Nigeria";
 	const mobileNumber = profile?.mobileNumber || "1234567890";
 	const isUserSuspended = user?.suspended
-	console.log({user})
 	const [activeView, setActiveView] = useState<"personal" | "wallet">("personal");
 	const buttonItems = [
 		{ 
