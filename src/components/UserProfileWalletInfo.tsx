@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DataTable, type Column } from "./DataTable";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
-import { ChevronDown, Plus, Minus } from "lucide-react";
+import { ChevronDown, Plus, Minus, X, Check } from "lucide-react";
 
 interface UserProfileWalletInfoProps {
   userId: string;
@@ -13,6 +13,16 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
   const [transactionType, setTransactionType] = useState<"credit" | "debit">("credit");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState<{ type: "credit" | "debit"; amount: string } | null>(null);
+
+  const handleProcessTransaction = () => {
+    if (!amount) return;
+    setSuccessData({ type: transactionType, amount });
+    setShowSuccessModal(true);
+    setAmount("");
+    setReason("");
+  };
 
   const transactions = [
     { type: "Deposit", amount: 150000, referenceId: "DEP-2025-000123", dateTime: "Aug 8, 2025\n10:42 pm", status: "Success" },
@@ -160,11 +170,47 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
         </div>
 
         <div className="mt-8 flex justify-center">
-          <button className="bg-[#1BAA04] text-white font-bold px-8 py-3 rounded-[6px] transition-colors cursor-pointer">
+          <button 
+            onClick={handleProcessTransaction}
+            className="bg-[#1BAA04] text-white font-bold px-8 py-3 rounded-[6px] transition-colors cursor-pointer disabled:opacity-50"
+            disabled={!amount}
+          >
             Process Transaction
           </button>
         </div>
       </div>
+
+      {showSuccessModal && successData && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-[400px] bg-white rounded-[24px] p-8 flex flex-col items-center text-center shadow-xl">
+            <button 
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-4 right-4 p-1.5 text-gray-500 hover:bg-gray-100 rounded-full border border-gray-300 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            <div className="w-24 h-24 mb-4 relative">
+              {/* Mocking the jagged success icon with a standard lucide check and a green circle */}
+              <div className="absolute inset-0 bg-[#1BAA04] rounded-full flex items-center justify-center">
+                <Check className="w-12 h-12 text-white" strokeWidth={3} />
+              </div>
+            </div>
+            
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
+            <p className="text-gray-600 mb-8 max-w-[280px]">
+              This user has been successfully {successData.type === 'credit' ? 'credited' : 'Debited'} with an amount of ₦{Number(successData.amount).toLocaleString()}.
+            </p>
+            
+            <button 
+              onClick={() => setShowSuccessModal(false)}
+              className="w-[180px] bg-[#1BAA04] text-white font-bold py-3.5 rounded-[40px] transition-colors cursor-pointer"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
