@@ -160,7 +160,7 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
         </div>
 
         <div className="mt-8 flex justify-center">
-          <button className="bg-[#10C300] text-white font-bold px-8 py-3 rounded-full hover:bg-[#0ea800] transition-colors shadow-[0_4px_14px_0_rgba(16,195,0,0.39)] cursor-pointer">
+          <button className="bg-[#1BAA04] text-white font-bold px-8 py-3 rounded-[6px] transition-colors cursor-pointer">
             Process Transaction
           </button>
         </div>
