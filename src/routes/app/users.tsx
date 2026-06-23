@@ -8,7 +8,10 @@ import { type Column, DataTable } from "#/components/DataTable";
 import { ActionDropdown } from "../../components/ActionDropdown";
 import { SendNoticeModal } from "../../components/SendNoticeModal";
 import { UserProfileModal } from "../../components/UserProfileModal";
-import { TimePeriodDropdown, type TimePeriodOption } from "../../components/TimePeriodDropdown";
+import {
+	TimePeriodFilter,
+	type TimePeriod,
+} from "../../components/TimePeriodFilter";
 import { type NewUser, type User, type UserProfile, userService } from "../../lib/users";
 import { notificationService } from "../../lib/notifications";
 import { getDateRangeForPeriod } from "../../lib/time-period";
@@ -40,7 +43,7 @@ const [activeTab, setActiveTab] = useState<Tab>("all");
 	const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
 		"all",
 	);
-	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriodOption>("All");
+	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
 	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [newUser, setNewUser] = useState<NewUser>({
@@ -335,13 +338,13 @@ useEffect(() => {
 								: "Pending"}
 						<ChevronDown className="h-3.5 w-3.5" />
 					</button>
-						<TimePeriodDropdown
-							value={selectedTimePeriod}
-							onChange={(period, range) => {
+						<TimePeriodFilter
+							onFilterChange={(period, range) => {
 								setSelectedTimePeriod(period);
 								setCustomRange(range);
 								setPage(1);
 							}}
+							buttonClassName="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
 						/>
 				</form>
 			</div>
