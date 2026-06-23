@@ -106,20 +106,25 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
               <button 
                 type="button"
                 onClick={() => setTransactionType("credit")}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
-                  transactionType === "credit" ? "border-[#10C300] bg-[#E8F8E5] text-[#10C300]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                className={`inline-flex items-center gap-2 px-2 w-[84px] py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
+                  transactionType === "credit" ? "border-[#10C300] bg-[#F7FEF7] text-[#10C300]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                 }`}
               >
-                <Plus className="w-4 h-4" /> Credit
+                <div className="w-[14px] h-[14px] rounded-full flex items-center justify-center border border-[#1BAA04]">
+                  <Plus className="w-4 h-4" />
+                </div>
+                Credit
               </button>
               <button 
                 type="button"
                 onClick={() => setTransactionType("debit")}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
+                className={`inline-flex items-center gap-2 px-2 w-[84px] py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
                   transactionType === "debit" ? "border-[#EE201C] bg-[#FEECEB] text-[#EE201C]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                 }`}
               >
-                <Minus className="w-4 h-4" /> Debit
+                <div className="w-[14px] h-[14px] rounded-full flex items-center justify-center border border-[#F3442D]">
+                  <Minus className="w-4 h-4" /> Debit
+                </div>
               </button>
             </div>
           </div>
@@ -135,7 +140,7 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
             />
           </div>
 
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 w-[207px]">
             <p className="text-gray-700 text-sm font-medium mb-2">Reasons</p>
             <div className="relative">
               <select
