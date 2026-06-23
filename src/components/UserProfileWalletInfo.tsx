@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { DataTable, type Column } from "./DataTable";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
-import { ChevronDown, Plus, Minus, X, Check } from "lucide-react";
+import { ChevronDown, Plus, Minus, X } from "lucide-react";
+import SuccessIndicator from "#/assets/SuccessIndicator.png";
 
 interface UserProfileWalletInfoProps {
   userId: string;
@@ -190,12 +191,7 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
               <X className="w-4 h-4" />
             </button>
             
-            <div className="w-24 h-24 mb-4 relative">
-              {/* Mocking the jagged success icon with a standard lucide check and a green circle */}
-              <div className="absolute inset-0 bg-[#1BAA04] rounded-full flex items-center justify-center">
-                <Check className="w-12 h-12 text-white" strokeWidth={3} />
-              </div>
-            </div>
+            <img src={SuccessIndicator} alt="Success" className="w-[84px] h-[84px] object-contain mb-4" />
             
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
             <p className="text-gray-600 mb-8 max-w-[280px]">
