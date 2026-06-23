@@ -29,6 +29,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 	const country = profile?.country || "Nigeria";
 	const mobileNumber = profile?.mobileNumber || "1234567890";
 	const isUserSuspended = user?.suspended
+
 	const [activeView, setActiveView] = useState<"personal" | "wallet">("personal");
 	const buttonItems = [
 		{ 
@@ -41,19 +42,19 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 			label: "Contact User Info", 
 			icon: <LuMessageSquareDot className={`w-4 h-4 ${activeView === 'personal' ? 'text-white' : 'text-gray-500'}`} />, 
 			onClick: () => setActiveView("personal"),
-			className: activeView === "personal" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white text-gray-500 hover:bg-gray-50"
+			className: activeView === "personal" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-[#EDF1F9] text-gray-500"
 		},
 		{ 
 			label: "Wallet Info", 
 			icon: <Wallet className={`w-4 h-4 ${activeView === 'wallet' ? 'text-white' : 'text-gray-500'}`} />, 
 			onClick: () => setActiveView("wallet"),
-			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white text-gray-500 hover:bg-gray-50"
+			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-[#EDF1F9] text-gray-500"
 		},
 		{ 
 			label: "Send a notice", 
 			icon: <MessageCircle className="w-4 h-4 text-gray-500" />, 
 			onClick: () => onSendNotice(user),
-			className: "bg-white text-gray-500 hover:bg-gray-50"
+			className: "bg-[#EDF1F9] text-gray-500"
 		}
 	];
 	const loading = isLoading && !profile;
