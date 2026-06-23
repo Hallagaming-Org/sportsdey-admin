@@ -15,6 +15,8 @@ import {
  	transactionService,
 } from "#/lib/transactions";
 import { TransactionDetailsModal } from "#/components/TransactionDetailsModal";
+import { UserProfileModal } from "#/components/UserProfileModal";
+import type { User } from "#/lib/users";
 export const Route = createFileRoute("/app/transactions")({
 	beforeLoad: ({ context }) => {
 		const admin = (context as any).admin;
@@ -160,6 +162,7 @@ function WalletPage() {
 
 	const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(initialViewTxn ?? null);
 	const [isDetailsOpen, setIsDetailsOpen] = useState(!!initialViewTxn);
+	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
 
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-6">
@@ -327,6 +330,15 @@ function WalletPage() {
 								queryClient.invalidateQueries({ queryKey: ["transactions"] });
 								router.invalidate();
 							}}
+							onViewProfile={(user) => setSelectedProfileUser(user)}
+						/>
+					)}
+
+					{selectedProfileUser && (
+						<UserProfileModal
+							user={selectedProfileUser}
+							onClose={() => setSelectedProfileUser(null)}
+							onSendNotice={() => setSelectedProfileUser(null)}
 						/>
 					)}
 				</div>
