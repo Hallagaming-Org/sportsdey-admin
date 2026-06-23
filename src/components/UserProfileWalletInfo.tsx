@@ -123,8 +123,9 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
                 }`}
               >
                 <div className="w-[14px] h-[14px] rounded-full flex items-center justify-center border border-[#F3442D]">
-                  <Minus className="w-4 h-4" /> Debit
+                  <Minus className="w-4 h-4 text-[#F3442D]" />
                 </div>
+                Debit
               </button>
             </div>
           </div>
