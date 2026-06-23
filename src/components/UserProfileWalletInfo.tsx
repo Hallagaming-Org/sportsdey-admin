@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { DataTable, type Column } from "./DataTable";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
-import { ChevronDown, Plus, Minus, X } from "lucide-react";
-import SuccessIndicator from "#/assets/SuccessIndicator.png";
+import { ChevronDown, Plus, Minus } from "lucide-react";
+import { SuccessModal } from "./SuccessModal";
 
 interface UserProfileWalletInfoProps {
   userId: string;
@@ -181,32 +181,11 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
         </div>
       </div>
 
-      {showSuccessModal && successData && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-[400px] bg-white rounded-[24px] p-8 flex flex-col items-center text-center shadow-xl">
-            <button 
-              onClick={() => setShowSuccessModal(false)}
-              className="absolute top-4 right-4 p-1.5 text-gray-500 hover:bg-gray-100 rounded-full border border-gray-300 transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-            
-            <img src={SuccessIndicator} alt="Success" className="w-[84px] h-[84px] object-contain mb-4" />
-            
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
-            <p className="text-gray-600 mb-8 max-w-[280px]">
-              This user has been successfully {successData.type === 'credit' ? 'credited' : 'Debited'} with an amount of ₦{Number(successData.amount).toLocaleString()}.
-            </p>
-            
-            <button 
-              onClick={() => setShowSuccessModal(false)}
-              className="w-[180px] bg-[#1BAA04] text-white font-bold py-3.5 rounded-[40px] transition-colors cursor-pointer"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
+      <SuccessModal 
+        open={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)}
+        text={successData ? `This user has been successfully ${successData.type === 'credit' ? 'credited' : 'Debited'} with an amount of ₦${Number(successData.amount).toLocaleString()}.` : ""}
+      />
     </div>
   );
 }
