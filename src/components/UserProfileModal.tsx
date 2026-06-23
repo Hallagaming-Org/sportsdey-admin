@@ -1,8 +1,10 @@
-import { X, AlertTriangle, MessageCircle } from "lucide-react";
+import { X, AlertTriangle, MessageCircle, Wallet } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { PauseCircle } from "lucide-react";
 import type { User, UserProfile } from "../lib/users";
 import { LuMessageSquareDot } from "react-icons/lu";
+import { useState } from "react";
+import { UserProfileWalletInfo } from "./UserProfileWalletInfo";
 
 interface UserProfileModalProps {
 	user: User;
@@ -27,26 +29,33 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 	const mobileNumber = profile?.mobileNumber || "1234567890";
 	const isUserSuspended = user?.suspended
 	console.log({user})
+	const [activeView, setActiveView] = useState<"personal" | "wallet">("personal");
 	const buttonItems = [
 		{ 
-			label: "Send a notice", 
-			icon: <MessageCircle className="w-4 h-4 text-[#667085" />, 
-			onClick: () => onSendNotice(user),
-			className: "bg-[#E0E8F980] text-[#667085]"
-		},
-		{ 
-			label: "Contact User", 
-			icon: <LuMessageSquareDot className="w-4 h-4" />, 
-			onClick: () => {},
-			className: "bg-[#10C300] text-white hover:bg-[#0ea800] shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]"
-		},
-		{ 
-			label: user.suspended ? "Reactivate" : "Suspend", 
-			icon: <PauseCircle className="w-4 h-4 text-[#B00020]" />, 
+			label: user.suspended ? "Suspended" : "Suspend", 
+			icon: <PauseCircle className={`w-4 h-4 ${user.suspended ? 'text-[#B00020]' : 'text-gray-500'}`} />, 
 			onClick: () => onSuspend?.(user),
-			className: "bg-[#FEECEB] border-[#FEECEB] text-[#B00020]"
+			className: `border border-dashed ${user.suspended ? 'border-[#B00020] text-[#B00020] bg-[#FEECEB]' : 'border-gray-300 text-gray-500 hover:bg-gray-50'}`
+		},
+		{ 
+			label: "Contact User Info", 
+			icon: <LuMessageSquareDot className="w-4 h-4 text-gray-500" />, 
+			onClick: () => {},
+			className: "bg-white border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50"
+		},
+		{ 
+			label: "Wallet Info", 
+			icon: <Wallet className={`w-4 h-4 ${activeView === 'wallet' ? 'text-white' : 'text-[#10C300]'}`} />, 
+			onClick: () => setActiveView(activeView === "wallet" ? "personal" : "wallet"),
+			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white border border-dashed border-[#10C300] text-[#10C300] hover:bg-[#E8F8E5]"
+		},
+		{ 
+			label: "Send a notice", 
+			icon: <MessageCircle className="w-4 h-4 text-gray-500" />, 
+			onClick: () => onSendNotice(user),
+			className: "bg-white border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50"
 		}
-	]
+	];
 	const loading = isLoading && !profile;
 
 	return (
@@ -127,73 +136,77 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 						</div>
 					</div>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div className="bg-white h-[280px] rounded-2xl p-5">
-							<h4 className="font-bold text-gray-900 mb-4">Personal Details</h4>
-							<div className="space-y-4 text-sm">
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Full Name:</span>
-									{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-xs text-left">{displayData.name}</span>}
-								</div>
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Email Address:</span>
-									{loading ? <Skeleton className="h-3 w-32" /> : <span className="font-normal text-gray-900 text-xs text-left underline underline-offset-2">{displayData.email}</span>}
-								</div>
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Mobile number:</span>
-									{loading ? <Skeleton className="h-3 w-20" /> : <span className="font-normal text-gray-900 text-xs text-left">{mobileNumber}</span>}
-								</div>
-								<div className="flex justify-between items-center">
-									<span className="text-gray-500 text-xs">Status:</span>
-									{loading ? (
-										<Skeleton className="h-6 w-16 rounded-full" />
-									) : (
-										<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-											status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
-											status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
-											"bg-[#FEECEB] text-[#EE201C]"
-										}`}>
-											{status === "verified" ? "Verified" : 
-											 status === "pending_verification" ? "Pending" : 
-											 "Not Verified"}
-										</span>
-									)}
-								</div>
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Country:</span>
-									{loading ? <Skeleton className="h-3 w-16" /> : <span className="font-normal text-gray-900 text-xs text-left">{country}</span>}
-								</div>
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Registration date:</span>
-									{loading ? (
-										<Skeleton className="h-3 w-24" />
-									) : (
-										<span className="font-normal text-gray-900 text-xs text-left">
-											{registeredDate ? new Date(registeredDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}
-										</span>
-									)}
+					{activeView === "personal" ? (
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="bg-white h-[280px] rounded-2xl p-5">
+								<h4 className="font-bold text-gray-900 mb-4">Personal Details</h4>
+								<div className="space-y-4 text-sm">
+									<div className="flex justify-between items-start">
+										<span className="text-gray-500 text-xs">Full Name:</span>
+										{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-xs text-left">{displayData.name}</span>}
+									</div>
+									<div className="flex justify-between items-start">
+										<span className="text-gray-500 text-xs">Email Address:</span>
+										{loading ? <Skeleton className="h-3 w-32" /> : <span className="font-normal text-gray-900 text-xs text-left underline underline-offset-2">{displayData.email}</span>}
+									</div>
+									<div className="flex justify-between items-start">
+										<span className="text-gray-500 text-xs">Mobile number:</span>
+										{loading ? <Skeleton className="h-3 w-20" /> : <span className="font-normal text-gray-900 text-xs text-left">{mobileNumber}</span>}
+									</div>
+									<div className="flex justify-between items-center">
+										<span className="text-gray-500 text-xs">Status:</span>
+										{loading ? (
+											<Skeleton className="h-6 w-16 rounded-full" />
+										) : (
+											<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+												status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
+												status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
+												"bg-[#FEECEB] text-[#EE201C]"
+											}`}>
+												{status === "verified" ? "Verified" : 
+												status === "pending_verification" ? "Pending" : 
+												"Not Verified"}
+											</span>
+										)}
+									</div>
+									<div className="flex justify-between items-start">
+										<span className="text-gray-500 text-xs">Country:</span>
+										{loading ? <Skeleton className="h-3 w-16" /> : <span className="font-normal text-gray-900 text-xs text-left">{country}</span>}
+									</div>
+									<div className="flex justify-between items-start">
+										<span className="text-gray-500 text-xs">Registration date:</span>
+										{loading ? (
+											<Skeleton className="h-3 w-24" />
+										) : (
+											<span className="font-normal text-gray-900 text-xs text-left">
+												{registeredDate ? new Date(registeredDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}
+											</span>
+										)}
+									</div>
 								</div>
 							</div>
-						</div>
 
-						<div className="h-[280px] bg-white rounded-2xl p-5">
-							<h4 className="font-bold text-gray-900 mb-4">User's Wallet</h4>
-							<div className="space-y-4 text-sm">
-								<div>
-									<span className="block text-gray-500 mb-1">Current Balance</span>
-									{loading ? (
-										<Skeleton className="h-8 w-28" />
-									) : (
-										<div className="inline-flex items-center gap-1 text-gray-900"><span className="text-xs font-medium">₦</span> <span className="text-2xl font-bold">{walletBalance.toLocaleString()}</span></div>
-									)}
-								</div>
-								<div className="flex justify-between items-start pt-2">
-									<span className="text-gray-500">Last Top-up:</span>
-									{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-left">{lastTopUp ? lastTopUp.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}</span>}
+							<div className="h-[280px] bg-white rounded-2xl p-5">
+								<h4 className="font-bold text-gray-900 mb-4">User's Wallet</h4>
+								<div className="space-y-4 text-sm">
+									<div>
+										<span className="block text-gray-500 mb-1">Current Balance</span>
+										{loading ? (
+											<Skeleton className="h-8 w-28" />
+										) : (
+											<div className="inline-flex items-center gap-1 text-gray-900"><span className="text-xs font-medium">₦</span> <span className="text-2xl font-bold">{walletBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
+										)}
+									</div>
+									<div className="flex justify-between items-start pt-2">
+										<span className="text-gray-500">Last Top-up:</span>
+										{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-left">{lastTopUp ? lastTopUp.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}</span>}
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
+					) : (
+						<UserProfileWalletInfo userId={user.id} balance={walletBalance} />
+					)}
 				</div>
 			</div>
 		</div>
