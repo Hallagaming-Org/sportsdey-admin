@@ -5,6 +5,7 @@ import type { User, UserProfile } from "../lib/users";
 import { LuMessageSquareDot } from "react-icons/lu";
 import { useState } from "react";
 import { UserProfileWalletInfo } from "./UserProfileWalletInfo";
+import { UserProfileLogNotes } from "./UserProfileLogNotes";
 
 interface UserProfileModalProps {
 	user: User;
@@ -33,21 +34,21 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 	const buttonItems = [
 		{ 
 			label: user.suspended ? "Suspended" : "Suspend", 
-			icon: <PauseCircle className={`w-4 h-4 ${user.suspended ? 'text-[#B00020]' : 'text-gray-500'}`} />, 
+			icon: <PauseCircle className={`w-4 h-4 ${user.suspended ? 'text-[#B00020]' : 'text-[#B00020]'}`} />, 
 			onClick: () => onSuspend?.(user),
-			className: `border border-dashed ${user.suspended ? 'border-[#B00020] text-[#B00020] bg-[#FEECEB]' : 'border-gray-300 text-gray-500 hover:bg-gray-50'}`
+			className: `border border-dashed ${user.suspended ? 'border-[#B00020] text-[#B00020] bg-[#FEECEB]' : 'border-[#B00020] text-[#B00020] bg-[#FEECEB] hover:bg-[#fddcd9]'}`
 		},
 		{ 
 			label: "Contact User Info", 
-			icon: <LuMessageSquareDot className="w-4 h-4 text-gray-500" />, 
-			onClick: () => {},
-			className: "bg-white border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50"
+			icon: <LuMessageSquareDot className={`w-4 h-4 ${activeView === 'personal' ? 'text-white' : 'text-gray-500'}`} />, 
+			onClick: () => setActiveView("personal"),
+			className: activeView === "personal" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50"
 		},
 		{ 
 			label: "Wallet Info", 
-			icon: <Wallet className={`w-4 h-4 ${activeView === 'wallet' ? 'text-white' : 'text-[#10C300]'}`} />, 
-			onClick: () => setActiveView(activeView === "wallet" ? "personal" : "wallet"),
-			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white border border-dashed border-[#10C300] text-[#10C300] hover:bg-[#E8F8E5]"
+			icon: <Wallet className={`w-4 h-4 ${activeView === 'wallet' ? 'text-white' : 'text-gray-500'}`} />, 
+			onClick: () => setActiveView("wallet"),
+			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-white border border-dashed border-gray-300 text-gray-500 hover:bg-gray-50"
 		},
 		{ 
 			label: "Send a notice", 
@@ -138,71 +139,65 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 
 					{activeView === "personal" ? (
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-							<div className="bg-white h-[280px] rounded-2xl p-5">
-								<h4 className="font-bold text-gray-900 mb-4">Personal Details</h4>
-								<div className="space-y-4 text-sm">
+							<div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full min-h-[360px]">
+								<h4 className="font-bold text-xl text-gray-900 mb-6">Personal Details</h4>
+								<div className="space-y-5 text-sm flex-1">
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-xs">Full Name:</span>
-										{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-xs text-left">{displayData.name}</span>}
+										<span className="text-gray-500 text-sm">Full Name:</span>
+										{loading ? <Skeleton className="h-4 w-24" /> : <span className="font-medium text-gray-900 text-sm text-left">{displayData.name}</span>}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-xs">Email Address:</span>
-										{loading ? <Skeleton className="h-3 w-32" /> : <span className="font-normal text-gray-900 text-xs text-left underline underline-offset-2">{displayData.email}</span>}
+										<span className="text-gray-500 text-sm">Email Address:</span>
+										{loading ? <Skeleton className="h-4 w-32" /> : <span className="font-medium text-gray-900 text-sm text-left underline underline-offset-2">{displayData.email}</span>}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-xs">Mobile number:</span>
-										{loading ? <Skeleton className="h-3 w-20" /> : <span className="font-normal text-gray-900 text-xs text-left">{mobileNumber}</span>}
+										<span className="text-gray-500 text-sm">Mobile number:</span>
+										{loading ? <Skeleton className="h-4 w-20" /> : <span className="font-medium text-gray-900 text-sm text-left">{mobileNumber}</span>}
 									</div>
-									<div className="flex justify-between items-center">
-										<span className="text-gray-500 text-xs">Status:</span>
+									<div className="flex justify-between items-start">
+										<span className="text-gray-500 text-sm">Status:</span>
 										{loading ? (
-											<Skeleton className="h-6 w-16 rounded-full" />
+											<Skeleton className="h-8 w-16" />
 										) : (
-											<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-												status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
-												status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
-												"bg-[#FEECEB] text-[#EE201C]"
-											}`}>
-												{status === "verified" ? "Verified" : 
-												status === "pending_verification" ? "Pending" : 
-												"Not Verified"}
-											</span>
+											<div className="flex flex-col items-end gap-1">
+												<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+													status === "verified" ? "bg-[#E8F8E5] text-[#10C300] border border-[#10C300]" :
+													status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
+													"bg-[#FEECEB] text-[#EE201C]"
+												}`}>
+													{status === "verified" ? "Verified" : 
+													status === "pending_verification" ? "Pending" : 
+													"Not Verified"}
+												</span>
+												<span className="text-xs font-medium text-gray-900">{user.id.replace('USR-', '') || "801030 30108"}</span>
+											</div>
 										)}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-xs">Country:</span>
-										{loading ? <Skeleton className="h-3 w-16" /> : <span className="font-normal text-gray-900 text-xs text-left">{country}</span>}
+										<span className="text-gray-500 text-sm">Date of Birth:</span>
+										{loading ? <Skeleton className="h-4 w-24" /> : <span className="font-medium text-gray-900 text-sm text-left">{profile?.dob || "15th of February, 2009"}</span>}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-xs">Registration date:</span>
+										<span className="text-gray-500 text-sm">Country:</span>
+										{loading ? <Skeleton className="h-4 w-16" /> : <span className="font-medium text-gray-900 text-sm text-left">{country}</span>}
+									</div>
+									<div className="flex justify-between items-start">
+										<span className="text-gray-500 text-sm">Device info:</span>
 										{loading ? (
-											<Skeleton className="h-3 w-24" />
+											<Skeleton className="h-8 w-32" />
 										) : (
-											<span className="font-normal text-gray-900 text-xs text-left">
-												{registeredDate ? new Date(registeredDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}
-											</span>
+											<div className="flex flex-col items-end gap-1 text-xs font-medium">
+												<span className="inline-flex items-center rounded-full px-2.5 py-1 bg-white border border-gray-200 text-gray-700 shadow-sm">
+													{profile?.deviceType || "IPhone 11"}
+												</span>
+												<span className="text-gray-700">{profile?.browser || "Safari"} &nbsp; {profile?.ipAddress || "105.112.23.191"}</span>
+											</div>
 										)}
 									</div>
 								</div>
 							</div>
 
-							<div className="h-[280px] bg-white rounded-2xl p-5">
-								<h4 className="font-bold text-gray-900 mb-4">User's Wallet</h4>
-								<div className="space-y-4 text-sm">
-									<div>
-										<span className="block text-gray-500 mb-1">Current Balance</span>
-										{loading ? (
-											<Skeleton className="h-8 w-28" />
-										) : (
-											<div className="inline-flex items-center gap-1 text-gray-900"><span className="text-xs font-medium">₦</span> <span className="text-2xl font-bold">{walletBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
-										)}
-									</div>
-									<div className="flex justify-between items-start pt-2">
-										<span className="text-gray-500">Last Top-up:</span>
-										{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-left">{lastTopUp ? lastTopUp.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}</span>}
-									</div>
-								</div>
-							</div>
+							<UserProfileLogNotes userId={user.id} />
 						</div>
 					) : (
 						<UserProfileWalletInfo userId={user.id} balance={walletBalance} />
