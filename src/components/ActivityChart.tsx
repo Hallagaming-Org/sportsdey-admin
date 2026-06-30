@@ -1,38 +1,40 @@
-import {
-	TimePeriodDropdown,
-	type TimePeriodOption,
-} from "./TimePeriodDropdown";
-import { useState } from "react";
+interface DayData {
+	date: string;
+	revenue: number;
+	bets: number;
+	users: number;
+}
 
 interface ActivityChartProps {
 	showHeader?: boolean;
+	data?: DayData[];
 }
 
-export function ActivityChart({ showHeader = true }: ActivityChartProps) {
-	const [selectedTimePeriod, setSelectedTimePeriod] =
-		useState<TimePeriodOption>("All");
+export function ActivityChart({ showHeader = true, data: propData }: ActivityChartProps) {
 
-	const days = Array.from({ length: 7 }).map((_, i) => {
-		const d = new Date();
-		d.setDate(d.getDate() - (6 - i));
-		if (i === 6) return "Today";
-		return d.toLocaleDateString("en-US", { weekday: "short" });
-	});
+	const displayData = propData
+		? propData.map((d) => ({ rev: d.revenue, bet: d.bets, users: d.users }))
+		: [
+				{ rev: 120000, bet: 150000, users: 80000 },
+				{ rev: 180000, bet: 220000, users: 120000 },
+				{ rev: 140000, bet: 130000, users: 90000 },
+				{ rev: 250000, bet: 280000, users: 150000 },
+				{ rev: 200000, bet: 230000, users: 110000 },
+				{ rev: 310000, bet: 340000, users: 190000 },
+				{ rev: 330000, bet: 350000, users: 210000 },
+			];
 
-	// Fixed dummy data for demonstration, matching the visual scale
-	const data = [
-		{ rev: 120000, bet: 150000, users: 80000 },
-		{ rev: 180000, bet: 220000, users: 120000 },
-		{ rev: 140000, bet: 130000, users: 90000 },
-		{ rev: 250000, bet: 280000, users: 150000 },
-		{ rev: 200000, bet: 230000, users: 110000 },
-		{ rev: 310000, bet: 340000, users: 190000 }, 
-		{ rev: 330000, bet: 350000, users: 210000 }  
-	];
+	const days = propData
+		? propData.map((d) => d.date)
+		: Array.from({ length: 7 }).map((_, i) => {
+				const d = new Date();
+				d.setDate(d.getDate() - (6 - i));
+				if (i === 6) return "Today";
+				return d.toLocaleDateString("en-US", { weekday: "short" });
+			});
 
-	const maxVal = Math.max(...data.flatMap(d => [d.rev, d.bet, d.users]));
+	const maxVal = Math.max(...displayData.flatMap(d => [d.rev, d.bet, d.users]));
 	const step = 100000;
-	// Cap to next multiple of step, minimum 300k
 	const cap = Math.max(300000, Math.ceil(maxVal / step) * step);
 	const formatK = (val: number) => `${Math.round(val / 1000)}K`;
 
@@ -41,10 +43,6 @@ export function ActivityChart({ showHeader = true }: ActivityChartProps) {
 			{showHeader && (
 				<div className="mb-6 flex items-center justify-between">
 					<h2 className="text-xl font-bold text-gray-900">Activity Trends/Reports</h2>
-					<TimePeriodDropdown
-						value={selectedTimePeriod}
-						onChange={(period) => setSelectedTimePeriod(period)}
-					/>
 				</div>
 			)}
 
@@ -64,13 +62,12 @@ export function ActivityChart({ showHeader = true }: ActivityChartProps) {
 						<div className="absolute bottom-0 left-0 w-full border-t border-gray-300"></div>
 
 						<div className="absolute bottom-0 left-0 right-0 top-0 flex items-end justify-between px-4 lg:px-12">
-							{data.map((day, idx) => (
+							{displayData.map((day, idx) => (
 								<div key={idx} className="flex h-full w-12 items-end justify-center z-10 group relative">
 									<div className={`w-2.5 bg-[#0D0D0D] transition-all duration-300 ${idx < 6 ? 'opacity-40' : 'opacity-100'}`} style={{ height: `${(day.rev / cap) * 100}%` }}></div>
 									<div className={`w-2.5 bg-[#1BAA04] transition-all duration-300 ${idx < 6 ? 'opacity-40' : 'opacity-100'}`} style={{ height: `${(day.bet / cap) * 100}%` }}></div>
 									<div className={`w-2.5 bg-[#E2FDD9] transition-all duration-300 ${idx < 6 ? 'opacity-40' : 'opacity-100'}`} style={{ height: `${(day.users / cap) * 100}%` }}></div>
 									
-									{/* Tooltip on hover */}
 									<div className="absolute top-full mt-2 hidden group-hover:flex flex-col bg-gray-900 text-white text-[10px] p-2 rounded shadow-lg z-20 whitespace-nowrap">
 										<div>Rev: ₦{day.rev.toLocaleString()}</div>
 										<div>Bets: ₦{day.bet.toLocaleString()}</div>
@@ -81,7 +78,6 @@ export function ActivityChart({ showHeader = true }: ActivityChartProps) {
 						</div>
 					</div>
 
-					{/* X-axis labels sitting right below the 0 line */}
 					<div className="pt-2 flex justify-between px-4 lg:px-12 text-xs font-semibold text-gray-500">
 						{days.map((day, idx) => (
 							<span key={idx} className="w-12 text-center uppercase tracking-wider">
