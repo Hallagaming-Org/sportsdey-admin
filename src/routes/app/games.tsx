@@ -119,6 +119,17 @@ function GamesPage() {
     return acc;
   }, {} as Record<string, Game[]>);
 
+  const CATEGORY_ORDER = ["popular", "others"];
+
+  const sortedCategories = Object.keys(gamesByCategory).sort((a, b) => {
+    const aIdx = CATEGORY_ORDER.indexOf(a);
+    const bIdx = CATEGORY_ORDER.indexOf(b);
+    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+    if (aIdx !== -1) return -1;
+    if (bIdx !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
   const toggleMutation = useMutation({
     mutationFn: async ({ id, isCurrentlyEnabled }: { id: string; isCurrentlyEnabled: boolean }) => {
       const res = await gamesService.toggleGame(id, !isCurrentlyEnabled);
@@ -176,7 +187,9 @@ function GamesPage() {
             ))}
           </div>
         ) : Object.keys(gamesByCategory).length > 0 ? (
-          Object.entries(gamesByCategory).map(([category, catGames]) => (
+          sortedCategories.map((category) => {
+            const catGames = gamesByCategory[category];
+            return (
             <div key={category} className="mb-10">
               <h3 className="mb-4 text-xl font-bold text-gray-800 capitalize">{category}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
@@ -185,7 +198,8 @@ function GamesPage() {
                 ))}
               </div>
             </div>
-          ))
+          );
+          })
         ) : (
           <div className="col-span-full text-center text-gray-500 py-10">
             No active games found.
