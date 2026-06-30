@@ -18,7 +18,12 @@ export function getCookie(name: string): string | null {
 	if (typeof document === "undefined") return null;
 	const value = `; ${document.cookie}`;
 	const parts = value.split(`; ${name}=`);
-	if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+	if (parts.length === 2) {
+		const cookies = parts.pop()?.split(";").shift();
+		console.log("cookies", cookies);
+		return cookies || null;
+	}
+	console.log("cookies", null)
 	return null;
 }
 
@@ -27,15 +32,15 @@ export function setCookie(name: string, value: string, days: number = 7): void {
 	let expires = "";
 	if (days) {
 		const date = new Date();
-		date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+		date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
 		expires = "; expires=" + date.toUTCString();
 	}
-	document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+	document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
 
 async function fetchApi<T>(
 	endpoint: string,
-	options: FetchOptions = {}
+	options: FetchOptions = {},
 ): Promise<{
 	success: boolean;
 	data?: T;
@@ -45,8 +50,7 @@ async function fetchApi<T>(
 }> {
 	const { method = "GET", body, headers = {} } = options;
 
-	// Update the cookie name here if it's different (e.g., 'token', 'admin_session')
-	const token = getCookie("accessToken");
+	const token = getCookie("admin_session");
 
 	const fetchOptions: RequestInit = {
 		method,
@@ -91,9 +95,13 @@ async function fetchApi<T>(
 	}
 
 	if (!response.ok || result.success === false) {
+		const errorMessage =
+			response.status === 400
+				? result.error || "Invalid request."
+				: "An error occurred. Try again later.";
 		return {
 			success: false,
-			error: result.error || `Request failed with status ${response.status}`,
+			error: errorMessage,
 			statusCode: response.status,
 			details: result.details ?? null,
 		};
@@ -106,5 +114,5 @@ async function fetchApi<T>(
 	};
 }
 
-export { fetchApi, API_BASE };
-export type { HttpMethod, FetchOptions };
+export type { FetchOptions, HttpMethod };
+export { API_BASE, fetchApi };
