@@ -37,6 +37,28 @@ export interface UserProfile {
 	lastTopUp: string | null;
 }
 
+export interface WalletOverview {
+	currentBalance: number;
+	totalDeposits: number;
+	totalWithdrawals: number;
+	netPosition: number;
+}
+
+export interface UserTransaction {
+	id: string;
+	type: string;
+	amount: number;
+	referenceId: string;
+	dateTime: string;
+	status: string;
+}
+
+export interface UserTransactionsResponse {
+	transactions: UserTransaction[];
+	totalPages: number;
+	total: number;
+}
+
 export interface CreateUserData {
 	name: string;
 	email: string;
@@ -107,6 +129,40 @@ class UserService {
 
 	async getUserProfile(userId: string): Promise<{ success: boolean; data?: UserProfile; error?: string }> {
 		return fetchApi<UserProfile>(`/user/${userId}/profile`);
+	}
+
+	async getUserWalletOverview(
+		userId: string,
+		params?: { fromDate?: string; toDate?: string },
+	): Promise<{ success: boolean; data?: WalletOverview; error?: string }> {
+		const searchParams = new URLSearchParams();
+		if (params?.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params?.toDate) searchParams.set("toDate", params.toDate);
+		const qs = searchParams.toString();
+		return fetchApi<WalletOverview>(`/user/${userId}/wallet/overview${qs ? `?${qs}` : ""}`);
+	}
+
+	async getUserWalletTransactions(
+		userId: string,
+		params?: { page?: number; limit?: number; fromDate?: string; toDate?: string },
+	): Promise<{ success: boolean; data?: UserTransactionsResponse; error?: string }> {
+		const searchParams = new URLSearchParams();
+		if (params?.page) searchParams.set("page", params.page.toString());
+		if (params?.limit) searchParams.set("limit", params.limit.toString());
+		if (params?.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params?.toDate) searchParams.set("toDate", params.toDate);
+		const qs = searchParams.toString();
+		return fetchApi<UserTransactionsResponse>(`/user/${userId}/wallet/transactions${qs ? `?${qs}` : ""}`);
+	}
+
+	async processManualTransaction(
+		userId: string,
+		data: { type: "credit" | "debit"; amount: number; reason: string },
+	): Promise<{ success: boolean; error?: string }> {
+		return fetchApi(`/user/${userId}/wallet/manual`, {
+			method: "POST",
+			body: data,
+		});
 	}
 }
 

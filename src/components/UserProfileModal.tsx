@@ -1,8 +1,16 @@
-import { X, AlertTriangle, MessageCircle } from "lucide-react";
+import { X, AlertTriangle, MessageCircle, MoreHorizontal, PlusCircle, MinusCircle, ChevronDown } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { PauseCircle } from "lucide-react";
-import type { User, UserProfile } from "../lib/users";
-import { LuMessageSquareDot } from "react-icons/lu";
+import type { User, UserProfile, UserTransaction } from "../lib/users";
+import { LuMessageSquareDot, LuWallet } from "react-icons/lu";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { userService } from "../lib/users";
+import { useState } from "react";
+import { toast } from "sonner";
+import { TimePeriodDropdown, type TimePeriodOption } from "./TimePeriodDropdown";
+import { getDateRangeForPeriod } from "../lib/time-period";
+
+type ProfileTab = "contact" | "wallet";
 
 interface UserProfileModalProps {
 	user: User;
@@ -17,35 +25,445 @@ function Skeleton({ className }: { className?: string }) {
 	return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
 }
 
+function formatCurrency(amount: number | undefined | null) {
+	if (amount == null) return "₦0.00";
+	return `₦${amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function StatusBadge({ status }: { status: string }) {
+	const s = status?.toLowerCase();
+	const isSuccess = s === "success" || s === "completed" || s === "won";
+	const isPending = s === "pending" || s === "processing";
+	const isFailed = s === "failed";
+
+	const cls = isSuccess
+		? "bg-[#E8F8E5] text-[#10C300] border border-[#10C300]/20"
+		: isPending
+			? "bg-[#FFF8E5] text-[#FFB000] border border-[#FFB000]/20"
+			: isFailed
+				? "bg-[#FEECEB] text-[#EE201C] border border-[#EE201C]/20"
+				: "bg-gray-100 text-gray-600 border border-gray-200";
+
+	const label = isSuccess ? "Success" : isPending ? "Pending" : isFailed ? "Failed" : status;
+
+	return (
+		<span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${cls}`}>
+			{label}
+		</span>
+	);
+}
+
+// ─── Wallet Tab ────────────────────────────────────────────────────────────────
+
+function WalletTab({ userId }: { userId: string }) {
+	const [timePeriod, setTimePeriod] = useState<TimePeriodOption>("All");
+	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
+	const [txType, setTxType] = useState<"credit" | "debit">("credit");
+	const [amount, setAmount] = useState("");
+	const [reason, setReason] = useState("");
+
+	const { fromDate, toDate } = getDateRangeForPeriod(timePeriod, customRange, { output: "iso" });
+
+	const {
+		data: overview,
+		isLoading: overviewLoading,
+	} = useQuery({
+		queryKey: ["user-wallet-overview", userId, fromDate, toDate],
+		queryFn: async () => {
+			const result = await userService.getUserWalletOverview(userId, { fromDate, toDate });
+			if (!result.success) throw new Error(result.error || "Failed to fetch wallet overview");
+			return result.data;
+		},
+		enabled: !!userId,
+	});
+
+	const {
+		data: txData,
+		isLoading: txLoading,
+	} = useQuery({
+		queryKey: ["user-wallet-transactions", userId, fromDate, toDate],
+		queryFn: async () => {
+			const result = await userService.getUserWalletTransactions(userId, { fromDate, toDate, limit: 10 });
+			if (!result.success) throw new Error(result.error || "Failed to fetch transactions");
+			return result.data;
+		},
+		enabled: !!userId,
+	});
+
+	const manualMutation = useMutation({
+		mutationFn: async () => {
+			if (!amount || Number.isNaN(Number(amount)) || Number(amount) <= 0) {
+				throw new Error("Please enter a valid amount");
+			}
+			if (!reason) throw new Error("Please select a reason");
+			const result = await userService.processManualTransaction(userId, {
+				type: txType,
+				amount: Number(amount),
+				reason,
+			});
+			if (!result.success) throw new Error(result.error || "Transaction failed");
+			return result;
+		},
+		onSuccess: () => {
+			toast.success(`Manual ${txType} of ₦${Number(amount).toLocaleString()} processed successfully`);
+			setAmount("");
+			setReason("");
+		},
+		onError: (e: Error) => toast.error(e.message),
+	});
+
+	const reasons = [
+		"Bonus credit",
+		"Compensation",
+		"Error correction",
+		"Promotional credit",
+		"Fraud reversal",
+		"Other",
+	];
+
+	const statCards = [
+		{ label: "Current Balance", value: overview?.currentBalance },
+		{ label: "Total Deposits", value: overview?.totalDeposits },
+		{ label: "Total Withdrawals", value: overview?.totalWithdrawals },
+		{ label: "Net Position (GGR)", value: overview?.netPosition },
+	];
+
+	return (
+		<div className="space-y-5">
+			{/* Wallet Overview */}
+			<div className="bg-white rounded-2xl p-5 shadow-sm">
+				<div className="flex items-center justify-between mb-4">
+					<h4 className="font-bold text-gray-900 text-base">Wallet Overview</h4>
+					<TimePeriodDropdown
+						value={timePeriod}
+						onChange={(p, r) => {
+							setTimePeriod(p);
+							setCustomRange(r);
+						}}
+					/>
+				</div>
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+					{statCards.map((card) => (
+						<div key={card.label}>
+							<p className="text-xs text-gray-500 mb-1">{card.label}</p>
+							{overviewLoading ? (
+								<Skeleton className="h-7 w-28" />
+							) : (
+								<p className="text-xl font-bold text-gray-900">{formatCurrency(card.value)}</p>
+							)}
+						</div>
+					))}
+				</div>
+			</div>
+
+			{/* Transaction Summary */}
+			<div className="bg-white rounded-2xl p-5 shadow-sm">
+				<div className="flex items-center justify-between mb-4">
+					<h4 className="font-bold text-gray-900 text-base">Transaction Summary</h4>
+				</div>
+			<div className="overflow-x-auto custom-scrollbar">
+				<table className="min-w-full text-sm whitespace-nowrap">
+					<thead>
+						<tr className="border-b border-gray-100">
+							<th className="text-left text-gray-500 font-medium pb-3 pr-4 text-xs">Type</th>
+							<th className="text-left text-gray-500 font-medium pb-3 pr-4 text-xs">Amount</th>
+							<th className="text-left text-gray-500 font-medium pb-3 pr-4 text-xs">Reference ID</th>
+							<th className="text-left text-gray-500 font-medium pb-3 pr-4 text-xs">Date &amp; Time</th>
+							<th className="text-left text-gray-500 font-medium pb-3 pr-4 text-xs">Status</th>
+							<th className="pb-3" />
+						</tr>
+					</thead>
+						<tbody>
+							{txLoading ? (
+								Array.from({ length: 3 }).map((_, i) => (
+									<tr key={i} className="border-b border-gray-50">
+										<td className="py-3 pr-4"><Skeleton className="h-4 w-20" /></td>
+										<td className="py-3 pr-4"><Skeleton className="h-4 w-24" /></td>
+										<td className="py-3 pr-4"><Skeleton className="h-4 w-32" /></td>
+										<td className="py-3 pr-4"><Skeleton className="h-4 w-28" /></td>
+										<td className="py-3 pr-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
+										<td className="py-3" />
+									</tr>
+								))
+							) : !txData?.transactions?.length ? (
+								<tr>
+									<td colSpan={6} className="py-8 text-center text-gray-400 text-sm">
+										No transactions found
+									</td>
+								</tr>
+							) : (
+								txData.transactions.map((tx: UserTransaction) => {
+									const [datePart, timePart] = tx.dateTime?.includes("T")
+										? [
+											new Date(tx.dateTime).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+											new Date(tx.dateTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase(),
+										]
+										: (tx.dateTime || "").split(" ");
+
+									const typeLabel =
+										tx.type === "deposit" ? "Deposit" :
+										tx.type === "withdrawal" ? "Withdrawal" :
+										tx.type === "manual_credit" ? "Manual Credit" :
+										tx.type === "manual_debit" ? "Manual Debit" :
+										tx.type;
+
+									return (
+										<tr key={tx.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+											<td className="py-3 pr-4 text-gray-900 text-xs font-medium">{typeLabel}</td>
+											<td className="py-3 pr-4 text-gray-900 text-xs font-semibold">{formatCurrency(tx.amount)}</td>
+											<td className="py-3 pr-4 text-gray-600 text-xs font-mono">{tx.referenceId || "-"}</td>
+											<td className="py-3 pr-4 text-xs">
+												<span className="font-medium text-gray-900 block">{datePart}</span>
+												<span className="text-gray-500">{timePart}</span>
+											</td>
+											<td className="py-3 pr-4">
+												<StatusBadge status={tx.status} />
+											</td>
+											<td className="py-3">
+												<button type="button" className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors p-1 rounded">
+													<MoreHorizontal className="w-4 h-4" />
+												</button>
+											</td>
+										</tr>
+									);
+								})
+							)}
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			{/* Manual Credit/Debits */}
+			<div className="bg-white rounded-2xl p-5 shadow-sm">
+				<div className="flex items-start justify-between mb-1">
+					<div>
+						<h4 className="font-bold text-gray-900 text-base">Manual Credit/Debits</h4>
+						<p className="text-xs text-gray-500 mt-0.5">Manually adjust user wallet balance</p>
+					</div>
+					<button type="button" className="text-gray-400 hover:text-gray-600 cursor-pointer p-1 rounded transition-colors">
+						<MoreHorizontal className="w-4 h-4" />
+					</button>
+				</div>
+
+				<div className="mt-4 flex flex-col gap-4">
+					{/* Transaction Type + Amount + Reason */}
+					<div className="flex flex-wrap items-end gap-4">
+						{/* Type selector */}
+						<div className="flex-shrink-0">
+							<p className="text-xs text-gray-500 mb-2">Transaction Type</p>
+							<div className="flex items-center gap-3">
+								<button
+									type="button"
+									onClick={() => setTxType("credit")}
+									className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium border transition-all cursor-pointer ${
+										txType === "credit"
+											? "bg-[#10C300] text-white border-[#10C300]"
+											: "bg-white text-gray-700 border-gray-200"
+									}`}
+								>
+									<PlusCircle className={`w-4 h-4 ${txType === "credit" ? "text-white" : "text-[#10C300]"}`} />
+									Credit
+								</button>
+								<button
+									type="button"
+									onClick={() => setTxType("debit")}
+									className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium border transition-all cursor-pointer ${
+										txType === "debit"
+											? "bg-[#EE201C] text-white border-[#EE201C]"
+											: "bg-white text-gray-700 border-gray-200"
+									}`}
+								>
+									<MinusCircle className={`w-4 h-4 ${txType === "debit" ? "text-white" : "text-[#EE201C]"}`} />
+									Debit
+								</button>
+							</div>
+						</div>
+
+						{/* Amount */}
+						<div className="flex-1 min-w-[140px]">
+							<label className="text-xs text-gray-500 mb-2 block">Amount (₦)</label>
+							<div className="relative">
+								<input
+									type="number"
+									min="0"
+									placeholder="Enter amount"
+									value={amount}
+									onChange={(e) => setAmount(e.target.value)}
+									className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#10C300] focus:border-[#10C300] transition-colors"
+								/>
+							</div>
+						</div>
+
+						{/* Reason */}
+						<div className="flex-1 min-w-[160px]">
+							<label className="text-xs text-gray-500 mb-2 block">Reasons</label>
+							<div className="relative">
+								<select
+									value={reason}
+									onChange={(e) => setReason(e.target.value)}
+									className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#10C300] focus:border-[#10C300] transition-colors appearance-none bg-white pr-8 cursor-pointer"
+								>
+									<option value="">Select a reason</option>
+									{reasons.map((r) => (
+										<option key={r} value={r}>{r}</option>
+									))}
+								</select>
+								<ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+							</div>
+						</div>
+					</div>
+
+					{/* Submit */}
+					<div className="flex justify-center">
+						<button
+							type="button"
+							onClick={() => manualMutation.mutate()}
+							disabled={manualMutation.isPending}
+							className="w-full max-w-xs bg-[#10C300] hover:bg-[#0ea800] disabled:opacity-60 text-white font-semibold rounded-full px-6 py-2.5 text-sm transition-colors cursor-pointer shadow-[0_4px_14px_0_rgba(16,195,0,0.3)]"
+						>
+							{manualMutation.isPending ? "Processing..." : "Process Transaction"}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+// ─── Contact Tab (existing profile layout) ─────────────────────────────────────
+
+function ContactTab({
+	displayData,
+	loading,
+	status,
+	registeredDate,
+	walletBalance,
+	lastTopUp,
+	country,
+	mobileNumber,
+}: {
+	displayData: User | UserProfile;
+	loading: boolean;
+	status: string;
+	registeredDate: number | string | null;
+	walletBalance: number;
+	lastTopUp: Date | null;
+	country: string;
+	mobileNumber: string;
+}) {
+	return (
+		<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div className="bg-white h-[280px] rounded-2xl p-5 shadow-sm">
+				<h4 className="font-bold text-gray-900 mb-4">Personal Details</h4>
+				<div className="space-y-4 text-sm">
+					<div className="flex justify-between items-start">
+						<span className="text-gray-500 text-xs">Full Name:</span>
+						{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-xs text-left">{displayData.name}</span>}
+					</div>
+					<div className="flex justify-between items-start">
+						<span className="text-gray-500 text-xs">Email Address:</span>
+						{loading ? <Skeleton className="h-3 w-32" /> : <span className="font-normal text-gray-900 text-xs text-left underline underline-offset-2">{displayData.email}</span>}
+					</div>
+					<div className="flex justify-between items-start">
+						<span className="text-gray-500 text-xs">Mobile number:</span>
+						{loading ? <Skeleton className="h-3 w-20" /> : <span className="font-normal text-gray-900 text-xs text-left">{mobileNumber}</span>}
+					</div>
+					<div className="flex justify-between items-center">
+						<span className="text-gray-500 text-xs">Status:</span>
+						{loading ? (
+							<Skeleton className="h-6 w-16 rounded-full" />
+						) : (
+							<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+								status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
+								status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
+								"bg-[#FEECEB] text-[#EE201C]"
+							}`}>
+								{status === "verified" ? "Verified" : status === "pending_verification" ? "Pending" : "Not Verified"}
+							</span>
+						)}
+					</div>
+					<div className="flex justify-between items-start">
+						<span className="text-gray-500 text-xs">Country:</span>
+						{loading ? <Skeleton className="h-3 w-16" /> : <span className="font-normal text-gray-900 text-xs text-left">{country}</span>}
+					</div>
+					<div className="flex justify-between items-start">
+						<span className="text-gray-500 text-xs">Registration date:</span>
+						{loading ? (
+							<Skeleton className="h-3 w-24" />
+						) : (
+							<span className="font-normal text-gray-900 text-xs text-left">
+								{registeredDate ? new Date(registeredDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-"}
+							</span>
+						)}
+					</div>
+				</div>
+			</div>
+
+			<div className="h-[280px] bg-white rounded-2xl p-5 shadow-sm">
+				<h4 className="font-bold text-gray-900 mb-4">User's Wallet</h4>
+				<div className="space-y-4 text-sm">
+					<div>
+						<span className="block text-gray-500 mb-1">Current Balance</span>
+						{loading ? (
+							<Skeleton className="h-8 w-28" />
+						) : (
+							<div className="inline-flex items-center gap-1 text-gray-900">
+								<span className="text-xs font-medium">₦</span>
+								<span className="text-2xl font-bold">{walletBalance.toLocaleString()}</span>
+							</div>
+						)}
+					</div>
+					<div className="flex justify-between items-start pt-2">
+						<span className="text-gray-500">Last Top-up:</span>
+						{loading ? (
+							<Skeleton className="h-3 w-24" />
+						) : (
+							<span className="font-normal text-gray-900 text-left">
+								{lastTopUp ? lastTopUp.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-"}
+							</span>
+						)}
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+// ─── Main Modal ────────────────────────────────────────────────────────────────
+
 export function UserProfileModal({ user, profile, isLoading, onClose, onSendNotice, onSuspend }: UserProfileModalProps) {
+	const [activeTab, setActiveTab] = useState<ProfileTab>("contact");
+
 	const displayData = profile || user;
 	const status = profile?.verificationStatus || user.status;
 	const registeredDate = profile?.createdAt ? new Date(profile.createdAt).getTime() : user.registeredDate;
 	const walletBalance = profile?.wallet?.balance ?? user.wallet;
 	const lastTopUp = profile?.lastTopUp ? new Date(profile.lastTopUp) : null;
 	const country = profile?.country || "Nigeria";
-	const mobileNumber = profile?.mobileNumber || "1234567890";
-	const buttonItems = [
-		{ 
-			label: "Send a notice", 
-			icon: <MessageCircle className="w-4 h-4 text-[#667085" />, 
-			onClick: () => onSendNotice(user),
-			className: "bg-[#E0E8F980] text-[#667085]"
+	const mobileNumber = profile?.mobileNumber || "—";
+	const loading = !!(isLoading && !profile);
+
+	const tabs = [
+		{
+			key: "contact" as ProfileTab,
+			label: "Contact User Info",
+			icon: <LuMessageSquareDot className="w-4 h-4" />,
 		},
-		{ 
-			label: "Contact User", 
-			icon: <LuMessageSquareDot className="w-4 h-4" />, 
-			onClick: () => {},
-			className: "bg-[#10C300] text-white hover:bg-[#0ea800] shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]"
+		{
+			key: "wallet" as ProfileTab,
+			label: "Wallet info",
+			icon: <LuWallet className="w-4 h-4" />,
 		},
-		{ 
-			label: user.suspended ? "Reactivate" : "Suspend", 
-			icon: <PauseCircle className="w-4 h-4 text-[#B00020]" />, 
+	];
+
+	const actionButtons = [
+		{
+			label: user.suspended ? "Reactivate" : "Suspended",
+			icon: <PauseCircle className="w-4 h-4 text-[#B00020]" />,
 			onClick: () => onSuspend?.(user),
-			className: "bg-[#FEECEB] border-[#FEECEB] text-[#B00020]"
-		}
-	]
-	const loading = isLoading && !profile;
+			className: "bg-[#FEECEB] border border-[#FEECEB] text-[#B00020]",
+		},
+	];
 
 	return (
 		<div
@@ -56,6 +474,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 				className="w-full max-w-[760px] rounded-[20px] bg-[#F2F4F7] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
 				onClick={(e) => e.stopPropagation()}
 			>
+				{/* Header */}
 				<div className="flex bg-white items-center justify-between p-6 border-b border-gray-100">
 					<div className="flex items-center gap-2">
 						<div className="p-2 bg-[#E8F8E5] rounded-full text-[#10C300]">
@@ -71,50 +490,61 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 						<X className="h-4 w-4 text-white" />
 					</button>
 				</div>
-				
+
+				{/* Scrollable body */}
 				<div className="overflow-y-auto custom-scrollbar p-8 space-y-6 flex-1">
-					{status === 'not_verified' && (
-						<div className="w-max mx-auto flex -mt-4 items-center gap-2 px-3 py-2 text-[#B00020] bg-[#FEECEB] rounded-full text-sm">
-							<AlertTriangle className="w-4 h-4" />
+					{/* Suspension banner */}
+					{user.suspended && (
+						<div className="w-full flex items-center gap-2 px-4 py-2.5 text-[#B00020] bg-[#FEECEB] rounded-xl text-sm border border-[#FEECEB]">
+							<AlertTriangle className="w-4 h-4 shrink-0" />
 							<p>This account has been suspended due to violation of the system rules and regulations.</p>
 						</div>
 					)}
 
+					{/* Avatar + name + tabs */}
 					<div className="flex flex-col items-center justify-center pt-2">
 						{loading ? (
 							<Skeleton className="h-24 w-24 rounded-full mb-3" />
-						) : displayData.image || displayData.photo ? (
-							<img 
-								src={displayData.image || displayData.photo} 
-								alt="avatar" 
-								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3" 
+						) : (displayData.image ?? displayData.photo) ? (
+							<img
+								src={(displayData.image ?? displayData.photo) ?? undefined}
+								alt="avatar"
+								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3"
 							/>
 						) : (
 							<div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center shadow-sm mb-3">
 								<CgProfile className="h-12 w-12 text-gray-400" />
 							</div>
 						)}
+
 						{loading ? (
 							<Skeleton className="h-4 w-32 mb-2" />
 						) : (
 							<h2 className="text-base font-bold text-gray-900">{displayData.name}</h2>
 						)}
+
 						<p className="text-[#10C300] font-medium text-xs flex items-center gap-1.5 mt-1">
-							<span className="w-2 h-2 rounded-full bg-[#10C300]"></span>
+							<span className="w-2 h-2 rounded-full bg-[#10C300]" />
 							Online
 						</p>
 						{loading ? (
 							<Skeleton className="h-3 w-24 mt-1" />
 						) : (
-							<p className="text-gray-500 text-xs mt-.5">
-								Joined on {registeredDate ? new Date(registeredDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}
+							<p className="text-gray-500 text-xs mt-0.5">
+								Joined on{" "}
+								{registeredDate
+									? new Date(registeredDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+									: "—"}
 							</p>
 						)}
 
-						<div className="flex items-center gap-3 mt-6">
-							{buttonItems.map((btn, idx) => (
-								<button 
+						{/* Tab buttons row */}
+						<div className="flex items-center gap-2 mt-6 flex-wrap justify-center">
+							{/* Suspend / Reactivate pill */}
+							{actionButtons.map((btn, idx) => (
+								<button
 									key={idx}
+									type="button"
 									onClick={btn.onClick}
 									className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${btn.className}`}
 								>
@@ -122,76 +552,51 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 									{btn.label}
 								</button>
 							))}
+
+							{/* Send notice */}
+							<button
+								type="button"
+								onClick={() => onSendNotice(user)}
+								className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-[#E0E8F980] text-[#667085] transition-colors cursor-pointer"
+							>
+								<MessageCircle className="w-4 h-4 text-[#667085]" />
+								Send a notice
+							</button>
+
+							{/* Tab pills */}
+							{tabs.map((tab) => (
+								<button
+									key={tab.key}
+									type="button"
+									onClick={() => setActiveTab(tab.key)}
+									className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
+										activeTab === tab.key
+											? "bg-[#10C300] text-white shadow-[0_4px_14px_0_rgba(16,195,0,0.3)]"
+											: "bg-[#E0E8F980] text-[#667085] hover:bg-gray-200"
+									}`}
+								>
+									{tab.icon}
+									{tab.label}
+								</button>
+							))}
 						</div>
 					</div>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div className="bg-white h-[280px] rounded-2xl p-5">
-							<h4 className="font-bold text-gray-900 mb-4">Personal Details</h4>
-							<div className="space-y-4 text-sm">
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Full Name:</span>
-									{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-xs text-left">{displayData.name}</span>}
-								</div>
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Email Address:</span>
-									{loading ? <Skeleton className="h-3 w-32" /> : <span className="font-normal text-gray-900 text-xs text-left underline underline-offset-2">{displayData.email}</span>}
-								</div>
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Mobile number:</span>
-									{loading ? <Skeleton className="h-3 w-20" /> : <span className="font-normal text-gray-900 text-xs text-left">{mobileNumber}</span>}
-								</div>
-								<div className="flex justify-between items-center">
-									<span className="text-gray-500 text-xs">Status:</span>
-									{loading ? (
-										<Skeleton className="h-6 w-16 rounded-full" />
-									) : (
-										<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-											status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
-											status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
-											"bg-[#FEECEB] text-[#EE201C]"
-										}`}>
-											{status === "verified" ? "Verified" : 
-											 status === "pending_verification" ? "Pending" : 
-											 "Not Verified"}
-										</span>
-									)}
-								</div>
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Country:</span>
-									{loading ? <Skeleton className="h-3 w-16" /> : <span className="font-normal text-gray-900 text-xs text-left">{country}</span>}
-								</div>
-								<div className="flex justify-between items-start">
-									<span className="text-gray-500 text-xs">Registration date:</span>
-									{loading ? (
-										<Skeleton className="h-3 w-24" />
-									) : (
-										<span className="font-normal text-gray-900 text-xs text-left">
-											{registeredDate ? new Date(registeredDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}
-										</span>
-									)}
-								</div>
-							</div>
-						</div>
-
-						<div className="h-[280px] bg-white rounded-2xl p-5">
-							<h4 className="font-bold text-gray-900 mb-4">User's Wallet</h4>
-							<div className="space-y-4 text-sm">
-								<div>
-									<span className="block text-gray-500 mb-1">Current Balance</span>
-									{loading ? (
-										<Skeleton className="h-8 w-28" />
-									) : (
-										<div className="inline-flex items-center gap-1 text-gray-900"><span className="text-xs font-medium">₦</span> <span className="text-2xl font-bold">{walletBalance.toLocaleString()}</span></div>
-									)}
-								</div>
-								<div className="flex justify-between items-start pt-2">
-									<span className="text-gray-500">Last Top-up:</span>
-									{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-left">{lastTopUp ? lastTopUp.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "-"}</span>}
-								</div>
-							</div>
-						</div>
-					</div>
+					{/* Tab content */}
+					{activeTab === "contact" ? (
+						<ContactTab
+							displayData={displayData}
+							loading={loading}
+							status={status}
+							registeredDate={registeredDate}
+							walletBalance={walletBalance}
+							lastTopUp={lastTopUp}
+							country={country}
+							mobileNumber={mobileNumber}
+						/>
+					) : (
+						<WalletTab userId={user.id} />
+					)}
 				</div>
 			</div>
 		</div>
