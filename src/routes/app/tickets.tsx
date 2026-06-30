@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   TimePeriodDropdown,
   type TimePeriodOption,
@@ -14,6 +15,8 @@ import { SendNoticeModal } from "#/components/SendNoticeModal";
 import NotificationIcon from "#/assets/NotificationIcon";
 import type { User } from "#/lib/users";
 import { notificationService } from "#/lib/notifications";
+import { ticketService, type TicketRecord, type TicketOutcome, type TicketTab } from "#/lib/tickets";
+import { getDateRangeForPeriod } from "#/lib/time-period";
 import { toast } from "sonner";
 
 
@@ -28,85 +31,64 @@ export const Route = createFileRoute("/app/tickets")({
   component: TicketsPage,
 });
 
-type TicketOutcome = "Won" | "Active" | "Lost";
-type TabKey = "all" | "casino" | "sportsbook" | "prediction";
-
-interface TicketRecord {
-  id: string;
-  playerName: string;
-  betCode: string;
-  betAmount: string;
-  gameType: string;
-  possibleWin: string;
-  odds: string;
-  outcome: TicketOutcome;
-}
-
-const DUMMY_TICKETS: TicketRecord[] = [
-  { id: "012345", playerName: "George James", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
-  { id: "012346", playerName: "Savannah Ekikopima Enenche", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Prediction Market", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
-  { id: "012347", playerName: "Xcape", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Lost" },
-  { id: "012348", playerName: "Bayse", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sports Betting", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
-  { id: "012349", playerName: "Lucky Rise", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
-  { id: "012350", playerName: "Lagos Rush", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sports Betting", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
-  { id: "012351", playerName: "Eagle", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sportbook", possibleWin: "₦10,000", odds: "5.5", outcome: "Lost" },
-  { id: "012352", playerName: "Xcape", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sportbook", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
-  { id: "012353", playerName: "Bayse", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Casino", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
-  { id: "012354", playerName: "Lucky Rise", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sports Betting", possibleWin: "₦10,000", odds: "5.5", outcome: "Won" },
-  { id: "012355", playerName: "Lagos Rush", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Prediction Market", possibleWin: "₦10,000", odds: "5.5", outcome: "Active" },
-  { id: "012356", playerName: "Eagle", betCode: "8FG23X", betAmount: "₦50,000", gameType: "Sportbook", possibleWin: "₦10,000", odds: "5.5", outcome: "Lost" },
-];
-
 const OUTCOME_STYLES: Record<TicketOutcome, string> = {
   Won: "bg-[#E8F8E5] text-[#10C300]",
   Active: "bg-[#FFF8E5] text-[#FFB000]",
   Lost: "bg-[#FEECEB] text-[#EE201C]",
 };
 
-const TABS: { key: TabKey; label: string }[] = [
+const TABS: { key: TicketTab; label: string }[] = [
   { key: "all", label: "All Tickets" },
   { key: "casino", label: "Casino" },
   { key: "sportsbook", label: "Sportsbook" },
-  { key: "prediction", label: "Prediction Market" },
 ];
 
 const ITEMS_PER_PAGE = 10;
 
 function TicketsPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabKey>("all");
+  const [activeTab, setActiveTab] = useState<TicketTab>("all");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selectedTimePeriod, setSelectedTimePeriod] =
     useState<TimePeriodOption>("All");
+  const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>();
 
   const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
   const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => setActionDropdown(null);
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const filteredTickets = DUMMY_TICKETS.filter((t) => {
-    if (activeTab === "casino") return t.gameType.toLowerCase() === "casino";
-    if (activeTab === "sportsbook") return t.gameType.toLowerCase() === "sportbook" || t.gameType.toLowerCase() === "sports betting";
-    if (activeTab === "prediction") return t.gameType.toLowerCase() === "prediction market";
-    return true;
-  }).filter((t) =>
-    search
-      ? t.id.includes(search) || t.playerName.toLowerCase().includes(search.toLowerCase())
-      : true
-  );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  const totalPages = Math.ceil(filteredTickets.length / ITEMS_PER_PAGE);
-  const paginatedTickets = filteredTickets.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
-  );
+  const dateRange = getDateRangeForPeriod(selectedTimePeriod, customRange);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["tickets", activeTab, page, debouncedSearch, dateRange.fromDate, dateRange.toDate],
+    queryFn: async () => {
+      const result = await ticketService.getTickets({
+        page,
+        limit: ITEMS_PER_PAGE,
+        type: activeTab === "all" ? undefined : activeTab,
+        search: debouncedSearch || undefined,
+        fromDate: dateRange.fromDate,
+        toDate: dateRange.toDate,
+      });
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+  });
 
   const columns: Column<TicketRecord>[] = [
     {
@@ -120,14 +102,6 @@ function TicketsPage() {
         <span className="text-gray-500 text-xs leading-relaxed" title={t.playerName}>
           {t.playerName}
         </span>
-      ),
-    },
-    {
-      header: "Bet Code",
-      accessor: (t) => (
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-800">{t.betCode}</span>
-        </div>
       ),
     },
     {
@@ -147,18 +121,10 @@ function TicketsPage() {
       ),
     },
     {
-      header: "Odds",
+      header: "Date",
       accessor: (t) => (
         <span className="text-gray-500 text-xs leading-relaxed">
-          {t.odds}
-        </span>
-      ),
-    },
-    {
-      header: "Potential Wins",
-      accessor: (t) => (
-        <span className="text-gray-500 text-xs leading-relaxed">
-          {t.possibleWin}
+          {t.createdAt}
         </span>
       ),
     },
@@ -174,7 +140,6 @@ function TicketsPage() {
     },
   ];
 
-  // Helper function to mock a User object from a ticket record
   const getMockUserFromTicket = (ticket: TicketRecord): User => {
     return {
       id: `USR-${ticket.id}`,
@@ -186,9 +151,12 @@ function TicketsPage() {
     };
   };
 
+  const tickets = data?.tickets ?? [];
+  const totalPages = data?.pagination.totalPages ?? 1;
+  const totalItems = data?.pagination.total ?? 0;
+
   return (
     <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-8">
-      {/* Sticky Header */}
       <div className="flex-none flex items-center justify-between">
         <div>
           <h2 className="font-bold text-2xl text-gray-900">Tickets</h2>
@@ -211,7 +179,6 @@ function TicketsPage() {
         </div>
       </div>
 
-      {/* Tabs + Search */}
       <div className="flex-none flex items-center justify-between gap-4">
         <div className="flex gap-8 border-b border-gray-200">
           {TABS.map((tab) => (
@@ -242,18 +209,22 @@ function TicketsPage() {
           </div>
           <TimePeriodDropdown
             value={selectedTimePeriod}
-            onChange={(period) => setSelectedTimePeriod(period)}
+            onChange={(period, custom) => {
+              setSelectedTimePeriod(period);
+              if (custom) setCustomRange(custom);
+              setPage(1);
+            }}
             buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
           />
         </div>
       </div>
 
-      {/* Reusable DataTable */}
       <div className="flex-1 min-h-0">
         <DataTable
-          data={paginatedTickets}
+          data={tickets}
           columns={columns}
           maxHeight="100%"
+          isLoading={isLoading}
           onActionClick={(ticket, e) => {
             e.stopPropagation();
             e.nativeEvent.stopImmediatePropagation();
@@ -269,13 +240,12 @@ function TicketsPage() {
             currentPage: page,
             totalPages,
             onPageChange: setPage,
-            totalItems: filteredTickets.length,
+            totalItems,
             itemsPerPage: ITEMS_PER_PAGE,
           }}
         />
       </div>
 
-      {/* Action Dropdown */}
       {actionDropdown && (
         <ActionDropdown
           top={actionDropdown.top}
@@ -302,7 +272,6 @@ function TicketsPage() {
               icon: <PauseCircle className="w-4 h-4" />,
               label: "Suspend",
               onClick: () => {
-                // Mock suspend logic
                 toast.success(`User suspended successfully`);
                 setActionDropdown(null);
               },
@@ -311,7 +280,6 @@ function TicketsPage() {
         />
       )}
 
-      {/* Profile Modal */}
       {selectedProfileUser && (
         <UserProfileModal
           user={selectedProfileUser}
@@ -326,11 +294,10 @@ function TicketsPage() {
         />
       )}
 
-      {/* Send Notice Modal */}
       {noticeModalUser && (
         <SendNoticeModal
           user={noticeModalUser}
-          availableUsers={[noticeModalUser]} // We provide at least the mock user to the available list
+          availableUsers={[noticeModalUser]}
           onClose={() => setNoticeModalUser(null)}
           onSubmit={async (data) => {
             const result = await notificationService.sendNotification({
