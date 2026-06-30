@@ -4,26 +4,29 @@ import {
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
-import { adminAuth } from "../lib/auth";
+import { type Admin, adminAuth } from "../lib/auth";
 
 export const Route = createFileRoute("/app")({
-	beforeLoad: async () => {
-		const session = await adminAuth.getSession();
-		// Only redirect to sign-in on the client. 
-		// On the server, we might not have the session due to cross-port cookie issues on localhost,
-		// so we let the client hydrate and check localStorage first.
-		if (!session && typeof window !== "undefined") {
-			throw redirect({ to: "/sign-in", replace: true });
-		}
-		return { admin: session };
-	},
 	component: AppLayoutComponent,
 });
 
 function AppLayoutComponent() {
-	const { admin } = Route.useRouteContext();
+	const [admin, setAdmin] = useState<Admin | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
 	const navigate = useNavigate();
+
+	useEffect(() => {
+		adminAuth.getSession().then((session) => {
+			if (!session) {
+				navigate({ to: "/sign-in", replace: true });
+				return;
+			}
+			setAdmin(session);
+			setIsLoading(false);
+		});
+	}, [navigate]);
 
 	async function handleLogout() {
 		await adminAuth.signOut();
@@ -31,6 +34,14 @@ function AppLayoutComponent() {
 			to: "/sign-in",
 			replace: true,
 		});
+	}
+
+	if (isLoading) {
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<div className="h-8 w-8 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+			</div>
+		);
 	}
 
 	return (
