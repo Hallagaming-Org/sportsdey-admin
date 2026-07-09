@@ -1,11 +1,15 @@
-import { X, AlertTriangle, MessageCircle, Wallet } from "lucide-react";
+import { X, AlertTriangle, MessageCircle, Wallet, ChevronDown, MinusCircle, PlusCircle, MoreHorizontal } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { PauseCircle } from "lucide-react";
-import type { User, UserProfile } from "../lib/users";
+import { userService, type User, type UserProfile, type UserTransaction } from "../lib/users";
 import { LuMessageSquareDot } from "react-icons/lu";
 import { useState } from "react";
 import { UserProfileWalletInfo } from "./UserProfileWalletInfo";
 import { UserProfileLogNotes } from "./UserProfileLogNotes";
+import { TimePeriodDropdown, type TimePeriodOption } from "./TimePeriodDropdown";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getDateRangeForPeriod } from "#/lib/time-period";
+import { toast } from "sonner";
 
 interface UserProfileModalProps {
 	user: User;
@@ -427,44 +431,17 @@ function ContactTab({
 // ─── Main Modal ────────────────────────────────────────────────────────────────
 
 export function UserProfileModal({ user, profile, isLoading, onClose, onSendNotice, onSuspend }: UserProfileModalProps) {
-	const [activeTab, setActiveTab] = useState<ProfileTab>("contact");
-
+	const [activeView, setActiveView] = useState<"personal" | "wallet">("personal");
 	const displayData = profile || user;
 	const status = profile?.verificationStatus || user.status;
 	const registeredDate = profile?.createdAt ? new Date(profile.createdAt).getTime() : user.registeredDate;
 	const walletBalance = profile?.wallet?.balance ?? user.wallet;
 	// const lastTopUp = profile?.lastTopUp ? new Date(profile.lastTopUp) : null;
 	const country = profile?.country || "Nigeria";
-<<<<<<< HEAD
-	const mobileNumber = profile?.mobileNumber || "—";
-	const loading = !!(isLoading && !profile);
-
-	const tabs = [
-		{
-			key: "contact" as ProfileTab,
-			label: "Contact User Info",
-			icon: <LuMessageSquareDot className="w-4 h-4" />,
-		},
-		{
-			key: "wallet" as ProfileTab,
-			label: "Wallet info",
-			icon: <LuWallet className="w-4 h-4" />,
-		},
-	];
-
-	const actionButtons = [
-		{
-			label: user.suspended ? "Reactivate" : "Suspended",
-			icon: <PauseCircle className="w-4 h-4 text-[#B00020]" />,
-			onClick: () => onSuspend?.(user),
-			className: "bg-[#FEECEB] border border-[#FEECEB] text-[#B00020]",
-		},
-	];
-=======
 	const mobileNumber = profile?.mobileNumber || "1234567890";
 	const isUserSuspended = user?.suspended
 
-	const [activeView, setActiveView] = useState<"personal" | "wallet">("personal");
+
 	const buttonItems = [
 		{ 
 			label: user.suspended ? "Suspended" : "Suspend", 
@@ -492,7 +469,6 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 		}
 	];
 	const loading = isLoading && !profile;
->>>>>>> 5ae04adbeb5b53b9c9c64fcd6cde016d33d2970e
 
 	return (
 		<div
@@ -519,21 +495,11 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 						<X className="h-4 w-4 text-white" />
 					</button>
 				</div>
-<<<<<<< HEAD
-
-				{/* Scrollable body */}
-				<div className="overflow-y-auto custom-scrollbar p-8 space-y-6 flex-1">
-					{/* Suspension banner */}
-					{user.suspended && (
-						<div className="w-full flex items-center gap-2 px-4 py-2.5 text-[#B00020] bg-[#FEECEB] rounded-xl text-sm border border-[#FEECEB]">
-							<AlertTriangle className="w-4 h-4 shrink-0" />
-=======
 				
 				<div className="flex-none p-8 pb-6 bg-[#F2F4F7]">
 					{isUserSuspended && (
 						<div className="w-max mx-auto flex -mt-4 items-center gap-2 px-3 py-2 text-[#B00020] bg-[#FEECEB] rounded-full text-sm mb-4">
 							<AlertTriangle className="w-4 h-4" />
->>>>>>> 5ae04adbeb5b53b9c9c64fcd6cde016d33d2970e
 							<p>This account has been suspended due to violation of the system rules and regulations.</p>
 						</div>
 					)}
@@ -542,19 +508,11 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 					<div className="flex flex-col items-center justify-center pt-2">
 						{loading ? (
 							<Skeleton className="h-24 w-24 rounded-full mb-3" />
-<<<<<<< HEAD
-						) : (displayData.image ?? displayData.photo) ? (
-							<img
-								src={(displayData.image ?? displayData.photo) ?? undefined}
-								alt="avatar"
-								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3"
-=======
 						) : displayData.image || displayData.photo ? (
 							<img 
 								src={displayData.image || displayData.photo || undefined} 
 								alt="avatar" 
 								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3" 
->>>>>>> 5ae04adbeb5b53b9c9c64fcd6cde016d33d2970e
 							/>
 						) : (
 							<div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center shadow-sm mb-3">
@@ -585,65 +543,21 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 
 						{/* Tab buttons row */}
 						<div className="flex items-center gap-2 mt-6 flex-wrap justify-center">
-							{/* Suspend / Reactivate pill */}
-							{actionButtons.map((btn, idx) => (
+							{buttonItems.map((btn, idx) => (
 								<button
 									key={idx}
 									type="button"
 									onClick={btn.onClick}
-									className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${btn.className}`}
+									className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${btn.className}`}
 								>
 									{btn.icon}
 									{btn.label}
-								</button>
-							))}
-
-							{/* Send notice */}
-							<button
-								type="button"
-								onClick={() => onSendNotice(user)}
-								className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-[#E0E8F980] text-[#667085] transition-colors cursor-pointer"
-							>
-								<MessageCircle className="w-4 h-4 text-[#667085]" />
-								Send a notice
-							</button>
-
-							{/* Tab pills */}
-							{tabs.map((tab) => (
-								<button
-									key={tab.key}
-									type="button"
-									onClick={() => setActiveTab(tab.key)}
-									className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
-										activeTab === tab.key
-											? "bg-[#10C300] text-white shadow-[0_4px_14px_0_rgba(16,195,0,0.3)]"
-											: "bg-[#E0E8F980] text-[#667085] hover:bg-gray-200"
-									}`}
-								>
-									{tab.icon}
-									{tab.label}
 								</button>
 							))}
 						</div>
 					</div>
 				</div>
 
-<<<<<<< HEAD
-					{/* Tab content */}
-					{activeTab === "contact" ? (
-						<ContactTab
-							displayData={displayData}
-							loading={loading}
-							status={status}
-							registeredDate={registeredDate}
-							walletBalance={walletBalance}
-							lastTopUp={lastTopUp}
-							country={country}
-							mobileNumber={mobileNumber}
-						/>
-					) : (
-						<WalletTab userId={user.id} />
-=======
 				<div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8">
 					{activeView === "personal" ? (
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -709,7 +623,6 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 						</div>
 					) : (
 						<UserProfileWalletInfo userId={user.id} balance={walletBalance} />
->>>>>>> 5ae04adbeb5b53b9c9c64fcd6cde016d33d2970e
 					)}
 				</div>
 			</div>
