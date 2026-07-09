@@ -5,12 +5,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { transactionService } from "#/lib/transactions";
 import type { DepositSummary, WithdrawalSummary } from "#/lib/transactions";
+import type { User } from "#/lib/users";
 
 interface Props {
   transactionId: string;
   open: boolean;
   onClose: () => void;
   onActionSuccess?: () => void;
+  onViewProfile?: (user: User) => void;
 }
 
 export function TransactionDetailsModal({
@@ -18,6 +20,7 @@ export function TransactionDetailsModal({
   open,
   onClose,
   onActionSuccess,
+  onViewProfile,
 }: Props) {
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -129,6 +132,7 @@ export function TransactionDetailsModal({
                 isPending: rejectMutation.isPending,
                 mutate: () => rejectMutation.mutate(undefined),
               }}
+              onViewProfile={onViewProfile}
             />
           ) : null}
         </div>
@@ -154,6 +158,7 @@ function Content({
   onClose,
   approveMutation,
   rejectMutation,
+  onViewProfile,
 }: {
   summary: DepositSummary | WithdrawalSummary;
   showRejectInput: boolean;
@@ -166,8 +171,24 @@ function Content({
   onClose: () => void;
   approveMutation: MutationState;
   rejectMutation: MutationState;
+  onViewProfile?: (user: User) => void;
 }) {
   const isDeposit = summary.type === "deposit";
+
+  const handleViewProfile = () => {
+    if (onViewProfile) {
+      const name = isDeposit ? "Unknown Player" : ((summary as WithdrawalSummary).accountName || "Unknown Player");
+      const user: User = {
+        id: (summary as any).userId || `USR-${summary.transactionId}`,
+        name: name,
+        email: `${name.split(" ")[0].toLowerCase()}@example.com`,
+        wallet: 0,
+        status: "verified",
+        registeredDate: Date.now(),
+      };
+      onViewProfile(user);
+    }
+  };
 
   const amount = `₦${summary.amount.toLocaleString("en-NG")}`;
   const fees = isDeposit
@@ -288,9 +309,7 @@ function Content({
             <h4 className="text-[16px] font-bold text-[#030229]">Transaction Summary</h4>
             {!isDeposit && (
               <button 
-                onClick={() => {
-                  toast.info("Viewing player profile...");
-                }}
+                onClick={handleViewProfile}
                 className="text-sm font-semibold text-[#1E9E24] underline hover:text-[#15803D] cursor-pointer"
               >
                 View Player profile
@@ -545,7 +564,7 @@ function Content({
                 Flag/Mark as Fraud
               </button>
               <button 
-                onClick={() => toast.info("Redirecting to player profile...")}
+                onClick={handleViewProfile}
                 className="flex-1 py-3.5 bg-[#EEF0F3] hover:bg-[#E5E7EB] text-[#030229] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
               >
                 View Player profile

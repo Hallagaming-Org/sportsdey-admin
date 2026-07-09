@@ -8,7 +8,10 @@ import { type Column, DataTable } from "#/components/DataTable";
 import { ActionDropdown } from "../../components/ActionDropdown";
 import { SendNoticeModal } from "../../components/SendNoticeModal";
 import { UserProfileModal } from "../../components/UserProfileModal";
-import { TimePeriodDropdown, type TimePeriodOption } from "../../components/TimePeriodDropdown";
+import {
+	TimePeriodFilter,
+	type TimePeriod,
+} from "../../components/TimePeriodFilter";
 import { type NewUser, type User, type UserProfile, userService } from "../../lib/users";
 import { notificationService } from "../../lib/notifications";
 import { getDateRangeForPeriod } from "../../lib/time-period";
@@ -37,8 +40,11 @@ function UsersPage() {
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
 	const [sort, setSort] = useState<"asc" | "desc">("asc");
-	const [activeTab, setActiveTab] = useState<Tab>("all");
-	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriodOption>("All");
+const [activeTab, setActiveTab] = useState<Tab>("all");
+	const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
+		"all",
+	);
+	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
 	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [newUser, setNewUser] = useState<NewUser>({
@@ -302,24 +308,40 @@ useEffect(() => {
 					</div>
 				</div>
 
-				<div className="flex items-center gap-3">
-					<div className="relative">
-						<input
-							type="text"
-							placeholder="Search"
-							value={search}
-							onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-							className="w-[352px] rounded-full border border-gray-200 bg-gray-50 py-2 pr-4 pl-9 text-sm focus:border-[#1BAA04] focus:outline-none focus:ring-1 focus:ring-[#1BAA04]"
-						/>
-						<Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
-					</div>
-						<TimePeriodDropdown
-							value={selectedTimePeriod}
-							onChange={(period, range) => {
+				<form className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
+					<button
+						type="button"
+						onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
+						className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
+					>
+						Price range
+						<ChevronDown className="h-3.5 w-3.5" />
+					</button>
+					<button
+						type="button"
+						onClick={() =>
+							setStatusFilter((current) => {
+								if (current === "all") return "verified";
+								if (current === "verified") return "pending";
+								return "all";
+							})
+						}
+						className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
+>
+						{statusFilter === "all"
+							? "Status"
+							: statusFilter === "verified"
+								? "Verified"
+								: "Pending"}
+						<ChevronDown className="h-3.5 w-3.5" />
+					</button>
+						<TimePeriodFilter
+							onFilterChange={(period, range) => {
 								setSelectedTimePeriod(period);
 								setCustomRange(range);
 								setPage(1);
 							}}
+							buttonClassName="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
 						/>
 				</div>
 			</div>

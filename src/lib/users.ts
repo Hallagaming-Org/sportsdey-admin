@@ -35,6 +35,10 @@ export interface UserProfile {
 		balance: number;
 	};
 	lastTopUp: string | null;
+	dob?: string | null;
+	deviceType?: string | null;
+	browser?: string | null;
+	ipAddress?: string | null;
 }
 
 export interface WalletOverview {

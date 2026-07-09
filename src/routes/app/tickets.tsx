@@ -2,9 +2,9 @@ import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  TimePeriodDropdown,
-  type TimePeriodOption,
-} from "#/components/TimePeriodDropdown";
+  TimePeriodFilter,
+  type TimePeriod,
+} from "#/components/TimePeriodFilter";
 import { Search, Eye, PauseCircle } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
 import SortIcon from "@/logo/sort.svg?react";
@@ -52,8 +52,7 @@ function TicketsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selectedTimePeriod, setSelectedTimePeriod] =
-    useState<TimePeriodOption>("All");
-  const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>();
+    useState<TimePeriod>("All");
 
   const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
@@ -207,13 +206,8 @@ function TicketsPage() {
             />
             <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
           </div>
-          <TimePeriodDropdown
-            value={selectedTimePeriod}
-            onChange={(period, custom) => {
-              setSelectedTimePeriod(period);
-              if (custom) setCustomRange(custom);
-              setPage(1);
-            }}
+          <TimePeriodFilter
+            onFilterChange={(period) => setSelectedTimePeriod(period)}
             buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
           />
         </div>
