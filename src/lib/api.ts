@@ -17,7 +17,8 @@ const API_BASE = (() => {
 	const envBase = import.meta.env.VITE_API_BASE;
 	if (envBase) return envBase;
 
-	return "http://localhost:3000";
+	// return "http://localhost:3000";
+	return "https://staging-api.sportsdey.com"
 })();
 // const API_BASE = (import.meta as any)?.env?.VITE_API_BASE as string;
 
