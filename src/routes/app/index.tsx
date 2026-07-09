@@ -49,7 +49,7 @@ function DashboardPage() {
 		fetchData(period, range);
 	};
 
-	if (!getCookie("admin_session")) {
+	if (!getCookie("admin_session") && !getCookie("admin_user_details")) {
 		return <Navigate to="/sign-in" replace />;
 	}
 
