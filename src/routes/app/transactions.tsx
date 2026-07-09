@@ -269,8 +269,8 @@ function WalletPage() {
 													t.dateTime.replace(/\n/g, ' '),
 													t.type,
 													t.paymentMethod || "N/A",
-													t.amount,
-													t.balanceAfter || "N/A",
+													t.amount?.replace(/₦/g, 'NGN '),
+													t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
 													t.status
 												]),
 												startY: 20,
@@ -320,8 +320,8 @@ function WalletPage() {
 																			t.dateTime.replace(/\n/g, ' '),
 																			t.type,
 																			t.paymentMethod || "N/A",
-																			t.amount,
-																			t.balanceAfter || "N/A",
+																			t.amount?.replace(/₦/g, 'NGN '),
+																			t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
 																			t.status
 																		].map(cell => new TableCell({
 																			children: [new Paragraph(String(cell))],
