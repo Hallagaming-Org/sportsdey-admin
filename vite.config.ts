@@ -15,4 +15,13 @@ export default defineConfig({
 		viteReact(),
 		svgr(),
 	],
+	server: {
+		proxy: {
+			"/api": {
+				target: "https://staging-api.sportsdey.com",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api/, ""),
+			},
+		},
+	},
 });
