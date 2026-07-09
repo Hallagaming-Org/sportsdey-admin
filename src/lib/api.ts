@@ -20,10 +20,8 @@ export function getCookie(name: string): string | null {
 	const parts = value.split(`; ${name}=`);
 	if (parts.length === 2) {
 		const cookies = parts.pop()?.split(";").shift();
-		console.log("cookies", cookies);
 		return cookies || null;
 	}
-	console.log("cookies", null)
 	return null;
 }
 
