@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { transactionService } from "#/lib/transactions";
 import type { DepositSummary, WithdrawalSummary } from "#/lib/transactions";
 import type { User } from "#/lib/users";
+import { truncateText } from "#/lib/utils";
 
 interface Props {
   transactionId: string;
@@ -321,7 +322,7 @@ function Content({
             {/* Transaction ID */}
             <div className="flex justify-between items-center text-sm">
               <span className="text-[#82869A] shrink-0">Transaction ID:</span>
-              <span className="font-medium text-[#030229] flex items-center gap-1.5">
+              <span className="font-medium text-[#030229] text-xs flex items-center gap-1.5">
                 {summary.transactionId}
                 <button 
                   onClick={() => handleCopy(summary.transactionId, "Transaction ID")}
@@ -400,19 +401,19 @@ function Content({
               <>
                 {/* Payment Method */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Payment Method:</span>
-                  <span className="font-bold text-[#030229]">{summary.paymentMethod}</span>
+                  <span className="text-[#82869A] shrink-0 text-xs">Payment Method:</span>
+                  <span className="font-bold text-[#030229] text-xs">{summary.paymentMethod}</span>
                 </div>
                 {/* Provider */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Provider:</span>
-                  <span className="font-bold text-[#030229]">{provider || "N/A"}</span>
+                  <span className="text-[#82869A] shrink-0 text-xs">Provider:</span>
+                  <span className="font-bold text-[#030229] text-xs">{provider || "N/A"}</span>
                 </div>
                 {/* Reference ID */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Reference ID:</span>
-                  <span className="font-medium text-[#030229] flex items-center gap-1.5">
-                    {summary.referenceId}
+                  <span className="text-[#82869A] shrink-0 text-xs">Reference ID:</span>
+                  <span className="font-medium text-[#030229] text-xs flex items-center gap-1.5">
+                    {truncateText(summary.referenceId, 18)}
                     <button 
                       onClick={() => handleCopy(summary.referenceId, "Reference ID")}
                       className="hover:opacity-80 transition-opacity cursor-pointer"
@@ -424,13 +425,13 @@ function Content({
                 </div>
                 {/* Card Type */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Card Type:</span>
-                  <span className="font-bold text-[#030229]">{(summary as DepositSummary).cardType || "N/A"}</span>
+                  <span className="text-[#82869A] shrink-0 text-xs">Card Type:</span>
+                  <span className="font-bold text-[#030229] text-xs">{(summary as DepositSummary).cardType || "N/A"}</span>
                 </div>
                 {/* Card last 4 Digits */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Card last 4 Digits:</span>
-                  <span className="font-bold text-[#030229]">
+                  <span className="text-[#82869A] shrink-0 text-xs">Card last 4 Digits:</span>
+                  <span className="font-bold text-[#030229] text-xs">
                     {(summary as DepositSummary).cardLast4 ? `****${(summary as DepositSummary).cardLast4}` : "N/A"}
                   </span>
                 </div>
@@ -439,13 +440,13 @@ function Content({
               <>
                 {/* Payment Method */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Payment Method:</span>
-                  <span className="font-bold text-[#030229]">{summary.paymentMethod}</span>
+                  <span className="text-[#82869A] shrink-0 text-xs">Payment Method:</span>
+                  <span className="font-bold text-[#030229] text-xs">{summary.paymentMethod}</span>
                 </div>
                 {/* Bank Name */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Bank Name:</span>
-                  <span className="font-bold text-[#030229]">
+                  <span className="text-[#82869A] shrink-0 text-xs">Bank Name:</span>
+                  <span className="font-bold text-[8px] text-[#030229]">
                     {(() => {
                       const bank = (summary as WithdrawalSummary).bankName;
                       if (!bank) return "N/A";
@@ -455,8 +456,8 @@ function Content({
                 </div>
                 {/* Account Number ID */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Account Number ID:</span>
-                  <span className="font-bold text-[#030229]">
+                  <span className="text-[#82869A] shrink-0 text-xs">Account Number ID:</span>
+                  <span className="font-bold text-[#030229] text-xs">
                     {(() => {
                       const accNum = (summary as WithdrawalSummary).accountNumber;
                       if (!accNum) return "N/A";
@@ -467,14 +468,14 @@ function Content({
                 </div>
                 {/* Account Name */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Account Name:</span>
-                  <span className="font-bold text-[#030229]">{(summary as WithdrawalSummary).accountName || "N/A"}</span>
+                  <span className="text-[#82869A] shrink-0 text-xs">Account Name:</span>
+                  <span className="font-bold text-[#030229] text-xs">{(summary as WithdrawalSummary).accountName || "N/A"}</span>
                 </div>
                 {/* Reference ID */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Reference ID:</span>
-                  <span className="font-medium text-[#030229] flex items-center gap-1.5">
-                    {summary.referenceId}
+                  <span className="text-[#82869A] shrink-0 text-xs">Reference ID:</span>
+                  <span className="font-medium text-[#030229] text-xs flex items-center gap-1.5">
+                    {truncateText(summary.referenceId, 10)}
                     <button 
                       onClick={() => handleCopy(summary.referenceId, "Reference ID")}
                       className="hover:opacity-80 transition-opacity cursor-pointer"
@@ -508,38 +509,38 @@ function Content({
               <>
                 {/* Description/Note */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Description/Note:</span>
-                  <span className="font-medium text-[#030229]">{description || "Deposit to main Wallet"}</span>
+                  <span className="text-[#82869A] text-xs shrink-0">Description/Note:</span>
+                  <span className="font-medium text-[#030229] text-xs">{description || "Deposit to main Wallet"}</span>
                 </div>
               </>
             ) : (
               <>
                 {/* Balance Before */}
                 <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] shrink-0">Balance Before:</span>
-                  <span className="font-bold text-[#030229]">{formattedBalanceBefore}</span>
+                  <span className="text-[#82869A] text-xs shrink-0">Balance Before:</span>
+                  <span className="font-bold text-[#030229] text-xs">{formattedBalanceBefore}</span>
                 </div>
               </>
             )}
             {/* IP Address */}
             <div className="flex justify-between items-center">
-              <span className="text-[#82869A] shrink-0">IP Address:</span>
-              <span className="font-medium text-[#030229]">{summary.ipAddress || "N/A"}</span>
+              <span className="text-[#82869A] text-xs shrink-0">IP Address:</span>
+              <span className="font-medium text-[#030229] text-xs">{summary.ipAddress || "N/A"}</span>
             </div>
             {/* Device */}
             <div className="flex justify-between items-center">
-              <span className="text-[#82869A] shrink-0">Device:</span>
-              <span className="font-medium text-[#030229]">{summary.device || "N/A"}</span>
+              <span className="text-[#82869A] shrink-0 text-xs">Device:</span>
+              <span className="font-medium text-[#030229] text-xs">{summary.device || "N/A"}</span>
             </div>
             {/* Location */}
             <div className="flex justify-between items-center">
-              <span className="text-[#82869A] shrink-0">Location:</span>
-              <span className="font-medium text-[#030229]">{summary.location || "N/A"}</span>
+              <span className="text-[#82869A] text-xs shrink-0">Location:</span>
+              <span className="font-medium text-[#030229] text-xs">{summary.location || "N/A"}</span>
             </div>
             {/* Transaction Channel */}
             <div className="flex justify-between items-center">
-              <span className="text-[#82869A] shrink-0">Transaction Channel:</span>
-              <span className="font-medium text-[#030229]">{summary.transactionChannel || "N/A"}</span>
+              <span className="text-[#82869A] text-xs shrink-0">Transaction Channel:</span>
+              <span className="font-medium text-[#030229] text-xs">{summary.transactionChannel || "N/A"}</span>
             </div>
           </div>
         </div>
