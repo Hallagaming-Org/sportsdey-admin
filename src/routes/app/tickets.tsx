@@ -53,6 +53,7 @@ function TicketsPage() {
   const [page, setPage] = useState(1);
   const [selectedTimePeriod, setSelectedTimePeriod] =
     useState<TimePeriod>("All");
+  const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 
   const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
@@ -207,7 +208,10 @@ function TicketsPage() {
             <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
           </div>
           <TimePeriodFilter
-            onFilterChange={(period) => setSelectedTimePeriod(period)}
+            onFilterChange={(period, range) => {
+              setSelectedTimePeriod(period);
+              setCustomRange(range);
+            }}
             buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
           />
         </div>
