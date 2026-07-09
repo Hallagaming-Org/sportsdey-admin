@@ -31,6 +31,7 @@ export interface SignInResponse {
 		admin: Admin;
 		token?: string;
 	};
+	token?: string;
 	error?: string;
 }
 
@@ -108,6 +109,17 @@ class AdminAuth {
 	}
 
 	async getSession(): Promise<Admin | null> {
+		const fallbackToLocal = () => {
+			const localDetails = getCookie("admin_user_details");
+			if (localDetails) {
+				try {
+					const parsed = JSON.parse(decodeURIComponent(localDetails));
+					return parsed.admin || parsed;
+				} catch (e) {}
+			}
+			return null;
+		};
+
 		try {
 			const token = getCookie("admin_session");
 			const response = await fetch(`${this.baseUrl}/admin/me`, {
@@ -119,16 +131,16 @@ class AdminAuth {
 			});
 
 			if (!response.ok) {
-				return null;
+				return fallbackToLocal();
 			}
 
 			const data = await response.json();
 			if (data.success && data.data) {
 				return data.data.admin || data.data;
 			}
-			return null;
+			return fallbackToLocal();
 		} catch {
-			return null;
+			return fallbackToLocal();
 		}
 	}
 
