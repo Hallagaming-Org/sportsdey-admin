@@ -3,6 +3,16 @@ import { DataTable, type Column } from "./DataTable";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
 import { ChevronDown, Plus, Minus } from "lucide-react";
 import { SuccessModal } from "./SuccessModal";
+import { TransactionDetailsModal } from "./TransactionDetailsModal";
+import { useQuery } from "@tanstack/react-query";
+import { transactionService, type Transaction, type TransactionStatus } from "#/lib/transactions";
+
+const STATUS_STYLES: Record<TransactionStatus, string> = {
+	Won: "bg-[#E8F8E5] text-[#10C300]",
+	Pending: "bg-[#FFF8E5] text-[#FFB000]",
+	Failed: "bg-[#FEECEB] text-[#EE201C]",
+	Refund: "bg-[#EFF6FF] text-[#3B82F6]",
+};
 
 interface UserProfileWalletInfoProps {
   userId: string;
@@ -16,6 +26,32 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
   const [reason, setReason] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState<{ type: "credit" | "debit"; amount: string } | null>(null);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
+
+  const {
+    data: response,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["transactions", "user", userId, page],
+    queryFn: async () => {
+      const result = await transactionService.getTransactions({
+        page,
+        limit: ITEMS_PER_PAGE,
+        search: userId,
+      });
+      if (!result.success) {
+        throw new Error(result.error || "Failed to fetch transactions");
+      }
+      return result.data;
+    },
+  });
+
+  const transactions = response?.transactions ?? [];
+  const totalPages = response?.pagination.totalPages ?? 0;
+  const totalItems = response?.pagination.total ?? 0;
 
   const handleProcessTransaction = () => {
     if (!amount) return;
@@ -25,36 +61,47 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
     setReason("");
   };
 
-  const transactions = [
-    { type: "Deposit", amount: 150000, referenceId: "DEP-2025-000123", dateTime: "Aug 8, 2025\n10:42 pm", status: "Success" },
-    { type: "Withdrawal", amount: 80000, referenceId: "WDR-2025-000123", dateTime: "Aug 8, 2025\n10:42 pm", status: "Success" },
-    { type: "Manual Credit", amount: 50000, referenceId: "MCR-2025-000123", dateTime: "Aug 8, 2025\n10:42 pm", status: "Success" },
-  ];
-
-  const columns: Column<typeof transactions[0]>[] = [
+  const columns: Column<Transaction>[] = [
     {
-      header: "Type",
-      accessor: "type",
-      cellClassName: "font-medium text-gray-900",
-    },
-    {
-      header: "Amount",
-      accessor: (t) => `₦${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
-      cellClassName: "font-bold text-gray-900",
-    },
-    {
-      header: "Reference ID",
-      accessor: "referenceId",
-      cellClassName: "font-mono text-gray-500",
+      header: "Transactions ID",
+      accessor: "id",
+      cellClassName: "font-mono text-gray-700",
     },
     {
       header: "Date & Time",
-      accessor: (t) => <span className="whitespace-pre-line text-gray-500 text-xs">{t.dateTime}</span>,
+      accessor: (t) => (
+        <span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
+          {t.dateTime}
+        </span>
+      ),
+    },
+    {
+      header: "Type",
+      accessor: (t) => (
+        <span className="font-medium text-gray-800">{t.type}</span>
+      ),
+    },
+    {
+      header: "Payment Method",
+      accessor: "paymentMethod",
+      cellClassName: "text-gray-500",
+    },
+    {
+      header: "Amount",
+      accessor: "amount",
+      cellClassName: "font-medium text-gray-900",
+    },
+    {
+      header: "Balance After",
+      accessor: "balanceAfter",
+      cellClassName: "font-medium text-gray-900",
     },
     {
       header: "Status",
       accessor: (t) => (
-        <span className="inline-flex items-center rounded-full bg-[#E8F8E5] px-2.5 py-1 text-xs font-medium text-[#10C300]">
+        <span
+          className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[t.status]}`}
+        >
           {t.status}
         </span>
       ),
@@ -98,10 +145,22 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
             columns={columns}
             data={transactions}
             maxHeight="300px"
+            isLoading={isLoading}
             onActionClick={() => {}}
-            actionMenuItems={[]}
-            emptyMessage="No transactions found"
-            isLoading={false}
+            actionMenuItems={[
+              {
+                label: "View transaction info",
+                onClick: (item) => setSelectedTransactionId(item.id)
+              }
+            ]}
+            emptyMessage={error ? error.message : "No transactions found"}
+            pagination={{
+              currentPage: page,
+              totalPages,
+              onPageChange: setPage,
+              totalItems,
+              itemsPerPage: ITEMS_PER_PAGE,
+            }}
           />
         </div>
       </div>
@@ -186,6 +245,14 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
         onClose={() => setShowSuccessModal(false)}
         text={successData ? `This user has been successfully ${successData.type === 'credit' ? 'credited' : 'Debited'} with an amount of ₦${Number(successData.amount).toLocaleString()}.` : ""}
       />
+
+      {selectedTransactionId && (
+        <TransactionDetailsModal
+          transactionId={selectedTransactionId}
+          open={!!selectedTransactionId}
+          onClose={() => setSelectedTransactionId(null)}
+        />
+      )}
     </div>
   );
 }
