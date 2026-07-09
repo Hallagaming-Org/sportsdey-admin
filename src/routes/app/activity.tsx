@@ -65,14 +65,14 @@ function TopBets() {
 				{TOP_BETS.map((bet) => (
 					<div key={bet.id} className="flex flex-wrap sm:flex-nowrap xl:grid xl:grid-cols-[1fr_auto_1fr] items-center justify-between gap-3 w-full overflow-hidden">
 						<div className="flex items-center gap-3 min-w-0 shrink">
-							<img 
-								src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${bet.name}`} 
-								alt="avatar" 
-								className="h-8 w-8 rounded-full bg-[#FEECEB] object-cover shrink-0 p-1" 
+							<img
+								src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${bet.name}`}
+								alt="avatar"
+								className="h-8 w-8 rounded-full bg-[#FEECEB] object-cover shrink-0 p-1"
 							/>
 							<span className="font-bold text-sm text-gray-900 truncate" title={bet.name}>{bet.name}</span>
 						</div>
-						
+
 						<div className="hidden xl:flex items-center justify-center px-4">
 							<span className="text-gray-400 font-medium text-sm truncate">{bet.type}</span>
 						</div>
@@ -102,45 +102,45 @@ function ActivityPage() {
 	}, []);
 
 	const columns: Column<ActivityRecord>[] = [
-		{ 
-			header: "User ID", 
-			accessor: "id" 
+		{
+			header: "User ID",
+			accessor: "id"
 		},
-		{ 
-			header: "Full Name", 
+		{
+			header: "Full Name",
 			accessor: (record) => (
 				<div className="flex items-center gap-3 min-w-0">
-					<img 
-						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${record.name}`} 
-						alt="avatar" 
-						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0" 
+					<img
+						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${record.name}`}
+						alt="avatar"
+						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0"
 					/>
 					<span className="font-medium text-sm text-gray-900 truncate" title={record.name}>{record.name}</span>
 				</div>
 			)
 		},
-		{ 
-			header: "Email address", 
+		{
+			header: "Email address",
 			accessor: "email",
 			cellClassName: "text-gray-500"
 		},
-		{ 
-			header: "Role", 
+		{
+			header: "Role",
 			accessor: "role",
 			cellClassName: "text-gray-500"
 		},
-		{ 
-			header: "Action", 
+		{
+			header: "Action",
 			accessor: "action",
 			cellClassName: "text-gray-500"
 		},
-		{ 
-			header: "Date", 
+		{
+			header: "Date",
 			accessor: "date",
 			cellClassName: "text-gray-500"
 		},
-		{ 
-			header: "Status", 
+		{
+			header: "Status",
 			accessor: (record) => (
 				<span className={`inline-flex items-center font-medium ${
 					record.status === "Online" ? "text-[#10C300]" : "text-[#EE201C]"
@@ -189,7 +189,7 @@ function ActivityPage() {
 							</button>
 						</div>
 					</div>
-					
+
 					<div className="flex-1 min-h-[350px]">
 						<DataTable
 							data={DUMMY_ACTIVITIES}
@@ -246,12 +246,6 @@ function ActivityPage() {
 							label: "Report this Activity",
 							onClick: () => setActionDropdown(null),
 						},
-						{
-							icon: <Trash className="w-4 h-4" />,
-							label: "Delete Activity log",
-							onClick: () => setActionDropdown(null),
-						},
-
 					]}
 				/>
 			)}

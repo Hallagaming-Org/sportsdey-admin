@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter, redirect } from "@tanstack/react-router";
-import { ChevronDown, Eye, PauseCircle } from "lucide-react";
+import { Eye, PauseCircle, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import NotificationIcon from "#/assets/NotificationIcon";
@@ -36,6 +36,7 @@ function UsersPage() {
 	const hasSendNoticePerm = useHasPermission("send_notifications");
 	const hasViewPlayerPerm = useHasPermission("view_player_details");
 	const hasDeactivatePerm = useHasPermission("deactivate_account");
+	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
 	const [sort, setSort] = useState<"asc" | "desc">("asc");
@@ -87,7 +88,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ["users", page, limit, sort, activeTab, fromDate, toDate],
+		queryKey: ["users", page, limit, sort, activeTab, search, fromDate, toDate],
 		queryFn: async () => {
 			// console.log("UsersPage: calling listUsers with", { page, limit, sort, tab: activeTab, fromDate, toDate });
 			const result = await userService.listUsers({
@@ -95,6 +96,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 				limit,
 				sort,
 				tab: activeTab,
+				search: search || undefined,
 				fromDate,
 				toDate,
 			});
@@ -234,12 +236,7 @@ useEffect(() => {
 		},
 	];
 
-	const filteredUsers =
-		usersData?.users?.filter((user) => {
-			if (statusFilter === "all") return true;
-			if (statusFilter === "verified") return user.status === "verified";
-			return user.status === "pending_verification";
-		}) ?? [];
+	const users = usersData?.users ?? [];
 
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-1 flex-col overflow-hidden">
@@ -346,11 +343,11 @@ useEffect(() => {
 							}}
 							buttonClassName="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
 						/>
-				</form>
+				</div>
 			</div>
 
 			<DataTable
-				data={filteredUsers}
+				data={users}
 				isLoading={isLoading}
 				columns={columns}
 				maxHeight="100%"
@@ -367,9 +364,9 @@ useEffect(() => {
 				emptyMessage="No user found"
 				pagination={{
 					currentPage: page,
-					totalPages: usersData ? usersData.totalPages : 0,
+					totalPages: usersData?.totalPages ?? 0,
 					onPageChange: setPage,
-					totalItems: filteredUsers.length,
+					totalItems: usersData?.total ?? 0,
 					itemsPerPage: limit,
 				}}
 			/>

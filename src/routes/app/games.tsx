@@ -45,6 +45,7 @@ const GAME_METADATA: Record<string, { tagline: string, type: string, color: stri
   solitaire: { tagline: "Single player card", type: "Card game", color: "from-cyan-500 to-blue-600", accentColor: "#0284C7", image: ImgSolitaire },
   twentyone: { tagline: "Reach 21", type: "Card game", color: "from-red-500 to-red-700", accentColor: "#DC2626", image: Img21 },
   XCAPEHB: { tagline: "Crash game", type: "Crash game", color: "from-purple-500 to-violet-700", accentColor: "#8B5CF6", image: ImgXcape },
+  "sportsdey-crash": { tagline: "Sportsdey original", type: "Crash game", color: "from-orange-500 to-red-600", accentColor: "#F97316", image: ImgLagosRush },
 };
 
 function GamesPage() {
@@ -96,6 +97,7 @@ function GamesPage() {
     "EAGLEHB",
     "LUCKYRISEHB",
     "LAGOSRUSH",
+    "sportsdey-crash",
   ];
 
   const sortedGames = [...games].sort((a, b) => {
@@ -118,6 +120,17 @@ function GamesPage() {
     acc[cat].push(game);
     return acc;
   }, {} as Record<string, Game[]>);
+
+  const CATEGORY_ORDER = ["popular", "others"];
+
+  const sortedCategories = Object.keys(gamesByCategory).sort((a, b) => {
+    const aIdx = CATEGORY_ORDER.indexOf(a);
+    const bIdx = CATEGORY_ORDER.indexOf(b);
+    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+    if (aIdx !== -1) return -1;
+    if (bIdx !== -1) return 1;
+    return a.localeCompare(b);
+  });
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, isCurrentlyEnabled }: { id: string; isCurrentlyEnabled: boolean }) => {
@@ -176,7 +189,9 @@ function GamesPage() {
             ))}
           </div>
         ) : Object.keys(gamesByCategory).length > 0 ? (
-          Object.entries(gamesByCategory).map(([category, catGames]) => (
+          sortedCategories.map((category) => {
+            const catGames = gamesByCategory[category];
+            return (
             <div key={category} className="mb-10">
               <h3 className="mb-4 text-xl font-bold text-gray-800 capitalize">{category}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
@@ -185,7 +200,8 @@ function GamesPage() {
                 ))}
               </div>
             </div>
-          ))
+          );
+          })
         ) : (
           <div className="col-span-full text-center text-gray-500 py-10">
             No active games found.

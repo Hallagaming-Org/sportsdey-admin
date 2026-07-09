@@ -36,6 +36,7 @@ export interface ListKycParams {
 export interface KycDocument {
 	id: string;
 	url: string;
+	mimeType: string;
 }
 
 export interface KycDocumentResponse {
@@ -63,6 +64,28 @@ class KycService {
 		kycId: string,
 	): Promise<{ success: boolean; data?: KycDocumentResponse; error?: string }> {
 		return fetchApi<KycDocumentResponse>(`/kyc/${kycId}`);
+	}
+
+	async approveKyc(
+		kycId: string,
+	): Promise<{ success: boolean; data?: { message: string }; error?: string }> {
+		return fetchApi(`/kyc/${kycId}/approve`, { method: "POST" });
+	}
+
+	async rejectKyc(
+		kycId: string,
+		reason: string,
+	): Promise<{ success: boolean; data?: { message: string }; error?: string }> {
+		return fetchApi(`/kyc/${kycId}/reject`, {
+			method: "POST",
+			body: { reason },
+		});
+	}
+
+	async markAsInReview(
+		kycId: string,
+	): Promise<{ success: boolean; data?: { message: string }; error?: string }> {
+		return fetchApi(`/kyc/${kycId}/review`, { method: "POST" });
 	}
 }
 

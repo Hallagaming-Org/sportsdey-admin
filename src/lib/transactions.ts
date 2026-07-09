@@ -1,7 +1,7 @@
 import { fetchApi } from "./api";
 
 export type TransactionStatus = "Won" | "Pending" | "Failed" | "Refund";
-export type TransactionType = "deposit" | "withdrawal" | "payments";
+export type TransactionType = "Deposit" | "Withdrawal" | "Payment";
 
 export interface Transaction {
 	id: string;
@@ -111,18 +111,24 @@ const mapStatusToUiStatus = (status: string): TransactionStatus => {
 	}
 };
 
-const mapTypeToUiType = (
-	type: "deposit" | "withdrawal" | "payment",
-): TransactionType => {
+const formatPaymentMethod = (method: string): string => {
+	const labels: Record<string, string> = {
+		bill_payment: "Bills-Payment",
+		wallet_transfer: "Transfer",
+		sportsbook: "Sports Betting",
+		hashcodex: "HashCodex",
+	};
+	return labels[method] ?? method.charAt(0).toUpperCase() + method.slice(1);
+};
+
+const formatType = (type: "deposit" | "withdrawal" | "payment"): string => {
 	switch (type) {
 		case "deposit":
-			return "deposit";
+			return "Deposit";
 		case "withdrawal":
-			return "withdrawal";
+			return "Withdrawal";
 		case "payment":
-			return "payments";
-		default:
-			return "payments";
+			return "Payment";
 	}
 };
 
@@ -130,8 +136,8 @@ const mapTransaction = (t: ServerTransaction): Transaction => {
 	return {
 		id: t.transaction_id,
 		dateTime: `${t.date_time.date}\n${t.date_time.time}`,
-		type: mapTypeToUiType(t.type),
-		paymentMethod: t.payment_method,
+		type: formatType(t.type) as TransactionType,
+		paymentMethod: formatPaymentMethod(t.payment_method),
 		amount: formatAmount(t.amount),
 		balanceAfter: formatAmount(t.balance_after),
 		status: mapStatusToUiStatus(t.status),
