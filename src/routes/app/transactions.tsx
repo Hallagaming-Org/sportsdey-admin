@@ -260,7 +260,7 @@ function WalletPage() {
 											setShowExportMenu(false);
 											if (transactions.length === 0) return;
 											
-											const doc = new jsPDF();
+											const doc = new jsPDF("landscape");
 											doc.text("Transactions", 14, 15);
 											autoTable(doc, {
 												head: [["ID", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"]],
