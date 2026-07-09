@@ -81,6 +81,12 @@ class KycService {
 			body: { reason },
 		});
 	}
+
+	async markAsInReview(
+		kycId: string,
+	): Promise<{ success: boolean; data?: { message: string }; error?: string }> {
+		return fetchApi(`/kyc/${kycId}/review`, { method: "POST" });
+	}
 }
 
 export const kycService = new KycService();

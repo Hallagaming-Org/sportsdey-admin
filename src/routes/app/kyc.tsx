@@ -115,8 +115,8 @@ function formatDate(date: string) {
 	});
 }
 
-function isImageMime(mime: string) {
-	return mime.startsWith("image/");
+function isImageMime(mime: string | null | undefined) {
+	return mime?.startsWith("image/") ?? false;
 }
 
 function DocumentViewer({ doc }: { doc: { url: string; mimeType: string } }) {
@@ -203,6 +203,8 @@ function KycPage() {
 		enabled: !!selectedRecord && showDocumentModal,
 	});
 
+	const activeDoc = documents?.[activeSide === "front" ? "frontDocument" : "backDocument"];
+
 	const queryClient = useQueryClient();
 
 	const approveMutation = useMutation({
@@ -233,6 +235,21 @@ function KycPage() {
 		},
 		onError: (err) => {
 			toast.error((err as Error).message || "Failed to reject KYC");
+		},
+	});
+
+	const reviewMutation = useMutation({
+		mutationFn: async (kycId: string) => {
+			const res = await kycService.markAsInReview(kycId);
+			if (!res.success) throw new Error(res.error);
+			return res.data;
+		},
+		onSuccess: () => {
+			toast.success("Document marked as in review");
+			queryClient.invalidateQueries({ queryKey: ["kyc"] });
+		},
+		onError: (err) => {
+			toast.error((err as Error).message || "Failed to mark as in review");
 		},
 	});
 
@@ -817,18 +834,19 @@ function KycPage() {
 							) : (
 								<div className="mt-4 flex flex-col gap-3">
 									<button
-										onClick={() => {
-											toast.info("Document marked as in review");
-											setShowDocumentModal(false);
-										}}
-										className="w-full py-4 bg-[#E9ECEF] hover:bg-[#DEE2E6] text-[#495057] font-semibold rounded-full text-base transition-colors cursor-pointer text-center"
-									>
-										Mark as in Review
+								onClick={() => {
+										reviewMutation.mutate(selectedRecord.kycId);
+										setShowDocumentModal(false);
+									}}
+									disabled={reviewMutation.isPending}
+									className="w-full py-2.5 bg-[#E9ECEF] hover:bg-[#DEE2E6] text-[#495057] font-semibold rounded-full text-sm transition-colors cursor-pointer text-center disabled:opacity-50"
+								>
+									{reviewMutation.isPending ? "Marking..." : "Mark as in Review"}
 									</button>
 									<div className="flex gap-4">
 										<button
 											onClick={() => setIsRejecting(true)}
-											className="w-1/2 py-4 bg-[#FEECEB] hover:bg-[#FCD8D6] text-[#EE201C] font-semibold rounded-full text-base transition-colors cursor-pointer text-center"
+											className="w-1/2 py-2.5 bg-[#FEECEB] hover:bg-[#FCD8D6] text-[#EE201C] font-semibold rounded-full text-sm transition-colors cursor-pointer text-center"
 										>
 											Decline Document
 										</button>
@@ -838,7 +856,7 @@ function KycPage() {
 												setShowDocumentModal(false);
 											}}
 											disabled={approveMutation.isPending}
-											className="w-1/2 py-4 bg-[#10C300] hover:bg-[#0EB000] text-white font-semibold rounded-full text-base transition-colors cursor-pointer text-center disabled:opacity-50"
+											className="w-1/2 py-2.5 bg-[#10C300] hover:bg-[#0EB000] text-white font-semibold rounded-full text-sm transition-colors cursor-pointer text-center disabled:opacity-50"
 										>
 											{approveMutation.isPending ? "Verifying..." : "Verify Document"}
 										</button>
