@@ -28,12 +28,19 @@ function SignInPage() {
 		}) => adminAuth.signIn(email, password),
 
 		onSuccess: (result) => {
-
-			if (result.success && result.data) {
-				setCookie("admin_user_details", encodeURIComponent(JSON.stringify(result.data)), 7);
-				if (result.data.token) {
-					setCookie("admin_session", result.data.token, 7);
+			if (result.success) {
+				const token = result.token || result.data?.token || (result as any).accessToken || (result as any).access_token || (result.data as any)?.accessToken || (result.data as any)?.access_token;
+				
+				if (result.data) {
+					setCookie("admin_user_details", encodeURIComponent(JSON.stringify(result.data)), 7);
 				}
+				
+				if (token) {
+					setCookie("admin_session", token, 7);
+				} else {
+					console.warn("Token not found in login response", result);
+				}
+				
 				navigate({
 					to: "/app",
 					replace: true,
