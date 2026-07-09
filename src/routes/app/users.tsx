@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter, redirect } from "@tanstack/react-router";
-import { Eye, PauseCircle, Search } from "lucide-react";
+import { Eye, PauseCircle, Search, ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import NotificationIcon from "#/assets/NotificationIcon";
@@ -343,7 +343,7 @@ useEffect(() => {
 							}}
 							buttonClassName="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
 						/>
-				</div>
+				</form>
 			</div>
 
 			<DataTable
