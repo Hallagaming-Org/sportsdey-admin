@@ -128,6 +128,22 @@ function TicketsPage() {
       ),
     },
     {
+      header: "Balance Before",
+      accessor: (t) => (
+        <span className="text-gray-500 text-xs leading-relaxed">
+          {t.balanceBefore ?? "N/A"}
+        </span>
+      ),
+    },
+    {
+      header: "Balance After",
+      accessor: (t) => (
+        <span className="text-gray-500 text-xs leading-relaxed">
+          {t.balanceAfter ?? "N/A"}
+        </span>
+      ),
+    },
+    {
       header: "Status",
       accessor: (t) => (
         <span

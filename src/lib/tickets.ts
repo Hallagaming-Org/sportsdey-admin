@@ -10,6 +10,8 @@ export interface TicketRecord {
 	gameType: string;
 	outcome: TicketOutcome;
 	createdAt: string;
+	balanceBefore: string | null;
+	balanceAfter: string | null;
 }
 
 export interface TicketsResponse {
