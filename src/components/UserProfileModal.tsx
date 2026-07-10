@@ -48,7 +48,6 @@ function StatusBadge({ status }: { status: string }) {
 	);
 }
 
-// ─── Wallet Tab ────────────────────────────────────────────────────────────────
 
 function WalletTab({ userId }: { userId: string }) {
 	const [timePeriod, setTimePeriod] = useState<TimePeriodOption>("All");
@@ -466,27 +465,27 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 
 	const [activeView, setActiveView] = useState<"personal" | "wallet">("personal");
 	const buttonItems = [
-		{ 
-			label: user.suspended ? "Suspended" : "Suspend", 
-			icon: <PauseCircle className={`w-4 h-4 ${user.suspended ? 'text-[#B00020]' : 'text-[#B00020]'}`} />, 
+		{
+			label: user.suspended ? "Suspended" : "Suspend",
+			icon: <PauseCircle className={`w-4 h-4 ${user.suspended ? 'text-[#B00020]' : 'text-[#B00020]'}`} />,
 			onClick: () => onSuspend?.(user),
 			className: `${user.suspended ? 'border-[#B00020] text-[#B00020] bg-[#FEECEB]' : 'border-[#B00020] text-[#B00020] bg-[#FEECEB] hover:bg-[#fddcd9]'}`
 		},
-		{ 
-			label: "Contact User Info", 
-			icon: <LuMessageSquareDot className={`w-4 h-4 ${activeView === 'personal' ? 'text-white' : 'text-gray-500'}`} />, 
+		{
+			label: "Contact User Info",
+			icon: <LuMessageSquareDot className={`w-4 h-4 ${activeView === 'personal' ? 'text-white' : 'text-gray-500'}`} />,
 			onClick: () => setActiveView("personal"),
 			className: activeView === "personal" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-[#EDF1F9] text-gray-500"
 		},
-		{ 
-			label: "Wallet Info", 
-			icon: <Wallet className={`w-4 h-4 ${activeView === 'wallet' ? 'text-white' : 'text-gray-500'}`} />, 
+		{
+			label: "Wallet Info",
+			icon: <Wallet className={`w-4 h-4 ${activeView === 'wallet' ? 'text-white' : 'text-gray-500'}`} />,
 			onClick: () => setActiveView("wallet"),
 			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-[#EDF1F9] text-gray-500"
 		},
-		{ 
-			label: "Send a notice", 
-			icon: <MessageCircle className="w-4 h-4 text-gray-500" />, 
+		{
+			label: "Send a notice",
+			icon: <MessageCircle className="w-4 h-4 text-gray-500" />,
 			onClick: () => onSendNotice(user),
 			className: "bg-[#EDF1F9] text-gray-500"
 		}
@@ -528,7 +527,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 						<div className="w-full flex items-center gap-2 px-4 py-2.5 text-[#B00020] bg-[#FEECEB] rounded-xl text-sm border border-[#FEECEB]">
 							<AlertTriangle className="w-4 h-4 shrink-0" />
 =======
-				
+
 				<div className="flex-none p-8 pb-6 bg-[#F2F4F7]">
 					{isUserSuspended && (
 						<div className="w-max mx-auto flex -mt-4 items-center gap-2 px-3 py-2 text-[#B00020] bg-[#FEECEB] rounded-full text-sm mb-4">
@@ -550,10 +549,10 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3"
 =======
 						) : displayData.image || displayData.photo ? (
-							<img 
-								src={displayData.image || displayData.photo || undefined} 
-								alt="avatar" 
-								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3" 
+							<img
+								src={displayData.image || displayData.photo || undefined}
+								alt="avatar"
+								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3"
 >>>>>>> 5ae04adbeb5b53b9c9c64fcd6cde016d33d2970e
 							/>
 						) : (
@@ -673,8 +672,8 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 													status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
 													"bg-[#FEECEB] text-[#EE201C]"
 												}`}>
-													{status === "verified" ? "Verified" : 
-													status === "pending_verification" ? "Pending" : 
+													{status === "verified" ? "Verified" :
+													status === "pending_verification" ? "Pending" :
 													"Not Verified"}
 												</span>
 												<span className="text-xs font-medium text-gray-900">{user.id.replace('USR-', '') || "801030 30108"}</span>
