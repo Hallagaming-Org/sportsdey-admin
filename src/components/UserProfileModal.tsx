@@ -558,24 +558,24 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 
 				<div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8">
 					{activeView === "personal" ? (
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-							<div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+							<div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
 								<h4 className="font-bold text-xl text-gray-900 mb-6">Personal Details</h4>
 								<div className="space-y-5 text-sm flex-1">
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-sm">Full Name:</span>
+										<span className="text-gray-500 text-xs">Full Name:</span>
 										{loading ? <Skeleton className="h-4 w-24" /> : <span className="font-medium text-gray-900 text-sm text-left">{displayData.name}</span>}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-sm">Email Address:</span>
+										<span className="text-gray-500 text-xs">Email Address:</span>
 										{loading ? <Skeleton className="h-4 w-32" /> : <span className="font-medium text-gray-900 text-sm text-left underline underline-offset-2">{displayData.email}</span>}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-sm">Mobile number:</span>
+										<span className="text-gray-500 text-xs">Mobile number:</span>
 										{loading ? <Skeleton className="h-4 w-20" /> : <span className="font-medium text-gray-900 text-sm text-left">{mobileNumber}</span>}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-sm">Status:</span>
+										<span className="text-gray-500 text-xs">Status:</span>
 										{loading ? (
 											<Skeleton className="h-8 w-16" />
 										) : (
@@ -589,20 +589,20 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 													status === "pending_verification" ? "Pending" :
 													"Not Verified"}
 												</span>
-												<span className="text-xs font-medium text-gray-900">{user.id.replace('USR-', '') || "801030 30108"}</span>
+												
 											</div>
 										)}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-sm">Date of Birth:</span>
+										<span className="text-gray-500 text-xs">Date of Birth:</span>
 										{loading ? <Skeleton className="h-4 w-24" /> : <span className="font-medium text-gray-900 text-sm text-left">{profile?.dob || "15th of February, 2009"}</span>}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-sm">Country:</span>
+										<span className="text-gray-500 text-xs">Country:</span>
 										{loading ? <Skeleton className="h-4 w-16" /> : <span className="font-medium text-gray-900 text-sm text-left">{country}</span>}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-sm">Device info:</span>
+										<span className="text-gray-500 text-xs">Device info:</span>
 										{loading ? (
 											<Skeleton className="h-8 w-32" />
 										) : (
