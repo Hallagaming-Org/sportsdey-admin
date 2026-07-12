@@ -122,6 +122,16 @@ function WalletPage() {
 			cellClassName: "font-mono text-gray-700",
 		},
 		{
+			header: "User ID",
+			accessor: (t) => t.userId || "-",
+			cellClassName: "font-mono text-[11px] text-gray-700",
+		},
+		{
+			header: "User Email",
+			accessor: (t) => t.userEmail || "-",
+			cellClassName: "text-gray-500",
+		},
+		{
 			header: "Date & Time",
 			accessor: (t) => (
 				<span className="whitespace-pre-line text-gray-500 text-xs leading-relaxed">
