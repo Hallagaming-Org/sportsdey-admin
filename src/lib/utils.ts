@@ -10,3 +10,11 @@ export function truncateText(text: string, length: number) {
 	}
 	return text;
 }
+
+export function capitalizeName(name: string) {
+	if (!name) return "";
+	return name
+		.split(" ")
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+		.join(" ");
+}
