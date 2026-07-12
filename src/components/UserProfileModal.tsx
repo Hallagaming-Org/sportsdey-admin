@@ -1,4 +1,4 @@
-import { X, AlertTriangle, MessageCircle, Wallet, ChevronDown, MinusCircle, PlusCircle, MoreHorizontal } from "lucide-react";
+import { X, AlertTriangle, MessageCircle, Wallet, ChevronDown, MinusCircle, PlusCircle, MoreHorizontal, Copy } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { PauseCircle } from "lucide-react";
 import { userService, type User, type UserProfile, type UserTransaction } from "../lib/users";
@@ -573,7 +573,27 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">user Id:</span>
-										{loading ? <Skeleton className="h-4 w-20" /> : <span className="font-medium text-gray-900 text-[10px] text-left">{user?.id}</span>}
+										{loading ? <Skeleton className="h-4 w-20" /> : (
+											<div className="flex items-center gap-1.5">
+												<span className="font-medium text-gray-900 text-xs text-left truncate max-w-[80px]" title={user?.id}>
+													{user?.id ? (user.id.length > 20 ? `${user.id.substring(0, 20)}...` : user.id) : ""}
+												</span>
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														if (user?.id) {
+															navigator.clipboard.writeText(user.id);
+															toast.success("User ID copied to clipboard");
+														}
+													}}
+													className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+													title="Copy User ID"
+												>
+													<Copy className="w-3.5 h-3.5" />
+												</button>
+											</div>
+										)}
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Mobile number:</span>
