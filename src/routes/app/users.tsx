@@ -210,6 +210,11 @@ useEffect(() => {
 			cellClassName: "text-gray-500",
 		},
 		{
+			header: "Registration IP",
+			accessor: (user) => user.ipAddress || "-",
+			cellClassName: "text-gray-500",
+		},
+		{
 			header: "Wallet Balance",
 			accessor: (user) => `₦${user.wallet.toLocaleString()}`,
 			cellClassName: "font-medium text-gray-900",
@@ -309,7 +314,20 @@ useEffect(() => {
 				</div>
 
 				<form className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
-					<button
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+						<input
+							type="text"
+							placeholder="Search users..."
+							value={search}
+							onChange={(e) => {
+								setSearch(e.target.value);
+								setPage(1);
+							}}
+							className="h-9 w-64 rounded-full border border-gray-200 bg-white pl-9 pr-4 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+						/>
+					</div>
+					{/* <button
 						type="button"
 						onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
 						className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
@@ -334,7 +352,7 @@ useEffect(() => {
 								? "Verified"
 								: "Pending"}
 						<ChevronDown className="h-3.5 w-3.5" />
-					</button>
+					</button> */}
 						<TimePeriodFilter
 							onFilterChange={(period, range) => {
 								setSelectedTimePeriod(period);
