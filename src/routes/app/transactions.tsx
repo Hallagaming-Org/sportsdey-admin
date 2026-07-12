@@ -2,10 +2,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter, useRouterState, redirect } from "@tanstack/react-router";
 import { ChevronDown, Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import { FaFileExport, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import { FaFileExport, FaFilePdf, FaFileWord, FaFileExcel } from "react-icons/fa6";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
+import * as XLSX from "xlsx";
 import { type Column, DataTable } from "#/components/DataTable";
 import {
 	TimePeriodFilter,
@@ -350,6 +351,31 @@ function WalletPage() {
 									>
 										<FaFileWord className="text-blue-600 w-4 h-4" />
 										DOCX
+									</button>
+									<button
+										onClick={() => {
+											setShowExportMenu(false);
+											if (transactions.length === 0) return;
+
+											const dataToExport = transactions.map(t => ({
+												"ID": t.id,
+												"Date & Time": t.dateTime.replace(/\n/g, ' '),
+												"Type": t.type,
+												"Payment Method": t.paymentMethod || "N/A",
+												"Amount": t.amount?.replace(/₦/g, 'NGN '),
+												"Balance After": t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
+												"Status": t.status
+											}));
+
+											const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+											const workbook = XLSX.utils.book_new();
+											XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+											XLSX.writeFile(workbook, `transactions_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+									>
+										<FaFileExcel className="text-green-600 w-4 h-4" />
+										Excel
 									</button>
 								</div>
 							)}
