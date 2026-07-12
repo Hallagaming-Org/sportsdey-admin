@@ -10,6 +10,7 @@ export interface User {
 	image?: string;
 	photo?: string;
 	suspended?: boolean;
+	ipAddress?: string | null;
 }
 
 export interface UsersResponse {
