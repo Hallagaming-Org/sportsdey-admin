@@ -494,20 +494,6 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 						<X className="h-4 w-4 text-white" />
 					</button>
 				</div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-				{/* Scrollable body */}
-				<div className="overflow-y-auto custom-scrollbar p-8 space-y-6 flex-1">
-					{/* Suspension banner */}
-					{user.suspended && (
-						<div className="w-full flex items-center gap-2 px-4 py-2.5 text-[#B00020] bg-[#FEECEB] rounded-xl text-sm border border-[#FEECEB]">
-							<AlertTriangle className="w-4 h-4 shrink-0" />
-=======
-
-=======
-				
->>>>>>> dbf123fcebb49bce26e3c62925da90e9c029a7e6
 				<div className="flex-none p-8 pb-6 bg-[#F2F4F7]">
 					{isUserSuspended && (
 						<div className="w-max mx-auto flex -mt-4 items-center gap-2 px-3 py-2 text-[#B00020] bg-[#FEECEB] rounded-full text-sm mb-4">
@@ -521,18 +507,10 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 						{loading ? (
 							<Skeleton className="h-24 w-24 rounded-full mb-3" />
 						) : displayData.image || displayData.photo ? (
-<<<<<<< HEAD
-							<img
-								src={displayData.image || displayData.photo || undefined}
-								alt="avatar"
-								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3"
->>>>>>> 5ae04adbeb5b53b9c9c64fcd6cde016d33d2970e
-=======
 							<img 
 								src={displayData.image || displayData.photo || undefined} 
 								alt="avatar" 
 								className="h-24 w-24 rounded-full bg-gray-200 object-cover shadow-sm mb-3" 
->>>>>>> dbf123fcebb49bce26e3c62925da90e9c029a7e6
 							/>
 						) : (
 							<div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center shadow-sm mb-3">
