@@ -658,7 +658,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 												</button>
 												
 												{showDevices && (
-													<div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-xl z-20 py-2 overflow-hidden">
+													<div className="absolute right-0 bottom-full mb-2 w-56 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-xl z-20 py-2 overflow-hidden">
 														<div className="px-3 py-1.5 border-b border-gray-50 bg-gray-50/50 mb-1">
 															<span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Device History</span>
 														</div>
@@ -695,7 +695,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 												</button>
 												
 												{showLoginIps && (
-													<div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-xl z-20 py-2 overflow-hidden">
+													<div className="absolute right-0 bottom-full mb-2 w-64 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-xl z-20 py-2 overflow-hidden">
 														<div className="px-3 py-1.5 border-b border-gray-50 bg-gray-50/50 mb-1">
 															<span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">IP History</span>
 														</div>
