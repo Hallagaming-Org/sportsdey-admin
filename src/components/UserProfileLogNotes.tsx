@@ -44,8 +44,8 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col">
-      <div className="flex items-center justify-between mb-4 relative" ref={menuRef}>
+    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
+      <div className="flex items-center justify-between mb-4 relative flex-shrink-0" ref={menuRef}>
         <h4 className="font-bold text-xl text-gray-900">Log Note</h4>
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -72,8 +72,9 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
         )}
       </div>
 
-      <div className="space-y-5">
-        {notes.map((note, index) => (
+      <div className="flex-1 relative min-h-0">
+        <div className="absolute inset-0 overflow-y-auto custom-scrollbar space-y-5 pr-2">
+          {notes.map((note, index) => (
           <div key={note.id} className="space-y-2 group">
             <div className="flex items-center justify-between">
               <span className="font-bold text-gray-900 text-sm">{note.author}</span>
@@ -90,6 +91,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
             </div>
           </div>
         ))}
+        </div>
       </div>
     </div>
   );
