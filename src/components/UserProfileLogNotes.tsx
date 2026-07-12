@@ -44,7 +44,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full min-h-[360px]">
+    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col">
       <div className="flex items-center justify-between mb-4 relative" ref={menuRef}>
         <h4 className="font-bold text-xl text-gray-900">Log Note</h4>
         <button 
@@ -72,7 +72,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-5 pr-2">
+      <div className="space-y-5">
         {notes.map((note, index) => (
           <div key={note.id} className="space-y-2 group">
             <div className="flex items-center justify-between">
