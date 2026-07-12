@@ -432,6 +432,8 @@ function ContactTab({
 
 export function UserProfileModal({ user, profile, isLoading, onClose, onSendNotice, onSuspend }: UserProfileModalProps) {
 	const [activeView, setActiveView] = useState<"personal" | "wallet">("personal");
+	const [showDevices, setShowDevices] = useState(false);
+	const [showLoginIps, setShowLoginIps] = useState(false);
 	const displayData = profile || user;
 	const status = profile?.verificationStatus || user.status;
 	const registeredDate = profile?.createdAt ? new Date(profile.createdAt).getTime() : user.registeredDate;
@@ -441,6 +443,17 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 	const mobileNumber = profile?.mobileNumber || "1234567890";
 	const isUserSuspended = user?.suspended
 
+	const mockDevices = [
+		{ name: profile?.deviceType || "IPhone 11", browser: profile?.browser || "Safari", current: true },
+		{ name: "MacBook Pro M2", browser: "Chrome", current: false },
+		{ name: "Samsung Galaxy S22", browser: "Chrome Mobile", current: false }
+	];
+
+	const mockLoginIps = [
+		{ ip: profile?.ipAddress || "105.112.23.191", timestamp: "2025-04-02 14:30:00", current: true },
+		{ ip: "192.168.1.1", timestamp: "2025-04-01 09:15:22", current: false },
+		{ ip: "105.112.23.192", timestamp: "2025-03-28 18:45:10", current: false }
+	];
 
 	const buttonItems = [
 		{
@@ -627,15 +640,76 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 										{loading ? <Skeleton className="h-4 w-16" /> : <span className="font-medium text-gray-900 text-sm text-left">{country}</span>}
 									</div>
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-xs">Device info:</span>
+										<span className="text-gray-500 text-xs mt-1">Device info:</span>
 										{loading ? (
 											<Skeleton className="h-8 w-32" />
 										) : (
-											<div className="flex flex-col items-end gap-1 text-xs font-medium">
-												<span className="inline-flex items-center rounded-full px-2.5 py-1 bg-white border border-gray-200 text-gray-700 shadow-sm">
+											<div className="relative">
+												<button
+													type="button"
+													onClick={() => {
+														setShowDevices(!showDevices);
+														setShowLoginIps(false);
+													}}
+													className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full shadow-sm text-xs font-medium cursor-pointer hover:bg-gray-50 transition-colors"
+												>
 													{profile?.deviceType || "IPhone 11"}
-												</span>
-												<span className="text-gray-700">{profile?.browser || "Safari"} &nbsp; {profile?.ipAddress || "105.112.23.191"}</span>
+													<ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showDevices ? 'rotate-180' : ''}`} />
+												</button>
+												
+												{showDevices && (
+													<div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-xl z-20 py-2 overflow-hidden">
+														<div className="px-3 py-1.5 border-b border-gray-50 bg-gray-50/50 mb-1">
+															<span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Device History</span>
+														</div>
+														{mockDevices.map((device, i) => (
+															<div key={i} className="px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors text-left group cursor-default">
+																<div className="flex items-center justify-between gap-2">
+																	<span className="text-xs font-medium text-gray-900 group-hover:text-[#10C300] transition-colors">{device.name}</span>
+																	{device.current && <span className="text-[10px] text-[#10C300] bg-[#E8F8E5] px-1.5 py-0.5 rounded-full font-medium">Current</span>}
+																</div>
+																<span className="text-[10px] text-gray-500 block mt-0.5">{device.browser}</span>
+															</div>
+														))}
+													</div>
+												)}
+											</div>
+										)}
+									</div>
+									<div className="flex justify-between items-start">
+										<span className="text-gray-500 text-xs mt-1">Login IP:</span>
+										{loading ? (
+											<Skeleton className="h-8 w-32" />
+										) : (
+											<div className="relative">
+												<button
+													type="button"
+													onClick={() => {
+														setShowLoginIps(!showLoginIps);
+														setShowDevices(false);
+													}}
+													className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full shadow-sm text-xs font-medium cursor-pointer hover:bg-gray-50 transition-colors"
+												>
+													{profile?.ipAddress || "105.112.23.191"}
+													<ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showLoginIps ? 'rotate-180' : ''}`} />
+												</button>
+												
+												{showLoginIps && (
+													<div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-xl z-20 py-2 overflow-hidden">
+														<div className="px-3 py-1.5 border-b border-gray-50 bg-gray-50/50 mb-1">
+															<span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">IP History</span>
+														</div>
+														{mockLoginIps.map((login, i) => (
+															<div key={i} className="px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors text-left group cursor-default">
+																<div className="flex items-center justify-between gap-2">
+																	<span className="text-xs font-medium text-gray-900 group-hover:text-[#10C300] transition-colors">{login.ip}</span>
+																	{login.current && <span className="text-[10px] text-[#10C300] bg-[#E8F8E5] px-1.5 py-0.5 rounded-full font-medium">Current</span>}
+																</div>
+																<span className="text-[10px] text-gray-500 block mt-0.5">{login.timestamp}</span>
+															</div>
+														))}
+													</div>
+												)}
 											</div>
 										)}
 									</div>
