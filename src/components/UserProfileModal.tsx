@@ -572,6 +572,10 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 										{loading ? <Skeleton className="h-4 w-32" /> : <span className="font-medium text-gray-900 text-sm text-left underline underline-offset-2">{displayData.email}</span>}
 									</div>
 									<div className="flex justify-between items-start">
+										<span className="text-gray-500 text-xs">user Id:</span>
+										{loading ? <Skeleton className="h-4 w-20" /> : <span className="font-medium text-gray-900 text-[10px] text-left">{user?.id}</span>}
+									</div>
+									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Mobile number:</span>
 										{loading ? <Skeleton className="h-4 w-20" /> : <span className="font-medium text-gray-900 text-sm text-left">{mobileNumber}</span>}
 									</div>
