@@ -15,6 +15,7 @@ import {
 import { type NewUser, type User, type UserProfile, userService } from "../../lib/users";
 import { notificationService } from "../../lib/notifications";
 import { getDateRangeForPeriod } from "../../lib/time-period";
+import { capitalizeName } from "../../lib/utils";
 
 import { useHasPermission } from "../../hooks/useCurrentUser";
 
@@ -189,9 +190,9 @@ useEffect(() => {
 					/> */}
 					<span
 						className="font-medium text-sm text-gray-900 hover:text-primary transition-colors truncate"
-						title={user.name}
+						title={capitalizeName(user.name)}
 					>
-						{user.name}
+						{capitalizeName(user.name)}
 					</span>
 				</div>
 			),
