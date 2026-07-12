@@ -10,6 +10,7 @@ import { TimePeriodDropdown, type TimePeriodOption } from "./TimePeriodDropdown"
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 import { toast } from "sonner";
+import { capitalizeName } from "#/lib/utils";
 
 interface UserProfileModalProps {
 	user: User;
@@ -564,7 +565,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 								<div className="space-y-5 text-sm flex-1">
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Full Name:</span>
-										{loading ? <Skeleton className="h-4 w-24" /> : <span className="font-medium text-gray-900 text-sm text-left">{displayData.name}</span>}
+										{loading ? <Skeleton className="h-4 w-24" /> : <span className="font-medium text-gray-900 text-sm text-left">{capitalizeName(displayData.name)}</span>}
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Email Address:</span>
