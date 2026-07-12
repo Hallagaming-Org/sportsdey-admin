@@ -558,8 +558,8 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 
 				<div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8">
 					{activeView === "personal" ? (
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-							<div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full min-h-[360px]">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+							<div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col">
 								<h4 className="font-bold text-xl text-gray-900 mb-6">Personal Details</h4>
 								<div className="space-y-5 text-sm flex-1">
 									<div className="flex justify-between items-start">
