@@ -17,7 +17,10 @@ import { notificationService } from "../../lib/notifications";
 import { getDateRangeForPeriod } from "../../lib/time-period";
 import { capitalizeName } from "../../lib/utils";
 import * as XLSX from "xlsx";
-import { FaFileExport, FaFileExcel } from "react-icons/fa6";
+import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
 
 import { useHasPermission } from "../../hooks/useCurrentUser";
 
@@ -91,6 +94,95 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
 		XLSX.writeFile(workbook, `Users_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+	};
+
+	const exportToPdf = () => {
+		if (!usersData?.users || usersData.users.length === 0) {
+			toast.error("No users to export");
+			return;
+		}
+		const doc = new jsPDF("landscape");
+		doc.text("Users", 14, 15);
+		autoTable(doc, {
+			head: [["User Id", "Player Name", "Email Address", "Registration Date", "Registration IP", "Wallet Balance", "Status"]],
+			body: usersData.users.map(u => [
+				u.id,
+				u.name,
+				u.email,
+				u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : "-",
+				u.ipAddress || "-",
+				u.wallet?.toString() || "0",
+				u.status === "verified" ? "Verified" : u.status === "pending_verification" ? "Pending" : "Not Verified"
+			]),
+			startY: 20,
+		});
+		doc.save(`Users_Export_${new Date().toISOString().split('T')[0]}.pdf`);
+	};
+
+	const exportToDocx = () => {
+		if (!usersData?.users || usersData.users.length === 0) {
+			toast.error("No users to export");
+			return;
+		}
+
+		const docx = new Document({
+			sections: [
+				{
+					properties: {},
+					children: [
+						new Paragraph({
+							children: [
+								new TextRun({
+									text: "Users",
+									bold: true,
+									size: 32,
+								}),
+							],
+							spacing: { after: 400 },
+						}),
+						new Table({
+							width: { size: 100, type: WidthType.PERCENTAGE },
+							rows: [
+								new TableRow({
+									children: ["User Id", "Player Name", "Email Address", "Registration Date", "Registration IP", "Wallet Balance", "Status"].map(
+										header => new TableCell({
+											children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
+											shading: { fill: "f3f4f6" },
+											margins: { top: 100, bottom: 100, left: 100, right: 100 }
+										})
+									),
+								}),
+								...usersData.users.map(u => new TableRow({
+									children: [
+										u.id,
+										u.name,
+										u.email,
+										u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : "-",
+										u.ipAddress || "-",
+										u.wallet?.toString() || "0",
+										u.status === "verified" ? "Verified" : u.status === "pending_verification" ? "Pending" : "Not Verified"
+									].map(cell => new TableCell({
+										children: [new Paragraph(String(cell))],
+										margins: { top: 100, bottom: 100, left: 100, right: 100 }
+									})),
+								}))
+							],
+						}),
+					],
+				},
+			],
+		});
+
+		Packer.toBlob(docx).then((blob) => {
+			const link = document.createElement("a");
+			const url = URL.createObjectURL(blob);
+			link.setAttribute("href", url);
+			link.setAttribute("download", `Users_Export_${new Date().toISOString().split('T')[0]}.docx`);
+			link.style.visibility = 'hidden';
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		});
 	};
 
 	// Close dropdown when clicking outside
@@ -328,6 +420,28 @@ useEffect(() => {
 						
 						{showExportDropdown && (
 							<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+								<button
+									onClick={(e) => {
+										e.stopPropagation();
+										setShowExportDropdown(false);
+										exportToPdf();
+									}}
+									className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+								>
+									<FaFilePdf className="text-red-500 w-4 h-4" />
+									PDF
+								</button>
+								<button
+									onClick={(e) => {
+										e.stopPropagation();
+										setShowExportDropdown(false);
+										exportToDocx();
+									}}
+									className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+								>
+									<FaFileWord className="text-blue-600 w-4 h-4" />
+									DOCX
+								</button>
 								<button
 									onClick={(e) => {
 										e.stopPropagation();
