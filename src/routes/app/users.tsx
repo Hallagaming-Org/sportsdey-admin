@@ -410,6 +410,9 @@ useEffect(() => {
 							type="button"
 							onClick={(e) => {
 								e.stopPropagation();
+								if (e.nativeEvent) {
+									e.nativeEvent.stopImmediatePropagation();
+								}
 								setShowExportDropdown(!showExportDropdown);
 							}}
 							className="inline-flex items-center h-11 gap-1.5 rounded-full bg-[#1BAA04] px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
