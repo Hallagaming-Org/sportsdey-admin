@@ -55,7 +55,6 @@ class AdminAuth {
 
 	async signIn(email: string, password: string): Promise<SignInResponse> {
 		try {
-		//   console.log("API_URL",this.baseUrl)
 			const response = await fetch(`${this.baseUrl}/admin/auth/sign-in`, {
 				method: "POST",
 				headers: {
@@ -105,7 +104,11 @@ class AdminAuth {
 
 	async getSession(): Promise<Admin | null> {
 		try {
+			const token = getCookie("admin_session");
 			const response = await fetch(`${this.baseUrl}/admin/me`, {
+				headers: {
+					...(token ? { Authorization: `Bearer ${token}` } : {}),
+				},
 				credentials: "include",
 				cache: "no-store",
 			});
@@ -125,7 +128,11 @@ class AdminAuth {
 	}
 
 	async listAdmins(): Promise<Admin[]> {
+		const token = getCookie("admin_session");
 		const response = await fetch(`${this.baseUrl}/admin/admins`, {
+			headers: {
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
 			credentials: "include",
 		});
 
@@ -142,10 +149,12 @@ class AdminAuth {
 		name: string;
 		role: "super_admin" | "admin" | "csr-admin";
 	}): Promise<Admin> {
+		const token = getCookie("admin_session");
 		const response = await fetch(`${this.baseUrl}/admin/admins`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
 			},
 			body: JSON.stringify(data),
 			credentials: "include",
@@ -227,10 +236,12 @@ class AdminAuth {
 
 	async changePassword(newPassword: string, confirmPassword: string): Promise<{ success: boolean; error?: string }> {
 		try {
+			const token = getCookie("admin_session");
 			const response = await fetch(`${this.baseUrl}/admin/auth/change-password`, {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
+					...(token ? { Authorization: `Bearer ${token}` } : {}),
 				},
 				body: JSON.stringify({ newPassword, confirmPassword }),
 				credentials: "include",
@@ -247,7 +258,11 @@ class AdminAuth {
 	}
 
 	async listDevices(): Promise<Device[]> {
+		const token = getCookie("admin_session");
 		const response = await fetch(`${this.baseUrl}/admin/auth/devices`, {
+			headers: {
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
 			credentials: "include",
 		});
 
@@ -259,10 +274,14 @@ class AdminAuth {
 	}
 
 	async logoutDevice(sessionId: string): Promise<void> {
+		const token = getCookie("admin_session");
 		const response = await fetch(
 			`${this.baseUrl}/admin/auth/devices/${sessionId}`,
 			{
 				method: "DELETE",
+				headers: {
+					...(token ? { Authorization: `Bearer ${token}` } : {}),
+				},
 				credentials: "include",
 			},
 		);
