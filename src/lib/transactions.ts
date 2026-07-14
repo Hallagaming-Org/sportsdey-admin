@@ -78,6 +78,8 @@ interface ServerTransaction {
 	amount: number | null;
 	balance_after: number | null;
 	status: string;
+	user_id?: string;
+	user_email?: string;
 }
 
 interface ServerTransactionsResponse {
@@ -137,6 +139,8 @@ const formatType = (type: "deposit" | "withdrawal" | "payment"): string => {
 const mapTransaction = (t: ServerTransaction): Transaction => {
 	return {
 		id: t.transaction_id,
+		user_id: t.user_id,
+		user_email: t.user_email,
 		dateTime: `${t.date_time.date}\n${t.date_time.time}`,
 		type: formatType(t.type) as TransactionType,
 		paymentMethod: formatPaymentMethod(t.payment_method),
