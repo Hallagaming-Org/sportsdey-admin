@@ -86,6 +86,7 @@ class UserService {
 		sort?: "asc" | "desc";
 		tab?: "all" | "recent" | "pending";
 		search?: string;
+		status?: string;
 		fromDate?: string;
 		toDate?: string;
 	}): Promise<{ success: boolean; data?: UsersResponse; error?: string }> {
@@ -95,6 +96,7 @@ class UserService {
 		if (params.sort) searchParams.set("sort", params.sort);
 		if (params.tab && params.tab !== "all") searchParams.set("tab", params.tab);
 		if (params.search) searchParams.set("search", params.search);
+		if (params.status && params.status !== "all") searchParams.set("status", params.status);
 		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
 		if (params.toDate) searchParams.set("toDate", params.toDate);
 
