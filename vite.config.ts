@@ -7,15 +7,15 @@ import svgr from "vite-plugin-svgr";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-	// server: {
-	// 	proxy: {
-	// 		"/staging-api": {
-	// 			target: "https://staging-api.sportsdey.com",
-	// 			changeOrigin: true,
-	// 			rewrite: (path) => path.replace(/^\/staging-api/, ""),
-	// 		},
-	// 	},
-	// },
+	server: {
+		proxy: {
+			"/staging-api": {
+				target: "https://staging-api.sportsdey.com",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/staging-api/, ""),
+			},
+		},
+	},
 	plugins: [
 		cloudflare({ viteEnvironment: { name: "ssr" } }),
 		tsconfigPaths(),
