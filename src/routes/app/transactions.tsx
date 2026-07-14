@@ -275,9 +275,11 @@ function WalletPage() {
 											const doc = new jsPDF("landscape");
 											doc.text("Transactions", 14, 15);
 											autoTable(doc, {
-												head: [["ID", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"]],
+												head: [["ID", "User ID", "User Email", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"]],
 												body: transactions.map(t => [
 													t.id,
+													t.user_id || "-",
+													t.user_email || "-",
 													t.dateTime.replace(/\n/g, ' '),
 													t.type,
 													t.paymentMethod || "N/A",
@@ -318,7 +320,7 @@ function WalletPage() {
 																width: { size: 100, type: WidthType.PERCENTAGE },
 																rows: [
 																	new TableRow({
-																		children: ["ID", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"].map(
+																		children: ["ID", "User ID", "User Email", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"].map(
 																			header => new TableCell({
 																				children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
 																				shading: { fill: "f3f4f6" },
@@ -329,6 +331,8 @@ function WalletPage() {
 																	...transactions.map(t => new TableRow({
 																		children: [
 																			t.id,
+																			t.user_id || "-",
+																			t.user_email || "-",
 																			t.dateTime.replace(/\n/g, ' '),
 																			t.type,
 																			t.paymentMethod || "N/A",
@@ -370,6 +374,8 @@ function WalletPage() {
 
 											const dataToExport = transactions.map(t => ({
 												"ID": t.id,
+												"User ID": t.user_id || "-",
+												"User Email": t.user_email || "-",
 												"Date & Time": t.dateTime.replace(/\n/g, ' '),
 												"Type": t.type,
 												"Payment Method": t.paymentMethod || "N/A",
