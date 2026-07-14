@@ -123,12 +123,13 @@ function WalletPage() {
 		},
 		{
 			header: "User ID",
-			accessor: (t) => t.userId || "-",
+			accessor: (t) => t.user_id
+ || "-",
 			cellClassName: "font-mono text-[11px] text-gray-700",
 		},
 		{
 			header: "User Email",
-			accessor: (t) => t.userEmail || "-",
+			accessor: (t) => t.user_email || "-",
 			cellClassName: "text-gray-500",
 		},
 		{
