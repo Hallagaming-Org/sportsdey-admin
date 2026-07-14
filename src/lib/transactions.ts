@@ -11,8 +11,8 @@ export interface Transaction {
 	amount: string;
 	balanceAfter: string;
 	status: TransactionStatus;
-	userId?: string;
-	userEmail?: string;
+	user_id?: string;
+	user_email?: string;
 }
 
 export interface DepositSummary {
