@@ -11,6 +11,7 @@ export interface User {
 	photo?: string;
 	suspended?: boolean;
 	ipAddress?: string | null;
+	registeredIpAddress?: string | null;
 }
 
 export interface UsersResponse {
@@ -40,6 +41,7 @@ export interface UserProfile {
 	deviceType?: string | null;
 	browser?: string | null;
 	ipAddress?: string | null;
+	registeredIpAddress?: string | null;
 }
 
 export interface WalletOverview {
