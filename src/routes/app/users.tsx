@@ -80,7 +80,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 			"Player Name": user.name,
 			"Email Address": user.email,
 			"Registration Date": user.registeredDate ? new Date(user.registeredDate).toLocaleDateString() : "-",
-			"Registration IP": user.ipAddress || "-",
+			"Registration IP": user.registeredIpAddress || user.ipAddress || "-",
 			"Wallet Balance": user.wallet,
 			"Status": user.status === "verified" ? "Verified" : user.status === "pending_verification" ? "Pending" : "Not Verified",
 		}));
@@ -110,7 +110,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 				u.name,
 				u.email,
 				u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : "-",
-				u.ipAddress || "-",
+				u.registeredIpAddress || u.ipAddress || "-",
 				u.wallet?.toString() || "0",
 				u.status === "verified" ? "Verified" : u.status === "pending_verification" ? "Pending" : "Not Verified"
 			]),
@@ -158,7 +158,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 										u.name,
 										u.email,
 										u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : "-",
-										u.ipAddress || "-",
+										u.registeredIpAddress || u.ipAddress || "-",
 										u.wallet?.toString() || "0",
 										u.status === "verified" ? "Verified" : u.status === "pending_verification" ? "Pending" : "Not Verified"
 									].map(cell => new TableCell({
@@ -332,7 +332,7 @@ useEffect(() => {
 		},
 		{
 			header: "Registration IP",
-			accessor: (user) => user.ipAddress || "-",
+			accessor: (user) => user.registeredIpAddress || user.ipAddress || "-",
 			cellClassName: "text-gray-500",
 		},
 		{
