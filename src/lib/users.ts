@@ -201,6 +201,12 @@ class UserService {
 			body: { userId, note },
 		});
 	}
+
+	async deleteUserLogNote(noteId: string): Promise<{ success: boolean; error?: string }> {
+		return fetchApi(`/admin/log-notes/${noteId}`, {
+			method: "DELETE",
+		});
+	}
 }
 
 export const userService = new UserService();
