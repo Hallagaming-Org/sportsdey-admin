@@ -189,15 +189,15 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
             </button>
             {currentUser?.role === 'super_admin' && (
               <>
-                <button 
+                {/* <button 
                   onClick={() => {
                     toast.info("Hover over a note and click delete");
                     setIsMenuOpen(false);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  <Trash2 className="w-4 h-4" /> Delete a note
-                </button>
+                  <Trash2 className="w-4 h-4" /> Delete a notes
+                </button> */}
                 <button 
                   onClick={() => {
                     if (rawNotes) {
