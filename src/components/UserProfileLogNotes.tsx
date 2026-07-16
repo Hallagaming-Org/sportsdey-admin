@@ -34,9 +34,10 @@ function ExpandableNote({ text }: { text: string }) {
 
   const handleShowLess = () => {
     setExpanded(false);
+    // Scroll the entire note into view, centered, after the DOM updates
     setTimeout(() => {
-      containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 10);
+      containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
   };
 
   return (
@@ -127,14 +128,27 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
     return notesArray
       .filter((note: any) => note && !deletedNoteIds.includes(note.id))
       .map((note: any) => {
-        const role = note.admin?.role === 'super_admin' ? 'Super Admin' : 
-                     note.admin?.role === 'csr-admin' ? 'CSR Admin' : 
-                     note.admin?.role ? note.admin.role.charAt(0).toUpperCase() + note.admin.role.slice(1) : 'Admin';
+        const formatWithOrdinal = (dateString: string) => {
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return "";
+          const day = date.getDate();
+          const month = date.toLocaleDateString("en-US", { month: "long" }).toLowerCase();
+          const year = date.getFullYear();
+          const suffix = (day % 10 === 1 && day !== 11) ? "st" :
+                         (day % 10 === 2 && day !== 12) ? "nd" :
+                         (day % 10 === 3 && day !== 13) ? "rd" : "th";
+          return `${day}${suffix} ${month}, ${year}`;
+        };
+
+        const role = note.adminRole === 'super_admin' ? 'Super Admin' : 
+                     note.adminRole === 'csr-admin' ? 'CSR Admin' : 
+                     note.adminRole ? note.adminRole.charAt(0).toUpperCase() + note.adminRole.slice(1) : 'Admin';
+
         return {
           id: note.id || String(Math.random()),
-          author: role,
-          authorEmail: note.admin?.email || undefined,
-          date: note.createdAt ? new Date(note.createdAt).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }) : "",
+          author: note.adminName || note.admin?.name || role,
+          authorEmail: note.adminEmail || note.admin?.email || role,
+          date: note.createdAt ? formatWithOrdinal(note.createdAt) : "",
           text: note.note || note.text || "",
         };
       });
