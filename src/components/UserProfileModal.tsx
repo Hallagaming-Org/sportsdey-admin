@@ -445,59 +445,61 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 
 	const deviceHistory = useMemo(() => {
 		const list: Array<{ name: string; browser: string; current: boolean }> = [];
-		if (profile?.deviceType) {
+		const sessionDevices = profile?.recentSessions?.devices || [];
+		if (sessionDevices.length > 0) {
+			sessionDevices.forEach((d: any, index: number) => {
+				let name = "";
+				let browser = "";
+				let current = false;
+				if (typeof d === "string") {
+					name = d;
+					current = index === 0;
+				} else if (d && typeof d === "object") {
+					name = d.name || d.deviceName || "Unknown Device";
+					browser = d.browser || "";
+					current = d.current || d.isCurrent || index === 0;
+				}
+				if (name && name !== "N/A" && !list.some(item => item.name === name)) {
+					list.push({ name, browser, current });
+				}
+			});
+		} else if (profile?.deviceType && profile.deviceType !== "N/A") {
 			list.push({
 				name: profile.deviceType,
 				browser: profile.browser || "",
 				current: true
 			});
 		}
-		const sessionDevices = profile?.recentSessions?.devices || [];
-		sessionDevices.forEach((d: any, index: number) => {
-			let name = "";
-			let browser = "";
-			let current = false;
-			if (typeof d === "string") {
-				name = d;
-				current = list.length === 0 && index === 0;
-			} else if (d && typeof d === "object") {
-				name = d.name || d.deviceName || "Unknown Device";
-				browser = d.browser || "";
-				current = d.current || d.isCurrent || (list.length === 0 && index === 0);
-			}
-			if (name && !list.some(item => item.name === name)) {
-				list.push({ name, browser, current });
-			}
-		});
 		return list;
 	}, [profile]);
 
 	const ipHistory = useMemo(() => {
 		const list: Array<{ ip: string; timestamp: string; current: boolean }> = [];
-		if (profile?.ipAddress) {
+		const sessionIps = profile?.recentSessions?.ipAddresses || [];
+		if (sessionIps.length > 0) {
+			sessionIps.forEach((ipObj: any, index: number) => {
+				let ip = "";
+				let timestamp = "";
+				let current = false;
+				if (typeof ipObj === "string") {
+					ip = ipObj;
+					current = index === 0;
+				} else if (ipObj && typeof ipObj === "object") {
+					ip = ipObj.ip || ipObj.ipAddress || "0.0.0.0";
+					timestamp = ipObj.timestamp || ipObj.createdAt || ipObj.lastActiveAt || "";
+					current = ipObj.current || ipObj.isCurrent || index === 0;
+				}
+				if (ip && ip !== "N/A" && !list.some(item => item.ip === ip)) {
+					list.push({ ip, timestamp, current });
+				}
+			});
+		} else if (profile?.ipAddress && profile.ipAddress !== "N/A") {
 			list.push({
 				ip: profile.ipAddress,
 				timestamp: "",
 				current: true
 			});
 		}
-		const sessionIps = profile?.recentSessions?.ipAddresses || [];
-		sessionIps.forEach((ipObj: any, index: number) => {
-			let ip = "";
-			let timestamp = "";
-			let current = false;
-			if (typeof ipObj === "string") {
-				ip = ipObj;
-				current = list.length === 0 && index === 0;
-			} else if (ipObj && typeof ipObj === "object") {
-				ip = ipObj.ip || ipObj.ipAddress || "0.0.0.0";
-				timestamp = ipObj.timestamp || ipObj.createdAt || ipObj.lastActiveAt || "";
-				current = ipObj.current || ipObj.isCurrent || (list.length === 0 && index === 0);
-			}
-			if (ip && !list.some(item => item.ip === ip)) {
-				list.push({ ip, timestamp, current });
-			}
-		});
 		return list;
 	}, [profile]);
 
@@ -724,7 +726,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 													</>
 												) : (
 													<span className="font-medium text-gray-900 text-sm text-left block mt-1">
-														{profile?.deviceType || deviceHistory[0]?.name || ""}
+														{deviceHistory[0]?.name || ""}
 													</span>
 												)}
 											</div>
@@ -769,7 +771,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 													</>
 												) : (
 													<span className="font-medium text-gray-900 text-sm text-left block mt-1">
-														{profile?.ipAddress || ipHistory[0]?.ip || ""}
+														{ipHistory[0]?.ip || ""}
 													</span>
 												)}
 											</div>
