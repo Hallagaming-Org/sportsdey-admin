@@ -1,6 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { MoreHorizontal, PlusCircle, Trash2, XCircle } from "lucide-react";
 import { useCurrentUser } from "../hooks/useCurrentUser";
+import { userService } from "../lib/users";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface LogNote {
   id: string;
@@ -63,37 +66,15 @@ function ExpandableNote({ text }: { text: string }) {
 
 export function UserProfileLogNotes({ userId }: { userId: string }) {
   const currentUser = useCurrentUser();
+  const queryClient = useQueryClient();
   const userRole = currentUser?.role === 'super_admin' ? 'Super Admin' : 
                    currentUser?.role === 'csr-admin' ? 'CSR Admin' : 
                    currentUser?.role ? currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1) : 'Admin';
 
-  const [notes, setNotes] = useState<LogNote[]>([
-    {
-      id: "1",
-      author: userRole,
-      authorEmail: currentUser?.email,
-      date: "2nd april, 2025",
-      text: "This user has been a consistent player and also and we are to reward the user with a ₦ 500 free bet ....",
-    },
-    {
-      id: "2",
-      author: userRole,
-      authorEmail: currentUser?.email,
-      date: "2nd april, 2025",
-      text: "This user has been a consistent player and also and we are to reward the user with a ₦ 500 free bet ....",
-    },
-    {
-      id: "3",
-      author: userRole,
-      authorEmail: currentUser?.email,
-      date: "2nd april, 2025",
-      text: "This user has been a consistent player and also and we are to reward the user with a ₦ 500 free bet ....",
-    },
-  ]);
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteText, setNewNoteText] = useState("");
+  const [deletedNoteIds, setDeletedNoteIds] = useState<string[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -106,8 +87,66 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const { data: rawNotes, isLoading } = useQuery({
+    queryKey: ["user-log-notes", userId],
+    queryFn: async () => {
+      const res = await userService.getUserLogNotes(userId);
+      if (!res.success) throw new Error(res.error || "Failed to fetch log notes");
+      return res.data || [];
+    },
+    enabled: !!userId,
+  });
+
+  const addNoteMutation = useMutation({
+    mutationFn: async (text: string) => {
+      const res = await userService.createUserLogNote(userId, text);
+      if (!res.success) throw new Error(res.error || "Failed to add log note");
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-log-notes", userId] });
+      setNewNoteText("");
+      setIsAddingNote(false);
+      toast.success("Log note added successfully");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message);
+    }
+  });
+
+  const notes: LogNote[] = useMemo(() => {
+    console.log("UserProfileLogNotes rawNotes:", rawNotes);
+    if (!rawNotes) return [];
+    
+    const notesArray = Array.isArray(rawNotes)
+      ? rawNotes
+      : (rawNotes && typeof rawNotes === 'object')
+        ? ((rawNotes as any).logNotes || (rawNotes as any).notes || (rawNotes as any).data || [])
+        : [];
+
+    return notesArray
+      .filter((note: any) => note && !deletedNoteIds.includes(note.id))
+      .map((note: any) => {
+        const role = note.admin?.role === 'super_admin' ? 'Super Admin' : 
+                     note.admin?.role === 'csr-admin' ? 'CSR Admin' : 
+                     note.admin?.role ? note.admin.role.charAt(0).toUpperCase() + note.admin.role.slice(1) : 'Admin';
+        return {
+          id: note.id || String(Math.random()),
+          author: role,
+          authorEmail: note.admin?.email || undefined,
+          date: note.createdAt ? new Date(note.createdAt).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }) : "",
+          text: note.note || note.text || "",
+        };
+      });
+  }, [rawNotes, deletedNoteIds]);
+
   const wordCount = newNoteText.trim() ? newNoteText.trim().split(/\s+/).length : 0;
   const isOverLimit = wordCount > 1000;
+
+  const handleAddNote = () => {
+    if (!newNoteText.trim() || isOverLimit) return;
+    addNoteMutation.mutate(newNoteText.trim());
+  };
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
@@ -136,12 +175,20 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
             </button>
             {currentUser?.role === 'super_admin' && (
               <>
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
+                <button 
+                  onClick={() => {
+                    toast.info("Hover over a note and click delete");
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
                   <Trash2 className="w-4 h-4" /> Delete a note
                 </button>
                 <button 
                   onClick={() => {
-                    setNotes([]);
+                    if (rawNotes) {
+                      setDeletedNoteIds(rawNotes.map(n => n.id));
+                    }
                     setIsMenuOpen(false);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
@@ -156,79 +203,82 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
 
       <div className="flex-1 relative min-h-0">
         <div className="absolute inset-0 overflow-y-auto custom-scrollbar space-y-5 pr-2">
-          {isAddingNote && (
-            <div className="space-y-2 group bg-[#F8F9FC] rounded-lg p-3.5 border border-gray-200">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex flex-col">
-                  <span className="font-bold text-gray-900 text-sm">{userRole}</span>
-                  {currentUser?.email && <span className="text-gray-500 text-[10px] mt-0.5">{currentUser.email}</span>}
-                </div>
-                <span className="text-gray-400 text-xs mt-0.5">Now</span>
-              </div>
-              <textarea 
-                value={newNoteText}
-                onChange={(e) => setNewNoteText(e.target.value)}
-                className="w-full bg-white rounded-lg p-3 text-sm text-gray-600 border border-gray-200 focus:border-[#1BAA04] focus:ring-1 focus:ring-[#1BAA04] outline-none min-h-[150px] resize-y"
-                placeholder="Type your note here..."
-                autoFocus
-              />
-              <div className="flex justify-end">
-                <span className={`text-[8px] ${isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
-                  {wordCount} / 1,000
-                </span>
-              </div>
-              <div className="flex justify-end gap-2 pt-1">
-                <button 
-                  onClick={() => { setIsAddingNote(false); setNewNoteText(""); }}
-                  className="px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    if (!newNoteText.trim() || isOverLimit) return;
-                    setNotes([{
-                      id: Date.now().toString(),
-                      author: userRole,
-                      authorEmail: currentUser?.email,
-                      date: new Date().toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }),
-                      text: newNoteText
-                    }, ...notes]);
-                    setIsAddingNote(false);
-                    setNewNoteText("");
-                  }}
-                  disabled={isOverLimit}
-                  className="px-3 py-1.5 text-xs font-medium bg-[#1BAA04] text-white rounded hover:bg-[#158903] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Add note
-                </button>
-              </div>
-          </div>
-          )}
-
-          {notes.map((note, index) => (
-          <div key={note.id} className="space-y-2 group">
-            <div className="flex items-start justify-between">
-              <div className="flex flex-col">
-                <span className="font-bold text-gray-900 text-sm">{note.author}</span>
-                {note.authorEmail && <span className="text-gray-500 text-[10px] mt-0.5">{note.authorEmail}</span>}
-              </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-gray-400 text-xs">{note.date}</span>
-                {/* Show trash icon on hover only for super admin */}
-                {currentUser?.role === 'super_admin' && (
-                  <button 
-                    onClick={() => setNotes(notes.filter(n => n.id !== note.id))}
-                    className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-32">
+              <span className="text-gray-400 text-sm">Loading log notes...</span>
             </div>
-            <ExpandableNote text={note.text} />
-          </div>
-        ))}
+          ) : (
+            <>
+              {isAddingNote && (
+                <div className="space-y-2 group bg-[#F8F9FC] rounded-lg p-3.5 border border-gray-200">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-gray-900 text-sm">{userRole}</span>
+                      {currentUser?.email && <span className="text-gray-500 text-[10px] mt-0.5">{currentUser.email}</span>}
+                    </div>
+                    <span className="text-gray-400 text-xs mt-0.5">Now</span>
+                  </div>
+                  <textarea 
+                    value={newNoteText}
+                    onChange={(e) => setNewNoteText(e.target.value)}
+                    className="w-full bg-white rounded-lg p-3 text-sm text-gray-600 border border-gray-200 focus:border-[#1BAA04] focus:ring-1 focus:ring-[#1BAA04] outline-none min-h-[150px] resize-y"
+                    placeholder="Type your note here..."
+                    autoFocus
+                  />
+                  <div className="flex justify-end">
+                    <span className={`text-[8px] ${isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+                      {wordCount} / 1,000
+                    </span>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button 
+                      onClick={() => { setIsAddingNote(false); setNewNoteText(""); }}
+                      className="px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
+                      disabled={addNoteMutation.isPending}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={handleAddNote}
+                      disabled={isOverLimit || addNoteMutation.isPending}
+                      className="px-3 py-1.5 text-xs font-medium bg-[#1BAA04] text-white rounded hover:bg-[#158903] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {addNoteMutation.isPending ? "Adding..." : "Add note"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {notes.length === 0 && !isAddingNote ? (
+                <div className="flex justify-center items-center h-32">
+                  <span className="text-gray-400 text-sm">No log notes found</span>
+                </div>
+              ) : (
+                notes.map((note) => (
+                  <div key={note.id} className="space-y-2 group">
+                    <div className="flex items-start justify-between">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-gray-900 text-sm">{note.author}</span>
+                        {note.authorEmail && <span className="text-gray-500 text-[10px] mt-0.5">{note.authorEmail}</span>}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-gray-400 text-xs">{note.date}</span>
+                        {currentUser?.role === 'super_admin' && (
+                          <button 
+                            onClick={() => setDeletedNoteIds([...deletedNoteIds, note.id])}
+                            className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <ExpandableNote text={note.text} />
+                  </div>
+                ))
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
