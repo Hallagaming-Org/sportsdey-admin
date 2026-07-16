@@ -75,8 +75,10 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteText, setNewNoteText] = useState("");
-  const [deletedNoteIds, setDeletedNoteIds] = useState<string[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
+  
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean, type: 'single' | 'all', noteId?: string }>({ isOpen: false, type: 'single' });
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -115,6 +117,42 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
     }
   });
 
+  const deleteNoteMutation = useMutation({
+    mutationFn: async (noteId: string) => {
+      const res = await userService.deleteUserLogNote(noteId);
+      if (!res.success) throw new Error(res.error || "Failed to delete log note");
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-log-notes", userId] });
+      toast.success("Log note deleted successfully");
+      setDeleteModal({ isOpen: false, type: 'single' });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message);
+    }
+  });
+
+  const handleDeleteConfirm = async () => {
+    if (deleteModal.type === 'single' && deleteModal.noteId) {
+      deleteNoteMutation.mutate(deleteModal.noteId);
+    } else if (deleteModal.type === 'all' && rawNotes) {
+      setIsDeletingAll(true);
+      try {
+        for (const note of rawNotes) {
+           await userService.deleteUserLogNote(note.id);
+        }
+        queryClient.invalidateQueries({ queryKey: ["user-log-notes", userId] });
+        toast.success("All log notes deleted successfully");
+        setDeleteModal({ isOpen: false, type: 'single' });
+      } catch (err: any) {
+        toast.error(err.message || "Failed to clear all log notes");
+      } finally {
+        setIsDeletingAll(false);
+      }
+    }
+  };
+
   const notes: LogNote[] = useMemo(() => {
     console.log("UserProfileLogNotes rawNotes:", rawNotes);
     if (!rawNotes) return [];
@@ -126,7 +164,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
         : [];
 
     return notesArray
-      .filter((note: any) => note && !deletedNoteIds.includes(note.id))
+      .filter((note: any) => note)
       .map((note: any) => {
         const formatWithOrdinal = (dateString: string) => {
           const date = new Date(dateString);
@@ -152,7 +190,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
           text: note.note || note.text || "",
         };
       });
-  }, [rawNotes, deletedNoteIds]);
+  }, [rawNotes]);
 
   const wordCount = newNoteText.trim() ? newNoteText.trim().split(/\s+/).length : 0;
   const isOverLimit = wordCount > 1000;
@@ -200,9 +238,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                 </button> */}
                 <button 
                   onClick={() => {
-                    if (rawNotes) {
-                      setDeletedNoteIds(rawNotes.map(n => n.id));
-                    }
+                    setDeleteModal({ isOpen: true, type: 'all' });
                     setIsMenuOpen(false);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
@@ -279,7 +315,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                         <span className="text-gray-400 text-xs">{note.date}</span>
                         {currentUser?.role === 'super_admin' && (
                           <button 
-                            onClick={() => setDeletedNoteIds([...deletedNoteIds, note.id])}
+                            onClick={() => setDeleteModal({ isOpen: true, type: 'single', noteId: note.id })}
                             className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -295,6 +331,44 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
           )}
         </div>
       </div>
+
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-red-100 mx-auto flex items-center justify-center mb-4">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                {deleteModal.type === 'single' ? 'Delete log note?' : 'Clear all log notes?'}
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Are you sure you want to {deleteModal.type === 'single' ? 'delete this note' : 'clear all log notes'}? This action cannot be undone.
+              </p>
+              <div className="flex items-center gap-3 w-full">
+                <button
+                  onClick={() => setDeleteModal({ isOpen: false, type: 'single' })}
+                  disabled={deleteNoteMutation.isPending || isDeletingAll}
+                  className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  disabled={deleteNoteMutation.isPending || isDeletingAll}
+                  className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {(deleteNoteMutation.isPending || isDeletingAll) ? (
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                  ) : (
+                    "Yes, delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
