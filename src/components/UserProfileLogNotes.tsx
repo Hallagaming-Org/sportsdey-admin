@@ -5,6 +5,7 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 interface LogNote {
   id: string;
   author: string;
+  authorEmail?: string;
   date: string;
   text: string;
 }
@@ -70,18 +71,21 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
     {
       id: "1",
       author: userRole,
+      authorEmail: currentUser?.email,
       date: "2nd april, 2025",
       text: "This user has been a consistent player and also and we are to reward the user with a ₦ 500 free bet ....",
     },
     {
       id: "2",
       author: userRole,
+      authorEmail: currentUser?.email,
       date: "2nd april, 2025",
       text: "This user has been a consistent player and also and we are to reward the user with a ₦ 500 free bet ....",
     },
     {
       id: "3",
       author: userRole,
+      authorEmail: currentUser?.email,
       date: "2nd april, 2025",
       text: "This user has been a consistent player and also and we are to reward the user with a ₦ 500 free bet ....",
     },
@@ -154,9 +158,12 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
         <div className="absolute inset-0 overflow-y-auto custom-scrollbar space-y-5 pr-2">
           {isAddingNote && (
             <div className="space-y-2 group bg-[#F8F9FC] rounded-lg p-3.5 border border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-gray-900 text-sm">{userRole}</span>
-                <span className="text-gray-400 text-xs">Now</span>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex flex-col">
+                  <span className="font-bold text-gray-900 text-sm">{userRole}</span>
+                  {currentUser?.email && <span className="text-gray-500 text-[10px] mt-0.5">{currentUser.email}</span>}
+                </div>
+                <span className="text-gray-400 text-xs mt-0.5">Now</span>
               </div>
               <textarea 
                 value={newNoteText}
@@ -183,6 +190,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                     setNotes([{
                       id: Date.now().toString(),
                       author: userRole,
+                      authorEmail: currentUser?.email,
                       date: new Date().toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }),
                       text: newNoteText
                     }, ...notes]);
@@ -200,9 +208,12 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
 
           {notes.map((note, index) => (
           <div key={note.id} className="space-y-2 group">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-gray-900 text-sm">{note.author}</span>
-              <div className="flex items-center gap-2">
+            <div className="flex items-start justify-between">
+              <div className="flex flex-col">
+                <span className="font-bold text-gray-900 text-sm">{note.author}</span>
+                {note.authorEmail && <span className="text-gray-500 text-[10px] mt-0.5">{note.authorEmail}</span>}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-gray-400 text-xs">{note.date}</span>
                 {/* Show trash icon on hover only for super admin */}
                 {currentUser?.role === 'super_admin' && (
