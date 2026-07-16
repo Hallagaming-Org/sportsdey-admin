@@ -12,6 +12,8 @@ export interface TicketRecord {
 	createdAt: string;
 	balanceBefore: string | null;
 	balanceAfter: string | null;
+	userId?: string;
+	userSuspended?: boolean;
 }
 
 export interface TicketsResponse {
