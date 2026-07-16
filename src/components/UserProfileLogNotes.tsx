@@ -69,19 +69,19 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
   const [notes, setNotes] = useState<LogNote[]>([
     {
       id: "1",
-      author: "Support admin",
+      author: userRole,
       date: "2nd april, 2025",
       text: "This user has been a consistent player and also and we are to reward the user with a ₦ 500 free bet ....",
     },
     {
       id: "2",
-      author: "Support admin",
+      author: userRole,
       date: "2nd april, 2025",
       text: "This user has been a consistent player and also and we are to reward the user with a ₦ 500 free bet ....",
     },
     {
       id: "3",
-      author: "Support admin",
+      author: userRole,
       date: "2nd april, 2025",
       text: "This user has been a consistent player and also and we are to reward the user with a ₦ 500 free bet ....",
     },
