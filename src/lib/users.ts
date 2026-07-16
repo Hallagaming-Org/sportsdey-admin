@@ -42,6 +42,10 @@ export interface UserProfile {
 	browser?: string | null;
 	ipAddress?: string | null;
 	registeredIpAddress?: string | null;
+	recentSessions?: {
+		ipAddresses: any[];
+		devices: any[];
+	} | null;
 }
 
 export interface WalletOverview {
