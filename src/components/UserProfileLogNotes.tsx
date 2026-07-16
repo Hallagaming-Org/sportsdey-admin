@@ -147,11 +147,12 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                 placeholder="Type your note here..."
                 autoFocus
               />
-              <div className="flex justify-between items-center pt-2">
-                <span className={`text-xs ${isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+              <div className="flex justify-end">
+                <span className={`text-[8px] ${isOverLimit ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
                   {wordCount} / 1,000
                 </span>
-                <div className="flex gap-2">
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
                 <button 
                   onClick={() => { setIsAddingNote(false); setNewNoteText(""); }}
                   className="px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
@@ -176,7 +177,6 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                   Add note
                 </button>
               </div>
-            </div>
           </div>
           )}
 
