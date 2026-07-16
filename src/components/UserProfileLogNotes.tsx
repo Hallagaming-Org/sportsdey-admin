@@ -12,6 +12,7 @@ function ExpandableNote({ text }: { text: string }) {
   const [expanded, setExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const textRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (textRef.current) {
@@ -26,8 +27,15 @@ function ExpandableNote({ text }: { text: string }) {
     overflow: 'hidden'
   };
 
+  const handleShowLess = () => {
+    setExpanded(false);
+    setTimeout(() => {
+      containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 10);
+  };
+
   return (
-    <div className="bg-[#F8F9FC] rounded-lg p-3.5 text-sm text-gray-600 leading-relaxed border border-gray-50 flex flex-col items-start">
+    <div ref={containerRef} className="bg-[#F8F9FC] rounded-lg p-3.5 text-sm text-gray-600 leading-relaxed border border-gray-50 flex flex-col items-start">
       <div ref={textRef} style={clampStyle} className="w-full whitespace-pre-wrap">
         {text}
       </div>
@@ -41,7 +49,7 @@ function ExpandableNote({ text }: { text: string }) {
       )}
       {expanded && (
         <button 
-          onClick={() => setExpanded(false)}
+          onClick={handleShowLess}
           className="text-[#1BAA04] hover:underline mt-2 text-xs font-semibold cursor-pointer"
         >
           Show less
