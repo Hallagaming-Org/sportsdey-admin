@@ -3,7 +3,7 @@ import { CgProfile } from "react-icons/cg";
 import { PauseCircle } from "lucide-react";
 import { userService, type User, type UserProfile, type UserTransaction } from "../lib/users";
 import { LuMessageSquareDot } from "react-icons/lu";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { UserProfileWalletInfo } from "./UserProfileWalletInfo";
 import { UserProfileLogNotes } from "./UserProfileLogNotes";
 import { TimePeriodDropdown, type TimePeriodOption } from "./TimePeriodDropdown";
@@ -443,17 +443,63 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 	const mobileNumber = profile?.mobileNumber || "1234567890";
 	const isUserSuspended = user?.suspended
 
-	const mockDevices = [
-		{ name: profile?.deviceType || "IPhone 11", browser: profile?.browser || "Safari", current: true },
-		{ name: "MacBook Pro M2", browser: "Chrome", current: false },
-		{ name: "Samsung Galaxy S22", browser: "Chrome Mobile", current: false }
-	];
+	const deviceHistory = useMemo(() => {
+		const list: Array<{ name: string; browser: string; current: boolean }> = [];
+		if (profile?.deviceType) {
+			list.push({
+				name: profile.deviceType,
+				browser: profile.browser || "",
+				current: true
+			});
+		}
+		const sessionDevices = profile?.recentSessions?.devices || [];
+		sessionDevices.forEach((d: any, index: number) => {
+			let name = "";
+			let browser = "";
+			let current = false;
+			if (typeof d === "string") {
+				name = d;
+				current = list.length === 0 && index === 0;
+			} else if (d && typeof d === "object") {
+				name = d.name || d.deviceName || "Unknown Device";
+				browser = d.browser || "";
+				current = d.current || d.isCurrent || (list.length === 0 && index === 0);
+			}
+			if (name && !list.some(item => item.name === name)) {
+				list.push({ name, browser, current });
+			}
+		});
+		return list;
+	}, [profile]);
 
-	const mockLoginIps = [
-		{ ip: profile?.ipAddress || "105.112.23.191", timestamp: "2025-04-02 14:30:00", current: true },
-		{ ip: "192.168.1.1", timestamp: "2025-04-01 09:15:22", current: false },
-		{ ip: "105.112.23.192", timestamp: "2025-03-28 18:45:10", current: false }
-	];
+	const ipHistory = useMemo(() => {
+		const list: Array<{ ip: string; timestamp: string; current: boolean }> = [];
+		if (profile?.ipAddress) {
+			list.push({
+				ip: profile.ipAddress,
+				timestamp: "",
+				current: true
+			});
+		}
+		const sessionIps = profile?.recentSessions?.ipAddresses || [];
+		sessionIps.forEach((ipObj: any, index: number) => {
+			let ip = "";
+			let timestamp = "";
+			let current = false;
+			if (typeof ipObj === "string") {
+				ip = ipObj;
+				current = list.length === 0 && index === 0;
+			} else if (ipObj && typeof ipObj === "object") {
+				ip = ipObj.ip || ipObj.ipAddress || "0.0.0.0";
+				timestamp = ipObj.timestamp || ipObj.createdAt || ipObj.lastActiveAt || "";
+				current = ipObj.current || ipObj.isCurrent || (list.length === 0 && index === 0);
+			}
+			if (ip && !list.some(item => item.ip === ip)) {
+				list.push({ ip, timestamp, current });
+			}
+		});
+		return list;
+	}, [profile]);
 
 	const buttonItems = [
 		{
@@ -653,7 +699,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 													}}
 													className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full shadow-sm text-xs font-medium cursor-pointer hover:bg-gray-50 transition-colors"
 												>
-													{profile?.deviceType || "IPhone 11"}
+													{profile?.deviceType || deviceHistory[0]?.name || "N/A"}
 													<ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showDevices ? 'rotate-180' : ''}`} />
 												</button>
 												
@@ -662,15 +708,19 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 														<div className="px-3 py-1.5 border-b border-gray-50 bg-gray-50/50 mb-1">
 															<span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Device History</span>
 														</div>
-														{mockDevices.map((device, i) => (
-															<div key={i} className="px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors text-left group cursor-default">
-																<div className="flex items-center justify-between gap-2">
-																	<span className="text-xs font-medium text-gray-900 group-hover:text-[#10C300] transition-colors">{device.name}</span>
-																	{device.current && <span className="text-[10px] text-[#10C300] bg-[#E8F8E5] px-1.5 py-0.5 rounded-full font-medium">Current</span>}
+														{deviceHistory.length === 0 ? (
+															<div className="px-4 py-3 text-xs text-gray-500 text-center cursor-default">No device history found</div>
+														) : (
+															deviceHistory.map((device, i) => (
+																<div key={i} className="px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors text-left group cursor-default">
+																	<div className="flex items-center justify-between gap-2">
+																		<span className="text-xs font-medium text-gray-900 group-hover:text-[#10C300] transition-colors">{device.name}</span>
+																		{device.current && <span className="text-[10px] text-[#10C300] bg-[#E8F8E5] px-1.5 py-0.5 rounded-full font-medium">Current</span>}
+																	</div>
+																	{device.browser && <span className="text-[10px] text-gray-500 block mt-0.5">{device.browser}</span>}
 																</div>
-																<span className="text-[10px] text-gray-500 block mt-0.5">{device.browser}</span>
-															</div>
-														))}
+															))
+														)}
 													</div>
 												)}
 											</div>
@@ -690,7 +740,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 													}}
 													className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full shadow-sm text-xs font-medium cursor-pointer hover:bg-gray-50 transition-colors"
 												>
-													{profile?.ipAddress || "105.112.23.191"}
+													{profile?.ipAddress || ipHistory[0]?.ip || "N/A"}
 													<ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showLoginIps ? 'rotate-180' : ''}`} />
 												</button>
 												
@@ -699,15 +749,19 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 														<div className="px-3 py-1.5 border-b border-gray-50 bg-gray-50/50 mb-1">
 															<span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">IP History</span>
 														</div>
-														{mockLoginIps.map((login, i) => (
-															<div key={i} className="px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors text-left group cursor-default">
-																<div className="flex items-center justify-between gap-2">
-																	<span className="text-xs font-medium text-gray-900 group-hover:text-[#10C300] transition-colors">{login.ip}</span>
-																	{login.current && <span className="text-[10px] text-[#10C300] bg-[#E8F8E5] px-1.5 py-0.5 rounded-full font-medium">Current</span>}
+														{ipHistory.length === 0 ? (
+															<div className="px-4 py-3 text-xs text-gray-500 text-center cursor-default">No IP history found</div>
+														) : (
+															ipHistory.map((login, i) => (
+																<div key={i} className="px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors text-left group cursor-default">
+																	<div className="flex items-center justify-between gap-2">
+																		<span className="text-xs font-medium text-gray-900 group-hover:text-[#10C300] transition-colors">{login.ip}</span>
+																		{login.current && <span className="text-[10px] text-[#10C300] bg-[#E8F8E5] px-1.5 py-0.5 rounded-full font-medium">Current</span>}
+																	</div>
+																	{login.timestamp && <span className="text-[10px] text-gray-500 block mt-0.5">{login.timestamp}</span>}
 																</div>
-																<span className="text-[10px] text-gray-500 block mt-0.5">{login.timestamp}</span>
-															</div>
-														))}
+															))
+														)}
 													</div>
 												)}
 											</div>
