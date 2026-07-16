@@ -10,7 +10,7 @@ import { TimePeriodDropdown, type TimePeriodOption } from "./TimePeriodDropdown"
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 import { toast } from "sonner";
-import { capitalizeName } from "#/lib/utils";
+import { capitalizeName, formatDeviceInfo } from "#/lib/utils";
 
 interface UserProfileModalProps {
 	user: User;
@@ -452,10 +452,10 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 				let browser = "";
 				let current = false;
 				if (typeof d === "string") {
-					name = d;
+					name = formatDeviceInfo(d);
 					current = index === 0;
 				} else if (d && typeof d === "object") {
-					name = d.name || d.deviceName || "Unknown Device";
+					name = formatDeviceInfo(d.name || d.deviceName || "Unknown Device");
 					browser = d.browser || "";
 					current = d.current || d.isCurrent || index === 0;
 				}
@@ -465,7 +465,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 			});
 		} else if (profile?.deviceType && profile.deviceType !== "N/A") {
 			list.push({
-				name: profile.deviceType,
+				name: formatDeviceInfo(profile.deviceType),
 				browser: profile.browser || "",
 				current: true
 			});
@@ -703,7 +703,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 															}}
 															className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full shadow-sm text-xs font-medium cursor-pointer hover:bg-gray-50 transition-colors"
 														>
-															{profile?.deviceType || deviceHistory[0]?.name || ""}
+															{deviceHistory[0]?.name || formatDeviceInfo(profile?.deviceType) || "N/A"}
 															<ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showDevices ? 'rotate-180' : ''}`} />
 														</button>
 														
@@ -725,8 +725,8 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 														)}
 													</>
 												) : (
-													<span className="font-medium text-gray-900 text-sm text-left block mt-1">
-														{deviceHistory[0]?.name || ""}
+													<span className="font-medium text-gray-900 text-sm text-left block mt-1" title={profile?.deviceType || undefined}>
+														{deviceHistory[0]?.name || formatDeviceInfo(profile?.deviceType) || "N/A"}
 													</span>
 												)}
 											</div>
