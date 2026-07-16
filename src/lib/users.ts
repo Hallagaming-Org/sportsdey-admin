@@ -48,6 +48,19 @@ export interface UserProfile {
 	} | null;
 }
 
+export interface LogNoteDetail {
+	id: string;
+	userId: string;
+	note: string;
+	adminId: string;
+	admin?: {
+		name: string;
+		email: string;
+		role: string;
+	} | null;
+	createdAt: string;
+}
+
 export interface WalletOverview {
 	currentBalance: number;
 	totalDeposits: number;
@@ -175,6 +188,17 @@ class UserService {
 		return fetchApi(`/user/${userId}/wallet/manual`, {
 			method: "POST",
 			body: data,
+		});
+	}
+
+	async getUserLogNotes(userId: string): Promise<{ success: boolean; data?: LogNoteDetail[]; error?: string }> {
+		return fetchApi<LogNoteDetail[]>(`/admin/log-notes/user/${userId}`);
+	}
+
+	async createUserLogNote(userId: string, note: string): Promise<{ success: boolean; data?: LogNoteDetail; error?: string }> {
+		return fetchApi<LogNoteDetail>("/admin/log-notes", {
+			method: "POST",
+			body: { userId, note },
 		});
 	}
 }
