@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   TimePeriodFilter,
   type TimePeriod,
@@ -13,7 +13,7 @@ import { ActionDropdown } from "#/components/ActionDropdown";
 import { UserProfileModal } from "#/components/UserProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import NotificationIcon from "#/assets/NotificationIcon";
-import type { User } from "#/lib/users";
+import { userService, type User } from "#/lib/users";
 import { notificationService } from "#/lib/notifications";
 import { ticketService, type TicketRecord, type TicketOutcome, type TicketTab } from "#/lib/tickets";
 import { getDateRangeForPeriod } from "#/lib/time-period";
@@ -58,6 +58,22 @@ function TicketsPage() {
   const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
   const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
+  const queryClient = useQueryClient();
+
+  const toggleSuspendMutation = useMutation({
+    mutationFn: async ({ userId }: { userId: string; isReactivate?: boolean }) => {
+      const result = await userService.toggleUserSuspend(userId);
+      if (!result.success) throw new Error(result.error || "Failed to toggle suspend status");
+      return result;
+    },
+    onSuccess: (data, variables) => {
+      toast.success(variables.isReactivate ? "User reactivated successfully" : "User suspended successfully");
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
 
   useEffect(() => {
     const handleClickOutside = () => setActionDropdown(null);
@@ -158,12 +174,13 @@ function TicketsPage() {
 
   const getMockUserFromTicket = (ticket: TicketRecord): User => {
     return {
-      id: `USR-${ticket.id}`,
+      id: ticket.userId || (ticket as any).playerId || ticket.id,
       name: ticket.playerName,
       email: `${ticket.playerName.split(" ")[0].toLowerCase()}@example.com`,
       wallet: 0,
       status: "verified",
       registeredDate: Date.now(),
+      suspended: ticket.userSuspended,
     };
   };
 
@@ -284,9 +301,12 @@ function TicketsPage() {
             },
             {
               icon: <PauseCircle className="w-4 h-4" />,
-              label: "Suspend",
+              label: actionDropdown.ticket.userSuspended ? "Reactivate" : "Suspend",
               onClick: () => {
-                toast.success(`User suspended successfully`);
+                toggleSuspendMutation.mutate({ 
+                  userId: actionDropdown.ticket.userId || (actionDropdown.ticket as any).playerId || actionDropdown.ticket.id, 
+                  isReactivate: actionDropdown.ticket.userSuspended 
+                });
                 setActionDropdown(null);
               },
             },
@@ -302,8 +322,8 @@ function TicketsPage() {
             setNoticeModalUser(user);
             setSelectedProfileUser(null);
           }}
-          onSuspend={() => {
-            toast.success(`User suspended successfully`);
+          onSuspend={(user) => {
+            toggleSuspendMutation.mutate({ userId: user.id, isReactivate: user.suspended });
           }}
         />
       )}
