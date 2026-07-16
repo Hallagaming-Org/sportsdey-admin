@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MoreHorizontal, PlusCircle, Trash2, XCircle } from "lucide-react";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 
 interface LogNote {
   id: string;
@@ -60,6 +61,11 @@ function ExpandableNote({ text }: { text: string }) {
 }
 
 export function UserProfileLogNotes({ userId }: { userId: string }) {
+  const currentUser = useCurrentUser();
+  const userRole = currentUser?.role === 'super_admin' ? 'Super Admin' : 
+                   currentUser?.role === 'csr-admin' ? 'CSR Admin' : 
+                   currentUser?.role ? currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1) : 'Admin';
+
   const [notes, setNotes] = useState<LogNote[]>([
     {
       id: "1",
@@ -124,18 +130,22 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
             >
               <PlusCircle className="w-4 h-4" /> Add a note
             </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
-              <Trash2 className="w-4 h-4" /> Delete a note
-            </button>
-            <button 
-              onClick={() => {
-                setNotes([]);
-                setIsMenuOpen(false);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-            >
-              <XCircle className="w-4 h-4" /> Clear all note
-            </button>
+            {currentUser?.role === 'super_admin' && (
+              <>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
+                  <Trash2 className="w-4 h-4" /> Delete a note
+                </button>
+                <button 
+                  onClick={() => {
+                    setNotes([]);
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <XCircle className="w-4 h-4" /> Clear all note
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -145,7 +155,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
           {isAddingNote && (
             <div className="space-y-2 group bg-[#F8F9FC] rounded-lg p-3.5 border border-gray-200">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-gray-900 text-sm">Admin</span>
+                <span className="font-bold text-gray-900 text-sm">{userRole}</span>
                 <span className="text-gray-400 text-xs">Now</span>
               </div>
               <textarea 
@@ -172,7 +182,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                     if (!newNoteText.trim() || isOverLimit) return;
                     setNotes([{
                       id: Date.now().toString(),
-                      author: "Admin",
+                      author: userRole,
                       date: new Date().toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }),
                       text: newNoteText
                     }, ...notes]);
@@ -194,13 +204,15 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
               <span className="font-bold text-gray-900 text-sm">{note.author}</span>
               <div className="flex items-center gap-2">
                 <span className="text-gray-400 text-xs">{note.date}</span>
-                {/* Show trash icon on hover */}
-                <button 
-                  onClick={() => setNotes(notes.filter(n => n.id !== note.id))}
-                  className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                {/* Show trash icon on hover only for super admin */}
+                {currentUser?.role === 'super_admin' && (
+                  <button 
+                    onClick={() => setNotes(notes.filter(n => n.id !== note.id))}
+                    className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
             <ExpandableNote text={note.text} />
