@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { MoreHorizontal, PlusCircle, Trash2, XCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Trash2, XCircle, Loader2 } from "lucide-react";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { userService } from "../lib/users";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -291,9 +291,16 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                     <button 
                       onClick={handleAddNote}
                       disabled={isOverLimit || addNoteMutation.isPending}
-                      className="px-3 py-1.5 text-xs font-medium bg-[#1BAA04] text-white rounded hover:bg-[#158903] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 text-xs font-medium bg-[#1BAA04] text-white rounded hover:bg-[#158903] cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                     >
-                      {addNoteMutation.isPending ? "Adding..." : "Add note"}
+                      {addNoteMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Adding...</span>
+                        </>
+                      ) : (
+                        "Add note"
+                      )}
                     </button>
                   </div>
                 </div>
@@ -349,17 +356,20 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                 <button
                   onClick={() => setDeleteModal({ isOpen: false, type: 'single' })}
                   disabled={deleteNoteMutation.isPending || isDeletingAll}
-                  className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                  className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteConfirm}
                   disabled={deleteNoteMutation.isPending || isDeletingAll}
-                  className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {(deleteNoteMutation.isPending || isDeletingAll) ? (
-                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Deleting...</span>
+                    </>
                   ) : (
                     "Yes, delete"
                   )}
