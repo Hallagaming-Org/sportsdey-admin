@@ -136,12 +136,11 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
   const handleDeleteConfirm = async () => {
     if (deleteModal.type === 'single' && deleteModal.noteId) {
       deleteNoteMutation.mutate(deleteModal.noteId);
-    } else if (deleteModal.type === 'all' && rawNotes) {
+    } else if (deleteModal.type === 'all') {
       setIsDeletingAll(true);
       try {
-        for (const note of rawNotes) {
-           await userService.deleteUserLogNote(note.id);
-        }
+        const res = await userService.deleteAllUserLogNotes(userId);
+        if (!res.success) throw new Error(res.error || "Failed to clear all log notes");
         queryClient.invalidateQueries({ queryKey: ["user-log-notes", userId] });
         toast.success("All log notes deleted successfully");
         setDeleteModal({ isOpen: false, type: 'single' });
