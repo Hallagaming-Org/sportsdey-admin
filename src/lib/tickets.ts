@@ -50,6 +50,28 @@ class TicketService {
 			`/admin/tickets?${searchParams.toString()}`,
 		);
 	}
+
+	async getUserTickets(
+		userId: string,
+		params: {
+			page?: number;
+			limit?: number;
+			type?: string;
+			fromDate?: string;
+			toDate?: string;
+		},
+	): Promise<{ success: boolean; data?: TicketsResponse; error?: string }> {
+		const searchParams = new URLSearchParams();
+		if (params.page) searchParams.set("page", params.page.toString());
+		if (params.limit) searchParams.set("limit", params.limit.toString());
+		searchParams.set("type", params.type || "all");
+		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params.toDate) searchParams.set("toDate", params.toDate);
+
+		return fetchApi<TicketsResponse>(
+			`/admin/tickets/user/${userId}?${searchParams.toString()}`,
+		);
+	}
 }
 
 export const ticketService = new TicketService();
