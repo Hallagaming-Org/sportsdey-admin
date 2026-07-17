@@ -307,8 +307,16 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
               )}
 
               {notes.length === 0 && !isAddingNote ? (
-                <div className="flex justify-center items-center h-32">
-                  <span className="text-gray-400 text-sm">No log notes found</span>
+                <div className="flex flex-col items-center justify-center h-48 py-8 text-center border-2 border-dashed border-gray-100 rounded-xl my-auto">
+                
+                  <p className="text-sm font-semibold text-gray-700">No log notes found</p>
+                  <button
+                    onClick={() => setIsAddingNote(true)}
+                    className="text-xs font-medium text-[#1BAA04] hover:underline mt-1.5 cursor-pointer flex items-center gap-1"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    Click here to add a log note
+                  </button>
                 </div>
               ) : (
                 notes.map((note) => (
