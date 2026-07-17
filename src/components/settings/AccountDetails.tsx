@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ArrowUpFromLine } from "lucide-react";
 import { toast } from "sonner";
 import { type Admin } from "@/lib/auth";
+import { API_BASE } from "#/lib/api";
 
 interface AccountDetailsProps {
 	admin: Admin | null;
@@ -55,7 +56,7 @@ export function AccountDetails({ admin }: AccountDetailsProps) {
 		setIsSaving(true);
 		try {
 			const response = await fetch(
-				`${import.meta.env.VITE_API_BASE || "https://staging-api.sportsdey.com"}/admin/me`,
+				`${API_BASE}/admin/me`,
 				{
 					method: "PATCH",
 					headers: {
@@ -158,7 +159,7 @@ export function AccountDetails({ admin }: AccountDetailsProps) {
 
 		xhr.open(
 			"PATCH",
-			`${import.meta.env.VITE_API_BASE || "https://staging-api.sportsdey.com"}/admin/me/profile-picture`,
+			`${API_BASE}/admin/me/profile-picture`,
 		);
 		xhr.withCredentials = true;
 		xhr.send(formData);
