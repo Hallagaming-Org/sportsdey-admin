@@ -236,18 +236,18 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h4 className="font-bold text-xl text-gray-900 mb-6">Tickets (bet) Summary</h4>
         
-        <div className="overflow-x-auto custom-scrollbar">
+        <div className="overflow-x-auto overflow-y-auto max-h-[380px] custom-scrollbar">
           <table className="min-w-full text-sm whitespace-nowrap">
-            <thead>
+            <thead className="sticky top-0 z-10 bg-white shadow-[0_1px_0_#f3f4f6]">
               <tr className="border-b border-gray-100 text-gray-500 text-xs font-semibold text-left">
-                <th className="pb-4 pr-4">Bet ID</th>
-                <th className="pb-4 pr-4">Date &amp; Time</th>
-                <th className="pb-4 pr-4">Amount</th>
-                <th className="pb-4 pr-4">Odds Game type</th>
-                <th className="pb-4 pr-4">Potential win</th>
-                <th className="pb-4 pr-4">Pay out</th>
-                <th className="pb-4 pr-4">Status</th>
-                <th className="pb-4 text-right"></th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Bet ID</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Date &amp; Time</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Amount</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Odds Game type</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Potential win</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Pay out</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Status</th>
+                <th className="pb-4 pt-2 bg-white text-right"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
