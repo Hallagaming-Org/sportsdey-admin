@@ -1,4 +1,4 @@
-import { X, AlertTriangle, MessageCircle, Wallet, ChevronDown, Copy } from "lucide-react";
+import { X, AlertTriangle, MessageCircle, Wallet, ChevronDown, Copy, History } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { PauseCircle } from "lucide-react";
 import { type User, type UserProfile } from "../lib/users";
@@ -6,6 +6,7 @@ import { LuMessageSquareDot } from "react-icons/lu";
 import { useState, useMemo } from "react";
 import { UserProfileWalletInfo } from "./UserProfileWalletInfo";
 import { UserProfileLogNotes } from "./UserProfileLogNotes";
+import { UserProfileHistory } from "./UserProfileHistory";
 import { toast } from "sonner";
 import { capitalizeName, formatDeviceInfo } from "#/lib/utils";
 
@@ -51,7 +52,7 @@ function Skeleton({ className }: { className?: string }) {
 // }
 
 export function UserProfileModal({ user, profile, isLoading, onClose, onSendNotice, onSuspend }: UserProfileModalProps) {
-	const [activeView, setActiveView] = useState<"personal" | "wallet">("personal");
+	const [activeView, setActiveView] = useState<"personal" | "wallet" | "history">("personal");
 	const [showDevices, setShowDevices] = useState(false);
 	const [showLoginIps, setShowLoginIps] = useState(false);
 	const displayData = profile || user;
@@ -143,6 +144,12 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-[#EDF1F9] text-gray-500"
 		},
 		{
+			label: "User history",
+			icon: <History className={`w-4 h-4 ${activeView === 'history' ? 'text-white' : 'text-gray-500'}`} />,
+			onClick: () => setActiveView("history"),
+			className: activeView === "history" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-[#EDF1F9] text-gray-500"
+		},
+		{
 			label: "Send a notice",
 			icon: <MessageCircle className="w-4 h-4 text-gray-500" />,
 			onClick: () => onSendNotice(user),
@@ -157,7 +164,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 			onClick={onClose}
 		>
 			<div
-				className="w-full max-w-[760px] rounded-[20px] bg-[#F2F4F7] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+				className="w-full max-w-[850px] rounded-[20px] bg-[#F2F4F7] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Header */}
@@ -402,8 +409,10 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 
 							<UserProfileLogNotes userId={user.id} />
 						</div>
-					) : (
+					) : activeView === "wallet" ? (
 						<UserProfileWalletInfo userId={user.id} balance={walletBalance} />
+					) : (
+						<UserProfileHistory userId={user.id} />
 					)}
 				</div>
 			</div>
