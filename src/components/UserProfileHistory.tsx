@@ -10,6 +10,10 @@ interface UserProfileHistoryProps {
   userId: string;
 }
 
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
+}
+
 export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("All");
   const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
@@ -140,27 +144,43 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div>
             <p className="text-gray-500 text-sm mb-1">Current Bets placed</p>
-            <p className="text-xl md:text-2xl font-bold text-gray-900">
-              {isOverviewLoading ? "..." : formatCurrency(walletOverview?.currentBalance ?? 1500)}
-            </p>
+            {isOverviewLoading ? (
+              <Skeleton className="h-7 w-28 mt-1" />
+            ) : (
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {formatCurrency(walletOverview?.currentBalance ?? 1500)}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-gray-500 text-sm mb-1">Total Games won</p>
-            <p className="text-xl md:text-2xl font-bold text-gray-900">
-              {isOverviewLoading ? "..." : formatCurrency(walletOverview?.totalDeposits ?? 1500)}
-            </p>
+            {isOverviewLoading ? (
+              <Skeleton className="h-7 w-28 mt-1" />
+            ) : (
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {formatCurrency(walletOverview?.totalDeposits ?? 1500)}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-gray-500 text-sm mb-1">Total Games Lost</p>
-            <p className="text-xl md:text-2xl font-bold text-gray-900">
-              {isOverviewLoading ? "..." : formatCurrency(walletOverview?.totalWithdrawals ?? 1500)}
-            </p>
+            {isOverviewLoading ? (
+              <Skeleton className="h-7 w-28 mt-1" />
+            ) : (
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {formatCurrency(walletOverview?.totalWithdrawals ?? 1500)}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-gray-500 text-sm mb-1">Net Position (GGR)</p>
-            <p className="text-xl md:text-2xl font-bold text-gray-900">
-              {isOverviewLoading ? "..." : formatCurrency(walletOverview?.netPosition ?? 1500)}
-            </p>
+            {isOverviewLoading ? (
+              <Skeleton className="h-7 w-28 mt-1" />
+            ) : (
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {formatCurrency(walletOverview?.netPosition ?? 1500)}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -185,16 +205,19 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {isTicketsLoading ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td className="py-4 pr-4"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                    <td className="py-4 pr-4"><div className="h-4 bg-gray-200 rounded w-24" /></td>
-                    <td className="py-4 pr-4"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                    <td className="py-4 pr-4"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                    <td className="py-4 pr-4"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                    <td className="py-4 pr-4"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                    <td className="py-4 pr-4"><div className="h-6 bg-gray-200 rounded-full w-16" /></td>
-                    <td className="py-4 text-right"><div className="h-4 bg-gray-200 rounded w-4 inline-block" /></td>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="border-b border-gray-50">
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-16" /></td>
+                    <td className="py-4 pr-4">
+                      <Skeleton className="h-4 w-24 mb-1" />
+                      <Skeleton className="h-3 w-16" />
+                    </td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
+                    <td className="py-4 text-right"><Skeleton className="h-4 w-4 ml-auto" /></td>
                   </tr>
                 ))
               ) : (
