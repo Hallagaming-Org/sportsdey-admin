@@ -1,4 +1,7 @@
-let API_BASE = import.meta.env.VITE_API_BASE as string;
+let API_BASE = (import.meta.env.VITE_API_BASE as string) || "https://api.sportsdey.com";
+if (API_BASE === "/api") {
+	API_BASE = "https://api.sportsdey.com";
+}
 if (import.meta.env.DEV && import.meta.env.MODE === "staging") {
 	API_BASE = "/staging-api";
 }
