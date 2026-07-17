@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { MoreHorizontal } from "lucide-react";
-import { TimePeriodDropdown, type TimePeriodOption } from "./TimePeriodDropdown";
+import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
 import { ticketService, type TicketRecord } from "../lib/tickets";
 import { userService } from "../lib/users";
 import { getDateRangeForPeriod } from "#/lib/time-period";
@@ -11,7 +11,7 @@ interface UserProfileHistoryProps {
 }
 
 export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
-  const [timePeriod, setTimePeriod] = useState<TimePeriodOption>("All");
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("All");
   const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
   const [page, setPage] = useState(1);
   const limit = 6;
@@ -129,11 +129,10 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
         <div className="flex items-center justify-between mb-6">
           <h4 className="font-bold text-xl text-gray-900">Ticket Overview</h4>
           <div className="flex items-center gap-2">
-            <TimePeriodDropdown
-              value={timePeriod}
-              onChange={(p, r) => {
-                setTimePeriod(p);
-                setCustomRange(r);
+            <TimePeriodFilter
+              onFilterChange={(period, range) => {
+                setTimePeriod(period);
+                setCustomRange(range);
               }}
             />
           </div>
