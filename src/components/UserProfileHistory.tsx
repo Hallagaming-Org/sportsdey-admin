@@ -18,9 +18,9 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("All");
   const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
   const [page, setPage] = useState(1);
-  const limit = 6;
+  const limit = 10;
 
-  const { fromDate, toDate } = getDateRangeForPeriod(timePeriod, customRange, { output: "iso" });
+  const { fromDate, toDate } = getDateRangeForPeriod(timePeriod, customRange, { output: "date" });
 
   const { data: walletOverview, isLoading: isOverviewLoading } = useQuery({
     queryKey: ["user-history-overview", userId, fromDate, toDate],
@@ -35,10 +35,10 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
   const { data: ticketsData, isLoading: isTicketsLoading } = useQuery({
     queryKey: ["user-history-tickets", userId, page, fromDate, toDate],
     queryFn: async () => {
-      const res = await ticketService.getTickets({
-        search: userId,
+      const res = await ticketService.getUserTickets(userId, {
         page,
         limit,
+        type: "all",
         fromDate,
         toDate,
       });
