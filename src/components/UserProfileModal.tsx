@@ -60,7 +60,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 	const walletBalance = profile?.wallet?.balance ?? user.wallet;
 	// const lastTopUp = profile?.lastTopUp ? new Date(profile.lastTopUp) : null;
 	const country = profile?.country || "Nigeria";
-	const mobileNumber = profile?.mobileNumber || "1234567890";
+	const mobileNumber = profile?.mobileNumber;
 	const isUserSuspended = user?.suspended
 
 	const deviceHistory = useMemo(() => {
