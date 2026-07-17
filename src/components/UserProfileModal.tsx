@@ -331,102 +331,102 @@ function WalletTab({ userId }: { userId: string }) {
 
 // ─── Contact Tab (existing profile layout) ─────────────────────────────────────
 
-function ContactTab({
-	displayData,
-	loading,
-	status,
-	registeredDate,
-	walletBalance,
-	lastTopUp,
-	country,
-	mobileNumber,
-}: {
-	displayData: User | UserProfile;
-	loading: boolean;
-	status: string;
-	registeredDate: number | string | null;
-	walletBalance: number;
-	lastTopUp: Date | null;
-	country: string;
-	mobileNumber: string;
-}) {
-	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-			<div className="bg-white h-[280px] rounded-2xl p-5 shadow-sm">
-				<h4 className="font-bold text-gray-900 mb-4">Personal Details</h4>
-				<div className="space-y-4 text-sm">
-					<div className="flex justify-between items-start">
-						<span className="text-gray-500 text-xs">Full Name:</span>
-						{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-xs text-left">{displayData.name}</span>}
-					</div>
-					<div className="flex justify-between items-start">
-						<span className="text-gray-500 text-xs">Email Address:</span>
-						{loading ? <Skeleton className="h-3 w-32" /> : <span className="font-normal text-gray-900 text-xs text-left underline underline-offset-2">{displayData.email}</span>}
-					</div>
-					<div className="flex justify-between items-start">
-						<span className="text-gray-500 text-xs">Mobile number:</span>
-						{loading ? <Skeleton className="h-3 w-20" /> : <span className="font-normal text-gray-900 text-xs text-left">{mobileNumber}</span>}
-					</div>
-					<div className="flex justify-between items-center">
-						<span className="text-gray-500 text-xs">Status:</span>
-						{loading ? (
-							<Skeleton className="h-6 w-16 rounded-full" />
-						) : (
-							<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-								status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
-								status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
-								"bg-[#FEECEB] text-[#EE201C]"
-							}`}>
-								{status === "verified" ? "Verified" : status === "pending_verification" ? "Pending" : "Not Verified"}
-							</span>
-						)}
-					</div>
-					<div className="flex justify-between items-start">
-						<span className="text-gray-500 text-xs">Country:</span>
-						{loading ? <Skeleton className="h-3 w-16" /> : <span className="font-normal text-gray-900 text-xs text-left">{country}</span>}
-					</div>
-					<div className="flex justify-between items-start">
-						<span className="text-gray-500 text-xs">Registration date:</span>
-						{loading ? (
-							<Skeleton className="h-3 w-24" />
-						) : (
-							<span className="font-normal text-gray-900 text-xs text-left">
-								{registeredDate ? new Date(registeredDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-"}
-							</span>
-						)}
-					</div>
-				</div>
-			</div>
+// function ContactTab({
+// 	displayData,
+// 	loading,
+// 	status,
+// 	registeredDate,
+// 	walletBalance,
+// 	lastTopUp,
+// 	country,
+// 	mobileNumber,
+// }: {
+// 	displayData: User | UserProfile;
+// 	loading: boolean;
+// 	status: string;
+// 	registeredDate: number | string | null;
+// 	walletBalance: number;
+// 	lastTopUp: Date | null;
+// 	country: string;
+// 	mobileNumber: string;
+// }) {
+// 	return (
+// 		<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+// 			<div className="bg-white h-[280px] rounded-2xl p-5 shadow-sm">
+// 				<h4 className="font-bold text-gray-900 mb-4">Personal Details</h4>
+// 				<div className="space-y-4 text-sm">
+// 					<div className="flex justify-between items-start">
+// 						<span className="text-gray-500 text-xs">Full Name:</span>
+// 						{loading ? <Skeleton className="h-3 w-24" /> : <span className="font-normal text-gray-900 text-xs text-left">{displayData.name}</span>}
+// 					</div>
+// 					<div className="flex justify-between items-start">
+// 						<span className="text-gray-500 text-xs">Email Address:</span>
+// 						{loading ? <Skeleton className="h-3 w-32" /> : <span className="font-normal text-gray-900 text-xs text-left underline underline-offset-2">{displayData.email}</span>}
+// 					</div>
+// 					<div className="flex justify-between items-start">
+// 						<span className="text-gray-500 text-xs">Mobile number:</span>
+// 						{loading ? <Skeleton className="h-3 w-20" /> : <span className="font-normal text-gray-900 text-xs text-left">{mobileNumber}</span>}
+// 					</div>
+// 					<div className="flex justify-between items-center">
+// 						<span className="text-gray-500 text-xs">Status:</span>
+// 						{loading ? (
+// 							<Skeleton className="h-6 w-16 rounded-full" />
+// 						) : (
+// 							<span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+// 								status === "verified" ? "bg-[#E8F8E5] text-[#10C300]" :
+// 								status === "pending_verification" ? "bg-[#FFF8E5] text-[#FFB000]" :
+// 								"bg-[#FEECEB] text-[#EE201C]"
+// 							}`}>
+// 								{status === "verified" ? "Verified" : status === "pending_verification" ? "Pending" : "Not Verified"}
+// 							</span>
+// 						)}
+// 					</div>
+// 					<div className="flex justify-between items-start">
+// 						<span className="text-gray-500 text-xs">Country:</span>
+// 						{loading ? <Skeleton className="h-3 w-16" /> : <span className="font-normal text-gray-900 text-xs text-left">{country}</span>}
+// 					</div>
+// 					<div className="flex justify-between items-start">
+// 						<span className="text-gray-500 text-xs">Registration date:</span>
+// 						{loading ? (
+// 							<Skeleton className="h-3 w-24" />
+// 						) : (
+// 							<span className="font-normal text-gray-900 text-xs text-left">
+// 								{registeredDate ? new Date(registeredDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-"}
+// 							</span>
+// 						)}
+// 					</div>
+// 				</div>
+// 			</div>
 
-			<div className="h-[280px] bg-white rounded-2xl p-5 shadow-sm">
-				<h4 className="font-bold text-gray-900 mb-4">User's Wallet</h4>
-				<div className="space-y-4 text-sm">
-					<div>
-						<span className="block text-gray-500 mb-1">Current Balance</span>
-						{loading ? (
-							<Skeleton className="h-8 w-28" />
-						) : (
-							<div className="inline-flex items-center gap-1 text-gray-900">
-								<span className="text-xs font-medium">₦</span>
-								<span className="text-2xl font-bold">{walletBalance.toLocaleString()}</span>
-							</div>
-						)}
-					</div>
-					<div className="flex justify-between items-start pt-2">
-						<span className="text-gray-500">Last Top-up:</span>
-						{loading ? (
-							<Skeleton className="h-3 w-24" />
-						) : (
-							<span className="font-normal text-gray-900 text-left">
-								{lastTopUp ? lastTopUp.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-"}
-							</span>
-						)}
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-}
+// 			<div className="h-[280px] bg-white rounded-2xl p-5 shadow-sm">
+// 				<h4 className="font-bold text-gray-900 mb-4">User's Wallet</h4>
+// 				<div className="space-y-4 text-sm">
+// 					<div>
+// 						<span className="block text-gray-500 mb-1">Current Balance</span>
+// 						{loading ? (
+// 							<Skeleton className="h-8 w-28" />
+// 						) : (
+// 							<div className="inline-flex items-center gap-1 text-gray-900">
+// 								<span className="text-xs font-medium">₦</span>
+// 								<span className="text-2xl font-bold">{walletBalance.toLocaleString()}</span>
+// 							</div>
+// 						)}
+// 					</div>
+// 					<div className="flex justify-between items-start pt-2">
+// 						<span className="text-gray-500">Last Top-up:</span>
+// 						{loading ? (
+// 							<Skeleton className="h-3 w-24" />
+// 						) : (
+// 							<span className="font-normal text-gray-900 text-left">
+// 								{lastTopUp ? lastTopUp.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-"}
+// 							</span>
+// 						)}
+// 					</div>
+// 				</div>
+// 			</div>
+// 		</div>
+// 	);
+// }
 
 // ─── Main Modal ────────────────────────────────────────────────────────────────
 
@@ -630,7 +630,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Email Address:</span>
-										{loading ? <Skeleton className="h-4 w-32" /> : <span className="font-medium text-gray-900 text-sm text-left underline underline-offset-2">{displayData.email}</span>}
+										{loading ? <Skeleton className="h-4 w-32" /> : <span className="font-medium text-gray-900 text-sm text-left underline underline-offset-2">{displayData.email || "N/A"}</span>}
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">user Id:</span>
@@ -658,7 +658,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Mobile number:</span>
-										{loading ? <Skeleton className="h-4 w-20" /> : <span className="font-medium text-gray-900 text-sm text-left">{mobileNumber}</span>}
+										{loading ? <Skeleton className="h-4 w-20" /> : <span className="font-medium text-gray-900 text-sm text-left">{mobileNumber || "N/A"}</span>}
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Status:</span>
@@ -681,11 +681,11 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Date of Birth:</span>
-										{loading ? <Skeleton className="h-4 w-24" /> : <span className="font-medium text-gray-900 text-sm text-left">{profile?.dob || "15th of February, 2009"}</span>}
+										{loading ? <Skeleton className="h-4 w-24" /> : <span className="font-medium text-gray-900 text-sm text-left">{profile?.dob || "N/A"}</span>}
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Country:</span>
-										{loading ? <Skeleton className="h-4 w-16" /> : <span className="font-medium text-gray-900 text-sm text-left">{country}</span>}
+										{loading ? <Skeleton className="h-4 w-16" /> : <span className="font-medium text-gray-900 text-sm text-left">{country || "N/A"}</span>}
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs mt-1">Device info:</span>
