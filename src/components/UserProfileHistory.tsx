@@ -106,19 +106,65 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
     },
   ];
 
-  const ticketsToDisplay = (ticketsData?.tickets && ticketsData.tickets.length > 0)
-    ? ticketsData.tickets.map((t: TicketRecord) => ({
-        id: t.id,
-        dateTime: t.createdAt ? new Date(t.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }) : "Aug 8, 2025",
-        amount: `₦${Number(t.betAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-        oddsGameType: t.gameType || "Casino",
-        potentialWin: t.outcome === "Won" ? `₦${Number(t.betAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "₦0",
-        payOut: t.outcome === "Won" ? `₦${Number(t.betAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "₦0",
-        status: t.outcome === "Won" ? "Won" : t.outcome === "Active" ? "Pending" : "Lost",
-      }))
+  const formatMoney = (val: string | number | null | undefined) => {
+    if (val == null || val === "") return "₦0.00";
+    if (typeof val === "string") {
+      const trimmed = val.trim();
+      if (trimmed.startsWith("₦") || trimmed.startsWith("$")) {
+        return trimmed;
+      }
+      const num = parseFloat(trimmed.replace(/[^0-9.-]+/g, ""));
+      if (isNaN(num)) return trimmed;
+      return `₦${num.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    if (typeof val === "number") {
+      return `₦${val.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    return String(val);
+  };
+
+  const formatTicketDate = (dateStr?: string) => {
+    if (!dateStr) return "—";
+    if (dateStr.includes(",")) {
+      const parts = dateStr.split(",");
+      if (parts.length >= 3) {
+        return `${parts[0]}, ${parts[1]}\n${parts.slice(2).join(",").trim()}`;
+      } else if (parts.length === 2) {
+        return `${parts[0]}\n${parts[1].trim()}`;
+      }
+    }
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      const datePart = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      const timePart = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
+      return `${datePart}\n${timePart}`;
+    }
+    return dateStr;
+  };
+
+  const rawTicketList = ticketsData?.tickets;
+  const hasLoadedTickets = Array.isArray(rawTicketList);
+
+  const ticketsToDisplay = hasLoadedTickets
+    ? rawTicketList.map((t: TicketRecord) => {
+        const amount = formatMoney(t.betAmount);
+        const potWin = (t as any).potentialWin != null ? formatMoney((t as any).potentialWin) : (t.outcome === "Won" ? amount : "₦0");
+        const payOut = (t as any).payOut != null ? formatMoney((t as any).payOut) : (t.outcome === "Won" ? amount : "₦0");
+        const status = t.outcome === "Won" ? "Won" : (t.outcome === "Active" || (t.outcome as any) === "Pending") ? "Pending" : "Lost";
+
+        return {
+          id: t.id,
+          dateTime: formatTicketDate(t.createdAt),
+          amount,
+          oddsGameType: t.gameType || "Casino",
+          potentialWin: potWin,
+          payOut,
+          status,
+        };
+      })
     : sampleTickets;
 
-  const totalPages = ticketsData?.pagination?.totalPages || 10;
+  const totalPages = ticketsData?.pagination?.totalPages || (hasLoadedTickets ? 1 : 10);
   const currentPage = ticketsData?.pagination?.page || page;
 
   const formatCurrency = (val?: number | null) => {
@@ -220,6 +266,12 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                     <td className="py-4 text-right"><Skeleton className="h-4 w-4 ml-auto" /></td>
                   </tr>
                 ))
+              ) : ticketsToDisplay.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-8 text-center text-gray-400 text-sm">
+                    No ticket history found for this user
+                  </td>
+                </tr>
               ) : (
                 ticketsToDisplay.map((ticket, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
