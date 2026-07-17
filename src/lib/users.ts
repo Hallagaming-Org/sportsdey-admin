@@ -207,6 +207,12 @@ class UserService {
 			method: "DELETE",
 		});
 	}
+
+	async deleteAllUserLogNotes(userId: string): Promise<{ success: boolean; error?: string }> {
+		return fetchApi(`/admin/log-notes/user/${userId}`, {
+			method: "DELETE",
+		});
+	}
 }
 
 export const userService = new UserService();
