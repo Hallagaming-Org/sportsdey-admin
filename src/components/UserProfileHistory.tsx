@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
 import { ticketService, type TicketRecord } from "../lib/tickets";
 import { userService } from "../lib/users";
@@ -275,7 +276,25 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
               ) : (
                 ticketsToDisplay.map((ticket, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4 pr-4 font-mono text-xs text-gray-900">{ticket.id}</td>
+                    <td className="py-4 pr-4">
+                      <div className="flex items-center gap-1.5 font-mono text-xs">
+                        <span className="font-medium text-gray-900 truncate max-w-[90px]" title={ticket.id}>
+                          {ticket.id.length > 10 ? `${ticket.id.substring(0, 10)}...` : ticket.id}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(ticket.id);
+                            toast.success("Bet ID copied to clipboard");
+                          }}
+                          className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                          title="Copy Bet ID"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
                     <td className="py-4 pr-4 text-xs">
                       {ticket.dateTime.includes("\n") ? (
                         <>
