@@ -204,12 +204,12 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
       <div className="flex items-center justify-between mb-4 relative flex-shrink-0" ref={menuRef}>
         <h4 className="font-bold text-xl text-gray-900">Log Note</h4>
-        <button 
+       {canAddLogNote && <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="p-1 rounded-full hover:bg-gray-100 transition-colors text-gray-500 cursor-pointer"
         >
           <MoreHorizontal className="w-5 h-5" />
-        </button>
+        </button>}
 
         {isMenuOpen && canAddLogNote && (
           <div className="absolute right-0 top-8 z-10 w-48 bg-white rounded-xl shadow-[0_4px_20px_0_rgba(0,0,0,0.1)] border border-gray-100 py-2">
