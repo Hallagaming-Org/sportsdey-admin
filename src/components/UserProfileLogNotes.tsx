@@ -67,7 +67,7 @@ function ExpandableNote({ text }: { text: string }) {
 
 export function UserProfileLogNotes({ userId }: { userId: string }) {
   const currentUser = useCurrentUser();
-  const canAddLogNote = useHasPermission("add_log_note");
+  const canAddLogNote = useHasPermission("create_log_note");
   const queryClient = useQueryClient();
   const userRole = currentUser?.role === 'super_admin' ? 'Super Admin' : 
                    currentUser?.role === 'csr-admin' ? 'CSR Admin' : 
