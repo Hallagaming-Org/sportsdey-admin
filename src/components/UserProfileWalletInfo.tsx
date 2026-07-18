@@ -3,6 +3,7 @@ import { DataTable, type Column } from "./DataTable";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
 import { ChevronDown, Plus, Minus } from "lucide-react";
 import { SuccessModal } from "./SuccessModal";
+import { useHasPermission } from "../hooks/useCurrentUser";
 
 interface UserProfileWalletInfoProps {
   userId: string;
@@ -10,6 +11,7 @@ interface UserProfileWalletInfoProps {
 }
 
 export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfoProps) {
+  const canManualCreditDebit = useHasPermission("manual_credit_debit");
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
   const [transactionType, setTransactionType] = useState<"credit" | "debit">("credit");
   const [amount, setAmount] = useState("");
@@ -106,80 +108,82 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h4 className="font-bold text-xl text-gray-900">Manual Credit/Debits</h4>
-        <p className="text-gray-500 text-sm mb-6">Manually adjust user wallet balance</p>
-        
-        <div className="flex items-end gap-6 flex-wrap lg:flex-nowrap">
-          <div className="flex-none">
-            <p className="text-gray-700 text-sm font-medium mb-2">Transaction Type</p>
-            <div className="flex items-center gap-2">
-              <button 
-                type="button"
-                onClick={() => setTransactionType("credit")}
-                className={`inline-flex items-center gap-2 px-2 w-[84px] py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
-                  transactionType === "credit" ? "border-[#10C300] bg-[#F7FEF7] text-[#10C300]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                <div className="w-[14px] h-[14px] rounded-full flex items-center justify-center border border-[#1BAA04]">
-                  <Plus className="w-4 h-4" />
-                </div>
-                Credit
-              </button>
-              <button 
-                type="button"
-                onClick={() => setTransactionType("debit")}
-                className={`inline-flex items-center gap-2 px-2 w-[84px] py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
-                  transactionType === "debit" ? "border-[#EE201C] bg-[#FEECEB] text-[#EE201C]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                <div className="w-[14px] h-[14px] rounded-full flex items-center justify-center border border-[#F3442D]">
-                  <Minus className="w-4 h-4 text-[#F3442D]" />
-                </div>
-                Debit
-              </button>
+      {canManualCreditDebit && (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h4 className="font-bold text-xl text-gray-900">Manual Credit/Debits</h4>
+          <p className="text-gray-500 text-sm mb-6">Manually adjust user wallet balance</p>
+          
+          <div className="flex items-end gap-6 flex-wrap lg:flex-nowrap">
+            <div className="flex-none">
+              <p className="text-gray-700 text-sm font-medium mb-2">Transaction Type</p>
+              <div className="flex items-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => setTransactionType("credit")}
+                  className={`inline-flex items-center gap-2 px-2 w-[84px] py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
+                    transactionType === "credit" ? "border-[#10C300] bg-[#F7FEF7] text-[#10C300]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="w-[14px] h-[14px] rounded-full flex items-center justify-center border border-[#1BAA04]">
+                    <Plus className="w-4 h-4" />
+                  </div>
+                  Credit
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setTransactionType("debit")}
+                  className={`inline-flex items-center gap-2 px-2 w-[84px] py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
+                    transactionType === "debit" ? "border-[#EE201C] bg-[#FEECEB] text-[#EE201C]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="w-[14px] h-[14px] rounded-full flex items-center justify-center border border-[#F3442D]">
+                    <Minus className="w-4 h-4 text-[#F3442D]" />
+                  </div>
+                  Debit
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-[200px]">
+              <p className="text-gray-700 text-sm font-medium mb-2">Amount (₦)</p>
+              <input 
+                type="number" 
+                placeholder="Enter amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[#10C300] focus:outline-none focus:ring-1 focus:ring-[#10C300]"
+              />
+            </div>
+
+            <div className="flex-1 w-[207px]">
+              <p className="text-gray-700 text-sm font-medium mb-2">Reasons</p>
+              <div className="relative">
+                <select
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="w-full appearance-none rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#10C300] focus:outline-none focus:ring-1 focus:ring-[#10C300] cursor-pointer"
+                >
+                  <option value="" disabled>Select a reason</option>
+                  <option value="bonus">Bonus</option>
+                  <option value="refund">Refund</option>
+                  <option value="correction">Correction</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 w-4 h-4 -translate-y-1/2 text-gray-500 pointer-events-none" />
+              </div>
             </div>
           </div>
 
-          <div className="flex-1 min-w-[200px]">
-            <p className="text-gray-700 text-sm font-medium mb-2">Amount (₦)</p>
-            <input 
-              type="number" 
-              placeholder="Enter amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[#10C300] focus:outline-none focus:ring-1 focus:ring-[#10C300]"
-            />
-          </div>
-
-          <div className="flex-1 w-[207px]">
-            <p className="text-gray-700 text-sm font-medium mb-2">Reasons</p>
-            <div className="relative">
-              <select
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="w-full appearance-none rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#10C300] focus:outline-none focus:ring-1 focus:ring-[#10C300] cursor-pointer"
-              >
-                <option value="" disabled>Select a reason</option>
-                <option value="bonus">Bonus</option>
-                <option value="refund">Refund</option>
-                <option value="correction">Correction</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 w-4 h-4 -translate-y-1/2 text-gray-500 pointer-events-none" />
-            </div>
+          <div className="mt-8 flex justify-center">
+            <button 
+              onClick={handleProcessTransaction}
+              className="bg-[#1BAA04] text-white font-bold px-8 py-3 rounded-[6px] transition-colors cursor-pointer disabled:opacity-50"
+              disabled={!amount}
+            >
+              Process Transaction
+            </button>
           </div>
         </div>
-
-        <div className="mt-8 flex justify-center">
-          <button 
-            onClick={handleProcessTransaction}
-            className="bg-[#1BAA04] text-white font-bold px-8 py-3 rounded-[6px] transition-colors cursor-pointer disabled:opacity-50"
-            disabled={!amount}
-          >
-            Process Transaction
-          </button>
-        </div>
-      </div>
+      )}
 
       <SuccessModal 
         open={showSuccessModal} 
