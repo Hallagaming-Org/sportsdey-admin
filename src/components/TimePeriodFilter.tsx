@@ -57,6 +57,7 @@ export function TimePeriodFilter({ onFilterChange, buttonClassName }: TimePeriod
 	return (
 		<div className="relative" ref={dropdownRef}>
 			<button 
+				type="button"
 				onClick={() => setIsOpen(!isOpen)}
 				className={buttonClassName || defaultButtonClass}
 			>
@@ -75,6 +76,7 @@ export function TimePeriodFilter({ onFilterChange, buttonClassName }: TimePeriod
 							{(["All", "Today", "Yesterday", "Last week", "Last month", "Custom"] as TimePeriod[]).map((p) => (
 								<button 
 									key={p} 
+									type="button"
 									onClick={() => handleSelect(p)}
 									className={`text-left px-3 py-2 text-sm rounded-md transition-colors ${
 										selected === p ? "bg-[#1BAA04]/10 text-[#1BAA04] font-medium" : "text-gray-700 hover:bg-gray-50 font-medium"
@@ -110,12 +112,14 @@ export function TimePeriodFilter({ onFilterChange, buttonClassName }: TimePeriod
 							</div>
 							<div className="flex items-center gap-2 mt-1">
 								<button 
+									type="button"
 									onClick={() => setShowCustom(false)} 
 									className="flex-1 rounded-lg border border-gray-200 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
 								>
 									Back
 								</button>
 								<button 
+									type="button"
 									onClick={handleCustomApply} 
 									disabled={!startDate || !endDate} 
 									className="flex-1 rounded-lg bg-[#1BAA04] py-2 text-xs font-medium text-white hover:bg-[#0ea800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
