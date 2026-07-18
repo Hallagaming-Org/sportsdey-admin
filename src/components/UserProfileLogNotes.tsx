@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { MoreHorizontal, PlusCircle, Trash2, XCircle, Loader2 } from "lucide-react";
-import { useCurrentUser } from "../hooks/useCurrentUser";
+import { useCurrentUser, useHasPermission } from "../hooks/useCurrentUser";
 import { userService } from "../lib/users";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -67,6 +67,7 @@ function ExpandableNote({ text }: { text: string }) {
 
 export function UserProfileLogNotes({ userId }: { userId: string }) {
   const currentUser = useCurrentUser();
+  const canAddLogNote = useHasPermission("add_log_note");
   const queryClient = useQueryClient();
   const userRole = currentUser?.role === 'super_admin' ? 'Super Admin' : 
                    currentUser?.role === 'csr-admin' ? 'CSR Admin' : 
@@ -210,20 +211,22 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
           <MoreHorizontal className="w-5 h-5" />
         </button>
 
-        {isMenuOpen && (
+        {isMenuOpen && canAddLogNote && (
           <div className="absolute right-0 top-8 z-10 w-48 bg-white rounded-xl shadow-[0_4px_20px_0_rgba(0,0,0,0.1)] border border-gray-100 py-2">
             <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-b border-gray-100 mb-1">
               Log note Menu Options
             </div>
-            <button 
-              onClick={() => {
-                setIsAddingNote(true);
-                setIsMenuOpen(false);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-            >
-              <PlusCircle className="w-4 h-4" /> Add a note
-            </button>
+            {canAddLogNote && (
+              <button 
+                onClick={() => {
+                  setIsAddingNote(true);
+                  setIsMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4" /> Add a note
+              </button>
+            )}
             {currentUser?.role === 'super_admin' && (
               <>
                 {/* <button 
@@ -295,7 +298,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                       {addNoteMutation.isPending ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Adding...</span>
+                        
                         </>
                       ) : (
                         "Add note"
@@ -375,7 +378,7 @@ export function UserProfileLogNotes({ userId }: { userId: string }) {
                   {(deleteNoteMutation.isPending || isDeletingAll) ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Deleting...</span>
+                     
                     </>
                   ) : (
                     "Yes, delete"
