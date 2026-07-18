@@ -489,7 +489,7 @@ useEffect(() => {
 					</div>
 				</div>
 
-				<form className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
+				<form onSubmit={(e) => e.preventDefault()} className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
 					<div className="relative">
 						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
 						<input
