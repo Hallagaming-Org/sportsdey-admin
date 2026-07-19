@@ -116,7 +116,7 @@ export function TicketDetailsView({
   };
 
   return (
-    <div className="flex flex-col gap-6 px-8 py-2 overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
+    <div className="font-inter flex flex-col gap-6 px-8 py-2 overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
       {/* Header Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -130,7 +130,7 @@ export function TicketDetailsView({
 
           <div>
             <div className="flex items-center gap-2.5">
-              <h2 className="font-bold text-2xl text-gray-900 font-mono">
+              <h2 className="font-bold text-2xl text-gray-900">
                 Ticket ID - {details.id}
               </h2>
               <span
