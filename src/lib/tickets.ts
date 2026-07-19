@@ -11,6 +11,14 @@ export interface MatchSelection {
 	status?: "Won" | "Lost" | "Pending" | "Void";
 }
 
+export interface CasinoRoundSummary {
+	id?: string | number;
+	betAmount: string | number;
+	cashedOutAt: string | number;
+	winAmount: string | number;
+	status?: "Won" | "Lost" | "Pending" | "Void";
+}
+
 export interface DetailedTicket extends TicketRecord {
 	placedAt?: string;
 	settledAt?: string;
@@ -30,6 +38,14 @@ export interface DetailedTicket extends TicketRecord {
 	ipAddress?: string;
 	deviceInfo?: string;
 	selections?: MatchSelection[];
+	// Casino specific fields
+	sessionId?: string | null;
+	betTime?: string;
+	cashOutTime?: string;
+	multiplier?: string | number;
+	winAmount?: string | number;
+	cashedOutAt?: string | number;
+	roundSummary?: CasinoRoundSummary[];
 }
 
 export interface TicketRecord {
@@ -45,6 +61,9 @@ export interface TicketRecord {
 	gameName?: string | null;
 	provider?: string | null;
 	roundId?: string | null;
+	sessionId?: string | null;
+	multiplier?: string | number;
+	winAmount?: string | number;
 	outcome: TicketOutcome;
 	createdAt: string;
 	balanceBefore: string | null;
