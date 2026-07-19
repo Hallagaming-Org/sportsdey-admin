@@ -63,40 +63,30 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
       dateTime: "Aug 8, 2025\n10:42 pm",
       amount: "₦150,000.00",
       gameType: "Casino",
+      gameName: "Slots",
+      provider: "Thndr",
+      roundId: "41abeae8-587b-5a9d-944a-d934d127046c",
+      balanceBefore: "₦14,358.59",
+      balanceAfter: "₦15,738.29",
       odds: "0.50",
       potentialWin: "₦150,000.00",
       payOut: "₦150,000.00",
       status: "Won",
     },
     {
-      id: "012345",
+      id: "012346",
       dateTime: "Aug 8, 2025\n10:42 pm",
       amount: "₦80,000.00",
       gameType: "Casino",
+      gameName: "Eagle",
+      provider: "ICRASH",
+      roundId: null,
+      balanceBefore: "₦79,903.31",
+      balanceAfter: "₦75,903.31",
       odds: "0.50",
       potentialWin: "₦80,000.00",
       payOut: "₦80,000.00",
-      status: "Pending",
-    },
-    {
-      id: "012345",
-      dateTime: "Aug 8, 2025\n10:42 pm",
-      amount: "₦50,000.00",
-      gameType: "Casino",
-      odds: "0.50",
-      potentialWin: "₦0.00",
-      payOut: "₦0.00",
-      status: "Lost",
-    },
-    {
-      id: "012345",
-      dateTime: "Aug 8, 2025\n10:42 pm",
-      amount: "₦150,000.00",
-      gameType: "Sportsbook",
-      odds: "1.85",
-      potentialWin: "₦150,000.00",
-      payOut: "₦150,000.00",
-      status: "Won",
+      status: "Active",
     },
   ];
 
@@ -142,11 +132,16 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
   const ticketsToDisplay = hasLoadedTickets
     ? rawTicketList.map((t: TicketRecord) => {
         const amount = formatMoney(t.betAmount);
-        const potWin = (t as any).potentialWin != null ? formatMoney((t as any).potentialWin) : (t.outcome === "Won" ? amount : "₦0.00");
-        const payOut = (t as any).payOut != null ? formatMoney((t as any).payOut) : (t.outcome === "Won" ? amount : "₦0.00");
-        const status = t.outcome === "Won" ? "Won" : (t.outcome === "Active" || (t.outcome as any) === "Pending") ? "Pending" : "Lost";
+        const potWin = t.potentialWin != null ? formatMoney(t.potentialWin) : (t.outcome === "Won" ? amount : "₦0.00");
+        const payOut = (t.payout != null || t.payOut != null) ? formatMoney(t.payout || t.payOut) : (t.outcome === "Won" ? amount : "₦0.00");
+        const status = t.outcome === "Won" ? "Won" : (t.outcome === "Active" || (t.outcome as any) === "Pending") ? "Active" : "Lost";
 
-        const gameType = t.gameType || "Sportsbook";
+        const gameType = t.gameType || "Casino";
+        const gameName = t.gameName || "—";
+        const provider = t.provider || "—";
+        const roundId = t.roundId || null;
+        const balanceBefore = t.balanceBefore ? formatMoney(t.balanceBefore) : "—";
+        const balanceAfter = t.balanceAfter ? formatMoney(t.balanceAfter) : "—";
         const oddsVal = (t as any).odd || (t as any).odds || (t as any).oddValue || "1.00";
 
         return {
@@ -154,6 +149,11 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
           dateTime: formatTicketDate(t.createdAt),
           amount,
           gameType,
+          gameName,
+          provider,
+          roundId,
+          balanceBefore,
+          balanceAfter,
           odds: String(oddsVal),
           potentialWin: potWin,
           payOut,
@@ -176,9 +176,14 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
       "Date & Time": t.dateTime.replace("\n", " "),
       "Amount": t.amount,
       "Game Type": t.gameType,
+      "Game Name": t.gameName,
+      "Provider": t.provider,
+      "Round ID": t.roundId || "-",
       "Odds": t.odds,
       "Potential Win": t.potentialWin,
       "Pay Out": t.payOut,
+      "Balance Before": t.balanceBefore,
+      "Balance After": t.balanceAfter,
       "Status": t.status,
     }));
 
@@ -201,13 +206,15 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
     const doc = new jsPDF("landscape");
     doc.text("Bet History Summary", 14, 15);
     autoTable(doc, {
-      head: [["Bet ID", "Date & Time", "Amount", "Game Type", "Odds", "Potential Win", "Pay Out", "Status"]],
+      head: [["Bet ID", "Date & Time", "Amount", "Game Type", "Game Name", "Provider", "Round ID", "Potential Win", "Pay Out", "Status"]],
       body: ticketsToDisplay.map((t) => [
         t.id,
         t.dateTime.replace("\n", " "),
         t.amount,
         t.gameType,
-        t.odds,
+        t.gameName,
+        t.provider,
+        t.roundId || "-",
         t.potentialWin,
         t.payOut,
         t.status,
@@ -242,7 +249,7 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: [
                 new TableRow({
-                  children: ["Bet ID", "Date & Time", "Amount", "Game Type", "Odds", "Potential Win", "Pay Out", "Status"].map(
+                  children: ["Bet ID", "Date & Time", "Amount", "Game Type", "Game Name", "Provider", "Round ID", "Potential Win", "Pay Out", "Status"].map(
                     (header) =>
                       new TableCell({
                         children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
@@ -258,7 +265,9 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                         t.dateTime.replace("\n", " "),
                         t.amount,
                         t.gameType,
-                        t.odds,
+                        t.gameName,
+                        t.provider,
+                        t.roundId || "-",
                         t.potentialWin,
                         t.payOut,
                         t.status,
@@ -417,9 +426,14 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                 <th className="pb-4 pt-2 pr-4 bg-white">Date &amp; Time</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Amount</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Game type</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Game Name</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Provider</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Round ID</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Odds</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Potential win</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Pay out</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Balance Before</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Balance After</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Status</th>
                 <th className="pb-4 pt-2 bg-white text-right"></th>
               </tr>
@@ -435,7 +449,12 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                     </td>
                     <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
                     <td className="py-4 pr-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-16" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-20" /></td>
                     <td className="py-4 pr-4"><Skeleton className="h-4 w-12" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
                     <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
                     <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
                     <td className="py-4 pr-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
@@ -444,7 +463,7 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                 ))
               ) : ticketsToDisplay.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-gray-400 text-sm">
+                  <td colSpan={14} className="py-8 text-center text-gray-400 text-sm">
                     No ticket history found for this user
                   </td>
                 </tr>
@@ -482,18 +501,45 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                     </td>
                     <td className="py-4 pr-4 font-bold text-gray-900 text-xs">{ticket.amount}</td>
                     <td className="py-4 pr-4 text-gray-700 text-xs">{ticket.gameType}</td>
+                    <td className="py-4 pr-4 text-gray-700 text-xs">{ticket.gameName}</td>
+                    <td className="py-4 pr-4 font-mono text-gray-700 text-xs">{ticket.provider}</td>
+                    <td className="py-4 pr-4 font-mono text-xs">
+                      {ticket.roundId ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500 truncate max-w-[80px]" title={ticket.roundId}>
+                            {ticket.roundId.length > 8 ? `${ticket.roundId.substring(0, 8)}...` : ticket.roundId}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(ticket.roundId!);
+                              toast.success("Round ID copied to clipboard");
+                            }}
+                            className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                            title="Copy Round ID"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
                     <td className="py-4 pr-4 font-mono text-gray-700 text-xs">{ticket.odds}</td>
                     <td className="py-4 pr-4 font-semibold text-gray-900 text-xs">{ticket.potentialWin}</td>
                     <td className="py-4 pr-4 font-semibold text-gray-900 text-xs">{ticket.payOut}</td>
+                    <td className="py-4 pr-4 text-gray-500 text-xs">{ticket.balanceBefore}</td>
+                    <td className="py-4 pr-4 text-gray-500 text-xs">{ticket.balanceAfter}</td>
                     <td className="py-4 pr-4">
                       {ticket.status === "Won" && (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#E8F8E5] text-[#10C300] border border-[#10C300]/20">
                           Won
                         </span>
                       )}
-                      {ticket.status === "Pending" && (
+                      {(ticket.status === "Active" || ticket.status === "Pending") && (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#FFF8E5] text-[#FFB000] border border-[#FFB000]/20">
-                          Pending
+                          {ticket.status}
                         </span>
                       )}
                       {ticket.status === "Lost" && (
