@@ -1,6 +1,6 @@
 import { fetchApi } from "./api";
 
-export type TicketOutcome = "Won" | "Active" | "Lost";
+export type TicketOutcome = "Won" | "Active" | "Lost" | "Declined";
 export type TicketTab = "all" | "casino" | "sportsbook";
 
 export interface MatchSelection {
