@@ -17,6 +17,17 @@ export interface Transaction {
 
 export interface DepositSummary {
 	transactionId: string;
+	userId?: string;
+	user_id?: string;
+	userName?: string;
+	user_name?: string;
+	userEmail?: string;
+	user_email?: string;
+	user?: {
+		id: string;
+		name?: string;
+		email?: string;
+	};
 	type: "deposit";
 	status: string;
 	amount: number;
@@ -33,10 +44,24 @@ export interface DepositSummary {
 	cardType?: string | null;
 	cardLast4?: string | null;
 	description?: string;
+	note?: string;
+	narration?: string;
+	reason?: string;
 }
 
 export interface WithdrawalSummary {
 	transactionId: string;
+	userId?: string;
+	user_id?: string;
+	userName?: string;
+	user_name?: string;
+	userEmail?: string;
+	user_email?: string;
+	user?: {
+		id: string;
+		name?: string;
+		email?: string;
+	};
 	type: "withdrawal";
 	status: string;
 	amount: number;
@@ -53,6 +78,10 @@ export interface WithdrawalSummary {
 	accountNumber?: string;
 	accountName?: string;
 	balanceBefore?: number | null;
+	description?: string;
+	note?: string;
+	narration?: string;
+	reason?: string;
 }
 
 export type TransactionSummary = DepositSummary | WithdrawalSummary;
