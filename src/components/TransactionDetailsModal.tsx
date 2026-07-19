@@ -262,12 +262,14 @@ function Content({
     doc.text(`Reference ID: ${summary.referenceId || summary.transactionId}`, 14, 28);
     doc.text(`Date & Time: ${formattedDate || "N/A"}`, 14, 34);
 
+    const formatCurr = (str: string) => (str ? String(str).replace(/₦/g, "NGN ") : "N/A");
+
     const rows = [
       ["Transaction ID", summary.transactionId],
       ["Type", summary.type.toUpperCase()],
       ["Status", (summary.status || "Completed").toUpperCase()],
-      ["Amount", amount],
-      ["Fees", fees],
+      ["Amount", formatCurr(amount)],
+      ["Fees", formatCurr(fees)],
       ["Payment Method", summary.paymentMethod || "N/A"],
       ["User ID", actualUserId || "N/A"],
       ["User Email", (summary as any).userEmail || (summary as any).user_email || (summary as any).user?.email || "N/A"],
