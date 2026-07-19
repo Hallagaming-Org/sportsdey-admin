@@ -4,7 +4,6 @@ import { MoreHorizontal, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
 import { ticketService, type TicketRecord } from "../lib/tickets";
-import { userService } from "../lib/users";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 
 import * as XLSX from "xlsx";
@@ -30,10 +29,10 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
 
   const { fromDate, toDate } = getDateRangeForPeriod(timePeriod, customRange, { output: "date" });
 
-  const { data: walletOverview, isLoading: isOverviewLoading } = useQuery({
-    queryKey: ["user-history-overview", userId, fromDate, toDate],
+  const { data: ticketOverview, isLoading: isOverviewLoading } = useQuery({
+    queryKey: ["user-ticket-overview", userId, fromDate, toDate],
     queryFn: async () => {
-      const res = await userService.getUserWalletOverview(userId, { fromDate, toDate });
+      const res = await ticketService.getUserTicketOverview(userId, { fromDate, toDate });
       if (!res.success) return null;
       return res.data;
     },
@@ -165,10 +164,6 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
   const totalPages = ticketsData?.pagination?.totalPages || (hasLoadedTickets ? 1 : 10);
   const currentPage = ticketsData?.pagination?.page || page;
 
-  const formatCurrency = (val?: number | null) => {
-    if (val == null) return "₦1,500.00";
-    return `₦${val.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
 
   const exportToExcel = () => {
     const dataToExport = ticketsToDisplay.map((t) => ({
@@ -317,7 +312,11 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
               <p className="text-xl md:text-2xl font-bold text-gray-900">
-                {formatCurrency(walletOverview?.currentBalance ?? 1500)}
+                {formatMoney(
+                  ticketOverview?.currentActiveBetAmount ??
+                    ticketOverview?.activeBetAmount ??
+                    ticketOverview?.currentActiveBet
+                )}
               </p>
             )}
           </div>
@@ -327,7 +326,10 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
               <p className="text-xl md:text-2xl font-bold text-gray-900">
-                {formatCurrency(walletOverview?.totalDeposits ?? 1500)}
+                {formatMoney(
+                  ticketOverview?.totalGamesWon ??
+                    ticketOverview?.gamesWon
+                )}
               </p>
             )}
           </div>
@@ -337,7 +339,10 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
               <p className="text-xl md:text-2xl font-bold text-gray-900">
-                {formatCurrency(walletOverview?.totalWithdrawals ?? 1500)}
+                {formatMoney(
+                  ticketOverview?.totalGamesLost ??
+                    ticketOverview?.gamesLost
+                )}
               </p>
             )}
           </div>
@@ -347,7 +352,11 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
               <p className="text-xl md:text-2xl font-bold text-gray-900">
-                {formatCurrency(walletOverview?.netPosition ?? 1500)}
+                {formatMoney(
+                  ticketOverview?.grossGamingRevenue ??
+                    ticketOverview?.ggr ??
+                    ticketOverview?.netPosition
+                )}
               </p>
             )}
           </div>
