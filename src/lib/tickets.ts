@@ -5,14 +5,20 @@ export type TicketTab = "all" | "casino" | "sportsbook";
 
 export interface TicketRecord {
 	id: string;
+	userId?: string;
 	playerName: string;
 	betAmount: string;
+	potentialWin?: string | null;
+	payout?: string | null;
+	payOut?: string | null;
 	gameType: string;
+	gameName?: string | null;
+	provider?: string | null;
+	roundId?: string | null;
 	outcome: TicketOutcome;
 	createdAt: string;
 	balanceBefore: string | null;
 	balanceAfter: string | null;
-	userId?: string;
 	userSuspended?: boolean;
 }
 
