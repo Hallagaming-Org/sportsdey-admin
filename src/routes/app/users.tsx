@@ -424,60 +424,65 @@ useEffect(() => {
 						Add new user
 					</button>
 
-					<div className="relative">
-						<button 
-							type="button"
-							onClick={(e) => {
-								e.stopPropagation();
-								if (e.nativeEvent) {
-									e.nativeEvent.stopImmediatePropagation();
-								}
-								setShowExportDropdown(!showExportDropdown);
-							}}
-							className="inline-flex items-center h-11 gap-1.5 rounded-full bg-[#1BAA04] px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
-						>
-							Export File as
-							<FaFileExport className="h-3.5 w-3.5 text-white" />
-						</button>
-						
-						{showExportDropdown && (
-							<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
-								<button
-									onClick={(e) => {
-										e.stopPropagation();
-										setShowExportDropdown(false);
-										exportToPdf();
-									}}
-									className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-								>
-									<FaFilePdf className="text-red-500 w-4 h-4" />
-									PDF
-								</button>
-								<button
-									onClick={(e) => {
-										e.stopPropagation();
-										setShowExportDropdown(false);
-										exportToDocx();
-									}}
-									className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-								>
-									<FaFileWord className="text-blue-600 w-4 h-4" />
-									DOCX
-								</button>
-								<button
-									onClick={(e) => {
-										e.stopPropagation();
-										setShowExportDropdown(false);
-										exportToExcel();
-									}}
-									className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-								>
-									<FaFileExcel className="text-green-600 w-4 h-4" />
-									Excel
-								</button>
-							</div>
-						)}
-					</div>
+					{users.length > 0 && (
+						<div className="relative">
+							<button 
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation();
+									if (e.nativeEvent) {
+										e.nativeEvent.stopImmediatePropagation();
+									}
+									setShowExportDropdown(!showExportDropdown);
+								}}
+								className="inline-flex items-center h-11 gap-1.5 rounded-full bg-[#1BAA04] px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
+							>
+								Export File as
+								<FaFileExport className="h-3.5 w-3.5 text-white" />
+							</button>
+							
+							{showExportDropdown && (
+								<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowExportDropdown(false);
+											exportToPdf();
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									>
+										<FaFilePdf className="text-red-500 w-4 h-4" />
+										PDF
+									</button>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowExportDropdown(false);
+											exportToDocx();
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									>
+										<FaFileWord className="text-blue-600 w-4 h-4" />
+										DOCX
+									</button>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowExportDropdown(false);
+											exportToExcel();
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									>
+										<FaFileExcel className="text-green-600 w-4 h-4" />
+										Excel
+									</button>
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 
