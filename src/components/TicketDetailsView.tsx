@@ -112,24 +112,25 @@ export function TicketDetailsView({
 
   const exportToPdf = () => {
     const doc = new jsPDF();
+    const cleanCurr = (val?: string | number | null) => (val ? String(val).replace(/₦/g, "NGN ") : "N/A");
     doc.text(`Ticket Details - ${details.id}`, 14, 15);
     doc.setFontSize(10);
     doc.text(`Player: ${details.playerName} | Status: ${details.outcome}`, 14, 23);
 
     if (isCasino) {
-      doc.text(`Stake: ${details.stakeAmount} | Win Amount: ${details.winAmount || details.actualPayout} | Profit: ${details.profit}`, 14, 30);
+      doc.text(`Stake: ${cleanCurr(details.stakeAmount)} | Win Amount: ${cleanCurr(details.winAmount || details.actualPayout)} | Profit: ${cleanCurr(details.profit)}`, 14, 30);
       autoTable(doc, {
         head: [["#", "Bet Amount", "Cashed out at", "Win Amount"]],
         body: details.roundSummary?.map((r, idx) => [
           r.id || idx + 1,
-          r.betAmount,
+          cleanCurr(r.betAmount),
           r.cashedOutAt,
-          r.winAmount,
+          cleanCurr(r.winAmount),
         ]) || [],
         startY: 38,
       });
     } else {
-      doc.text(`Stake: ${details.stakeAmount} | Payout: ${details.actualPayout} | Profit: ${details.profit}`, 14, 30);
+      doc.text(`Stake: ${cleanCurr(details.stakeAmount)} | Payout: ${cleanCurr(details.actualPayout)} | Profit: ${cleanCurr(details.profit)}`, 14, 30);
       autoTable(doc, {
         head: [["#", "Match", "Pick", "Odds"]],
         body: details.selections?.map((s: MatchSelection, idx: number) => [
