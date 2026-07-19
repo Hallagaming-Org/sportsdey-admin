@@ -19,14 +19,17 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { type Column, DataTable } from "#/components/DataTable";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
-import {
-	TimePeriodDropdown,
-	type TimePeriodOption,
-} from "#/components/TimePeriodDropdown";
+import { TimePeriodFilter, type TimePeriod } from "#/components/TimePeriodFilter";
+import { getDateRangeForPeriod } from "#/lib/time-period";
 import { notificationService } from "#/lib/notifications";
 import { type KycStatusFilter, kycService } from "@/lib/kyc";
 import FilterIcon from "@/logo/filter.svg?react";
 import SortIcon from "@/logo/sort.svg?react";
+import * as XLSX from "xlsx";
+import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
 
 export const Route = createFileRoute("/app/kyc")({
 	beforeLoad: ({ context }) => {
@@ -142,8 +145,9 @@ function KycPage() {
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [sortAsc, setSortAsc] = useState(true);
-	const [selectedTimePeriod, setSelectedTimePeriod] =
-		useState<TimePeriodOption>("All");
+	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
+	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
+	const [showExportDropdown, setShowExportDropdown] = useState(false);
 	const [selectedRecord, setSelectedRecord] = useState<KycRecord | null>(null);
 	const [showDocumentModal, setShowDocumentModal] = useState(false);
 	const [activeSide, setActiveSide] = useState<"front" | "back">("front");
@@ -157,8 +161,10 @@ function KycPage() {
 		email?: string;
 	} | null>(null);
 
-	// time filter
-	const [timeFilter, setTimeFilter] = useState<any>(null);
+	const { fromDate, toDate } = useMemo(
+		() => getDateRangeForPeriod(selectedTimePeriod, customRange),
+		[selectedTimePeriod, customRange],
+	);
 
 	const statusParam: KycStatusFilter | undefined = useMemo(() => {
 		if (activeTab === "all") return undefined;
@@ -170,14 +176,15 @@ function KycPage() {
 	}, [activeTab]);
 
 	const { data, isLoading, error } = useQuery({
-		queryKey: ["kyc", page, search, statusParam, timeFilter],
+		queryKey: ["kyc", page, search, statusParam, fromDate, toDate],
 		queryFn: async () => {
 			const res = await kycService.listKyc({
 				page,
 				limit: ITEMS_PER_PAGE,
 				search: search.trim() || undefined,
 				status: statusParam,
-				...timeFilter,
+				fromDate,
+				toDate,
 			});
 
 			if (!res.success) throw new Error(res.error);
@@ -276,6 +283,125 @@ function KycPage() {
 		);
 	}, [records, sortAsc]);
 
+	const exportToPdf = () => {
+		if (sorted.length === 0) return;
+		const doc = new jsPDF("landscape");
+		doc.text("KYC Documents Report", 14, 15);
+		autoTable(doc, {
+			head: [["S/N", "Player Name", "Document Name", "Size", "Date Uploaded", "Document Type", "Status"]],
+			body: sorted.map((r) => [
+				r.sn,
+				r.playerName,
+				r.documentName,
+				r.size,
+				r.dateUploaded,
+				r.type,
+				STATUS_LABELS[r.status] || r.status,
+			]),
+			startY: 20,
+		});
+		doc.save(`kyc_documents_${new Date().toISOString().split("T")[0]}.pdf`);
+	};
+
+	const exportToDocx = () => {
+		if (sorted.length === 0) return;
+		const docx = new Document({
+			sections: [
+				{
+					properties: {},
+					children: [
+						new Paragraph({
+							children: [
+								new TextRun({
+									text: "KYC Documents Report",
+									bold: true,
+									size: 32,
+								}),
+							],
+							spacing: { after: 400 },
+						}),
+						new Table({
+							width: { size: 100, type: WidthType.PERCENTAGE },
+							rows: [
+								new TableRow({
+									children: [
+										"S/N",
+										"Player Name",
+										"Document Name",
+										"Size",
+										"Date Uploaded",
+										"Document Type",
+										"Status",
+									].map(
+										(header) =>
+											new TableCell({
+												children: [
+													new Paragraph({
+														children: [new TextRun({ text: header, bold: true })],
+													}),
+												],
+												shading: { fill: "f3f4f6" },
+												margins: { top: 100, bottom: 100, left: 100, right: 100 },
+											}),
+									),
+								}),
+								...sorted.map(
+									(r) =>
+										new TableRow({
+											children: [
+												r.sn,
+												r.playerName,
+												r.documentName,
+												r.size,
+												r.dateUploaded,
+												r.type,
+												STATUS_LABELS[r.status] || r.status,
+											].map(
+												(cell) =>
+													new TableCell({
+														children: [new Paragraph(String(cell))],
+														margins: { top: 100, bottom: 100, left: 100, right: 100 },
+													}),
+											),
+										}),
+								),
+							],
+						}),
+					],
+				},
+			],
+		});
+
+		Packer.toBlob(docx).then((blob) => {
+			const link = document.createElement("a");
+			const url = URL.createObjectURL(blob);
+			link.setAttribute("href", url);
+			link.setAttribute("download", `kyc_documents_${new Date().toISOString().split("T")[0]}.docx`);
+			link.style.visibility = "hidden";
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		});
+	};
+
+	const exportToExcel = () => {
+		if (sorted.length === 0) return;
+		const dataToExport = sorted.map((r) => ({
+			"S/N": r.sn,
+			"Player Name": r.playerName,
+			"Document Name": r.documentName,
+			Size: r.size,
+			"Date Uploaded": r.dateUploaded,
+			"Document Type": r.type,
+			Status: STATUS_LABELS[r.status] || r.status,
+		}));
+
+		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, "KYC Documents");
+		XLSX.writeFile(workbook, `kyc_documents_${new Date().toISOString().split("T")[0]}.xlsx`);
+	};
+
 	const totalPages = Math.max(
 		1,
 		Math.ceil((data?.total || 0) / ITEMS_PER_PAGE),
@@ -298,16 +424,17 @@ function KycPage() {
 					<img
 						src={
 							r.image ||
-							`https://api.dicebear.com/7.x/avataaars/svg?seed=${r.playerName}`
+							"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
 						}
-						className="h-6 w-6 rounded-full object-cover"
+						alt={r.playerName}
+						className="w-8 h-8 rounded-full object-cover shrink-0"
 					/>
 					<span className="truncate">{r.playerName}</span>
 				</div>
 			),
 		},
 		{
-			header: "Form",
+			header: "Document Name",
 			accessor: "documentName",
 		},
 		{
@@ -315,18 +442,20 @@ function KycPage() {
 			accessor: "size",
 		},
 		{
-			header: "Date",
+			header: "Date Uploaded",
 			accessor: "dateUploaded",
 		},
 		{
-			header: "Type",
+			header: "Document Type",
 			accessor: "type",
 		},
 		{
 			header: "Status",
 			accessor: (r) => (
 				<span
-					className={`px-2 py-1 rounded-full text-xs ${STATUS_STYLES[r.status]}`}
+					className={`px-3 py-1 text-xs font-semibold rounded-full ${
+						STATUS_STYLES[r.status]
+					}`}
 				>
 					{STATUS_LABELS[r.status]}
 				</span>
@@ -336,138 +465,182 @@ function KycPage() {
 
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-6">
-			{/* HEADER */}
-			<div className="flex-none flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-				<div>
-					<h2 className="text-2xl font-bold">KYC & Document Uploads</h2>
-					<p className="text-gray-600">
-						Manage all Documents and files Uploaded.
-					</p>
-				</div>
-
-				<div className="flex items-center gap-3">
-					<button
-						onClick={() => setSortAsc((c) => !c)}
-						className="flex items-center gap-2 border px-3 py-2 rounded-full"
-					>
-						<SortIcon className="h-3 w-3" />
-						Sort
-					</button>
-
-					<button className="flex items-center gap-2 border px-3 py-2 rounded-full">
-						<FilterIcon className="h-3 w-3" />
-						Filter
-					</button>
-				</div>
-			</div>
-			{/* CONTENT */}
 			<div className="flex-1 min-h-0 flex flex-col gap-4">
-				{/* FILTER BAR */}
-				<div className="flex-none flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-					{/* TABS */}
-					<div className="flex gap-6 overflow-x-auto border-b">
+				{/* HEADER AND CONTROLS */}
+				<div className="relative z-30 flex-none flex items-center justify-between overflow-visible">
+					<div>
+						<h3 className="font-bold text-xl text-[#03002B]">KYC & Document Uploads</h3>
+						<p className="text-sm text-[#001A26]">Manage all Documents and files Uploaded.</p>
+					</div>
+
+					<div className="relative z-40 flex items-center gap-2">
+						{/* Search Input */}
+						<form
+							onSubmit={(e) => {
+								e.preventDefault();
+								setPage(1);
+							}}
+							className="relative"
+						>
+							<input
+								type="text"
+								placeholder="Search"
+								value={search}
+								onChange={(e) => {
+									setSearch(e.target.value);
+									setPage(1);
+								}}
+								className="w-64 rounded-full border border-gray-200 bg-gray-50 py-2 pr-4 pl-10 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+							/>
+							<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+						</form>
+
+						{/* Export Button */}
+						{sorted.length > 0 && (
+							<div className="relative">
+								<button 
+									type="button"
+									onClick={(e) => {
+										e.stopPropagation();
+										if (e.nativeEvent) {
+											e.nativeEvent.stopImmediatePropagation();
+										}
+										setShowExportDropdown(!showExportDropdown);
+									}}
+									className="inline-flex items-center h-11 gap-1.5 rounded-full bg-[#1BAA04] px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
+								>
+									Export File as
+									<FaFileExport className="h-3.5 w-3.5 text-white" />
+								</button>
+
+								{showExportDropdown && (
+									<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+										<button
+											type="button"
+											onClick={(e) => {
+												e.stopPropagation();
+												setShowExportDropdown(false);
+												exportToPdf();
+											}}
+											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+										>
+											<FaFilePdf className="text-red-500 w-4 h-4" />
+											PDF
+										</button>
+										<button
+											type="button"
+											onClick={(e) => {
+												e.stopPropagation();
+												setShowExportDropdown(false);
+												exportToDocx();
+											}}
+											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+										>
+											<FaFileWord className="text-blue-600 w-4 h-4" />
+											DOCX
+										</button>
+										<button
+											type="button"
+											onClick={(e) => {
+												e.stopPropagation();
+												setShowExportDropdown(false);
+												exportToExcel();
+											}}
+											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+										>
+											<FaFileExcel className="text-green-600 w-4 h-4" />
+											Excel
+										</button>
+									</div>
+								)}
+							</div>
+						)}
+
+						{/* Time Period Filter */}
+						<TimePeriodFilter
+							onFilterChange={(period, range) => {
+								setSelectedTimePeriod(period);
+								setCustomRange(range);
+								setPage(1);
+							}}
+							buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
+						/>
+					</div>
+				</div>
+
+				{/* TABS */}
+				<div className="flex shrink-0 items-center justify-between border-b border-gray-200">
+					<div className="flex gap-8">
 						{TAB_OPTIONS.map((tab) => (
 							<button
 								key={tab.key}
+								type="button"
 								onClick={() => {
 									setActiveTab(tab.key);
 									setPage(1);
 								}}
-								className={`pb-2 ${
+								className={`pb-3 text-sm font-medium transition-colors cursor-pointer ${
 									activeTab === tab.key
-										? "border-b-2 border-green-600 text-green-600"
-										: "text-gray-500"
+										? "border-b-2 border-[#1BAA04] text-[#1BAA04]"
+										: "text-gray-500 hover:text-gray-700"
 								}`}
 							>
 								{tab.label}
 							</button>
 						))}
 					</div>
-
-					{/* SEARCH + FILTER */}
-					<div className="flex items-center gap-2 shrink-0">
-						<div className="relative">
-							<input
-								value={search}
-								onChange={(e) => {
-									setSearch(e.target.value);
-									setPage(1);
-								}}
-								placeholder="Search"
-								className="w-64 pl-10 pr-4 py-2 border rounded-full"
-							/>
-							<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-						</div>
-
-						<TimePeriodDropdown
-							value={selectedTimePeriod}
-							onChange={(period, range) => {
-								setSelectedTimePeriod(period);
-								setTimeFilter({ period, range });
-								setPage(1);
-							}}
-							buttonClassName="px-3 py-2 border rounded-lg text-sm"
-							showCustomOption
-						/>
-					</div>
 				</div>
 
 				{/* TABLE */}
-				<div className="flex-1 min-h-0 overflow-hidden bg-white rounded-lg shadow">
-					{isLoading ? (
-						<div className="flex items-center justify-center h-full">
-							Loading...
-						</div>
-					) : error ? (
-						<div className="text-red-500 p-4">{(error as Error).message}</div>
-					) : (
-						<DataTable
-							data={sorted}
-							columns={columns}
-							maxHeight="100%"
-							pagination={{
-								currentPage: page,
-								totalPages,
-								onPageChange: setPage,
-								totalItems: data?.total || 0,
-								itemsPerPage: ITEMS_PER_PAGE,
-							}}
-							actionMenuItems={[
-								{
-									label: "View document",
-									icon: <Eye className="h-4 w-4" />,
-									onClick: (r) => {
-										setSelectedRecord(r);
-										setActiveSide("front");
-										setScale(1);
-										setRotation(0);
-										setIsRejecting(false);
-										setRejectReason("");
-										setShowDocumentModal(true);
-									},
+				<div className="flex-1 min-h-0">
+					<DataTable
+						data={sorted}
+						columns={columns}
+						maxHeight="100%"
+						isLoading={isLoading}
+						emptyMessage={error ? (error as Error).message : "No KYC documents found"}
+						pagination={{
+							currentPage: page,
+							totalPages,
+							onPageChange: setPage,
+							totalItems: data?.total || 0,
+							itemsPerPage: ITEMS_PER_PAGE,
+						}}
+						actionMenuItems={[
+							{
+								label: "View document",
+								icon: <Eye className="h-4 w-4" />,
+								onClick: (r) => {
+									setSelectedRecord(r);
+									setActiveSide("front");
+									setScale(1);
+									setRotation(0);
+									setIsRejecting(false);
+									setRejectReason("");
+									setShowDocumentModal(true);
 								},
-								{
-									label: "Notify",
-									icon: <SendHorizonal className="h-4 w-4" />,
-									onClick: (r) =>
-										setNoticeUser({ id: r.kycId, name: r.playerName }),
+							},
+							{
+								label: "Notify",
+								icon: <SendHorizonal className="h-4 w-4" />,
+								onClick: (r) =>
+									setNoticeUser({ id: r.kycId, name: r.playerName }),
+							},
+							{
+								label: "Review",
+								icon: <PauseCircle className="h-4 w-4" />,
+								onClick: (r) => {
+									setSelectedRecord(r);
+									setActiveSide("front");
+									setScale(1);
+									setRotation(0);
+									setIsRejecting(false);
+									setRejectReason("");
+									setShowDocumentModal(true);
 								},
-								{
-									label: "Review",
-									icon: <PauseCircle className="h-4 w-4" />,
-									onClick: (r) => {
-										setSelectedRecord(r);
-										setActiveSide("front");
-										setScale(1);
-										setRotation(0);
-										setIsRejecting(false);
-										setRejectReason("");
-										setShowDocumentModal(true);
-									},
-								},
-							]}
-						/>
-					)}
+							},
+						]}
+					/>
 				</div>
 			</div>
 
