@@ -117,13 +117,13 @@ export function TicketDetailsView({
   };
 
   return (
-    <div className="font-inter flex flex-col gap-6 px-8 py-2 overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
+    <div className="font-inter flex flex-col gap-6 px-8 py-2 overflow-y-auto max-h-[calc(100vh-100px)] print:max-h-none print:overflow-visible print:p-0 custom-scrollbar">
       {/* Header Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#757575] text-[#757575] transition-colors cursor-pointer"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#757575] text-[#757575] transition-colors cursor-pointer print:hidden"
             title="Back to Ticket History"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -165,7 +165,7 @@ export function TicketDetailsView({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 relative">
+        <div className="flex items-center gap-3 relative print:hidden">
           <button
             type="button"
             onClick={() => window.print()}
@@ -316,7 +316,7 @@ export function TicketDetailsView({
           <button
             type="button"
             onClick={() => onViewPlayerProfile(userForProfile)}
-            className="bg-[#1BAA04] hover:bg-[#158903] text-white px-5 py-2 rounded-full text-xs font-semibold shadow-sm transition-colors cursor-pointer whitespace-nowrap"
+            className="bg-[#1BAA04] hover:bg-[#158903] text-white px-5 py-2 rounded-full text-xs font-semibold shadow-sm transition-colors cursor-pointer whitespace-nowrap print:hidden"
           >
             View Player Profile
           </button>
