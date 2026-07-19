@@ -1,6 +1,6 @@
 import { fetchApi } from "./api";
 
-export type TransactionStatus = "Won" | "Pending" | "Failed" | "Refund";
+export type TransactionStatus = "Success" | "Pending" | "Failed" | "Refund";
 export type TransactionType = "Deposit" | "Withdrawal" | "Payment";
 
 export interface Transaction {
@@ -130,7 +130,7 @@ const mapStatusToUiStatus = (status: string): TransactionStatus => {
 	switch (status.toLowerCase()) {
 		case "success":
 		case "completed":
-			return "Won";
+			return "Success";
 		case "pending":
 		case "processing":
 			return "Pending";
@@ -184,7 +184,7 @@ class TransactionService {
 		page?: number;
 		limit?: number;
 		type?: "deposits" | "withdrawals" | "payments";
-		status?: "won" | "pending" | "failed" | "refund";
+		status?: "success" | "pending" | "failed" | "refund";
 		search?: string;
 		fromDate?: string;
 		toDate?: string;
