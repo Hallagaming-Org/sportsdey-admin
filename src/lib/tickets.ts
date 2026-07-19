@@ -32,6 +32,22 @@ export interface TicketsResponse {
 	};
 }
 
+export interface UserTicketOverview {
+	currentActiveBetAmount?: number | string;
+	activeBetAmount?: number | string;
+	currentActiveBet?: number | string;
+
+	totalGamesWon?: number | string;
+	gamesWon?: number | string;
+
+	totalGamesLost?: number | string;
+	gamesLost?: number | string;
+
+	grossGamingRevenue?: number | string;
+	ggr?: number | string;
+	netPosition?: number | string;
+}
+
 class TicketService {
 	async getTickets(params: {
 		page?: number;
@@ -78,6 +94,24 @@ class TicketService {
 			`/admin/tickets/user/${userId}?${searchParams.toString()}`,
 		);
 	}
+
+	async getUserTicketOverview(
+		userId: string,
+		params?: {
+			fromDate?: string;
+			toDate?: string;
+		},
+	): Promise<{ success: boolean; data?: UserTicketOverview; error?: string }> {
+		const searchParams = new URLSearchParams();
+		if (params?.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params?.toDate) searchParams.set("toDate", params.toDate);
+		const qs = searchParams.toString();
+
+		return fetchApi<UserTicketOverview>(
+			`/admin/ticket-overview/user/${userId}${qs ? `?${qs}` : ""}`,
+		);
+	}
 }
 
 export const ticketService = new TicketService();
+
