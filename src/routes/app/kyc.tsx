@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import {
-	CheckCircle,
 	Eye,
 	PauseCircle,
 	Search,
@@ -23,8 +22,6 @@ import { TimePeriodFilter, type TimePeriod } from "#/components/TimePeriodFilter
 import { getDateRangeForPeriod } from "#/lib/time-period";
 import { notificationService } from "#/lib/notifications";
 import { type KycStatusFilter, kycService } from "@/lib/kyc";
-import FilterIcon from "@/logo/filter.svg?react";
-import SortIcon from "@/logo/sort.svg?react";
 import * as XLSX from "xlsx";
 import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
 import jsPDF from "jspdf";
@@ -122,23 +119,23 @@ function isImageMime(mime: string | null | undefined) {
 	return mime?.startsWith("image/") ?? false;
 }
 
-function DocumentViewer({ doc }: { doc: { url: string; mimeType: string } }) {
-	const isImage = isImageMime(doc.mimeType);
+// function DocumentViewer({ doc }: { doc: { url: string; mimeType: string } }) {
+// 	const isImage = isImageMime(doc.mimeType);
 
-	if (isImage) {
-		return (
-			<img
-				src={doc.url}
-				alt="Document"
-				className="w-full h-full object-contain"
-			/>
-		);
-	}
+// 	if (isImage) {
+// 		return (
+// 			<img
+// 				src={doc.url}
+// 				alt="Document"
+// 				className="w-full h-full object-contain"
+// 			/>
+// 		);
+// 	}
 
-	return (
-		<embed src={doc.url} type={doc.mimeType} className="w-full h-full" />
-	);
-}
+// 	return (
+// 		<embed src={doc.url} type={doc.mimeType} className="w-full h-full" />
+// 	);
+// }
 
 function KycPage() {
 	const [activeTab, setActiveTab] = useState<KycTab>("all");
@@ -466,7 +463,6 @@ function KycPage() {
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-6">
 			<div className="flex-1 min-h-0 flex flex-col gap-4">
-				{/* HEADER AND CONTROLS */}
 				<div className="relative z-30 flex-none flex items-center justify-between overflow-visible">
 					<div>
 						<h3 className="font-bold text-xl text-[#03002B]">KYC & Document Uploads</h3>
@@ -474,7 +470,6 @@ function KycPage() {
 					</div>
 
 					<div className="relative z-40 flex items-center gap-2">
-						{/* Search Input */}
 						<form
 							onSubmit={(e) => {
 								e.preventDefault();
@@ -495,7 +490,16 @@ function KycPage() {
 							<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
 						</form>
 
-						{/* Export Button */}
+
+						<TimePeriodFilter
+							onFilterChange={(period, range) => {
+								setSelectedTimePeriod(period);
+								setCustomRange(range);
+								setPage(1);
+							}}
+							buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
+						/>
+
 						{sorted.length > 0 && (
 							<div className="relative">
 								<button 
@@ -555,16 +559,6 @@ function KycPage() {
 								)}
 							</div>
 						)}
-
-						{/* Time Period Filter */}
-						<TimePeriodFilter
-							onFilterChange={(period, range) => {
-								setSelectedTimePeriod(period);
-								setCustomRange(range);
-								setPage(1);
-							}}
-							buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
-						/>
 					</div>
 				</div>
 
