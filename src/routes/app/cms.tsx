@@ -422,63 +422,65 @@ function CmsPage() {
 									buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
 								/>
 
-								<div className="relative">
-									<button 
-										type="button"
-										onClick={(e) => {
-											e.stopPropagation();
-											if (e.nativeEvent) {
-												e.nativeEvent.stopImmediatePropagation();
-											}
-											setShowExportDropdown(!showExportDropdown);
-										}}
-										className="inline-flex items-center h-8 gap-1.5 rounded-full bg-[#1BAA04] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors whitespace-nowrap"
-									>
-										Export File as
-										<FaFileExport className="h-3 w-3 text-white" />
-									</button>
+								{contents.length > 0 && (
+									<div className="relative">
+										<button 
+											type="button"
+											onClick={(e) => {
+												e.stopPropagation();
+												if (e.nativeEvent) {
+													e.nativeEvent.stopImmediatePropagation();
+												}
+												setShowExportDropdown(!showExportDropdown);
+											}}
+											className="inline-flex items-center h-8 gap-1.5 rounded-full bg-[#1BAA04] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors whitespace-nowrap"
+										>
+											Export File as
+											<FaFileExport className="h-3 w-3 text-white" />
+										</button>
 
-									{showExportDropdown && (
-										<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
-											<button
-												type="button"
-												onClick={(e) => {
-													e.stopPropagation();
-													setShowExportDropdown(false);
-													exportToPdf();
-												}}
-												className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-											>
-												<FaFilePdf className="text-red-500 w-4 h-4" />
-												PDF
-											</button>
-											<button
-												type="button"
-												onClick={(e) => {
-													e.stopPropagation();
-													setShowExportDropdown(false);
-													exportToDocx();
-												}}
-												className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-											>
-												<FaFileWord className="text-blue-600 w-4 h-4" />
-												DOCX
-											</button>
-											<button
-												type="button"
-												onClick={(e) => {
-													e.stopPropagation();
-													setShowExportDropdown(false);
-													exportToExcel();
-												}}
-												className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-											>
-												<FaFileExcel className="text-green-600 w-4 h-4" />
-												Excel
-											</button>
-										</div>
-									)}
-								</div>
+										{showExportDropdown && (
+											<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														setShowExportDropdown(false);
+														exportToPdf();
+													}}
+													className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+												>
+													<FaFilePdf className="text-red-500 w-4 h-4" />
+													PDF
+												</button>
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														setShowExportDropdown(false);
+														exportToDocx();
+													}}
+													className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+												>
+													<FaFileWord className="text-blue-600 w-4 h-4" />
+													DOCX
+												</button>
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														setShowExportDropdown(false);
+														exportToExcel();
+													}}
+													className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+												>
+													<FaFileExcel className="text-green-600 w-4 h-4" />
+													Excel
+												</button>
+											</div>
+										)}
+									</div>
+								)}
 							</form>
 						)}
 					</div>
