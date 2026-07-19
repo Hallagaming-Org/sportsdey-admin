@@ -141,7 +141,7 @@ function KycPage() {
 	const [activeTab, setActiveTab] = useState<KycTab>("all");
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
-	const [sortAsc, setSortAsc] = useState(true);
+	const [sortAsc] = useState(true);
 	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
 	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 	const [showExportDropdown, setShowExportDropdown] = useState(false);
