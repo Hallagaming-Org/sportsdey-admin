@@ -5,7 +5,7 @@ import {
   TimePeriodFilter,
   type TimePeriod,
 } from "#/components/TimePeriodFilter";
-import { Search, Eye, PauseCircle } from "lucide-react";
+import { Search, Eye, PauseCircle, Copy } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
 import SortIcon from "@/logo/sort.svg?react";
 import FilterIcon from "@/logo/filter.svg?react";
@@ -70,12 +70,17 @@ function TicketsPage() {
     const dataToExport = tickets.map((t) => ({
       "Bet ID": t.id,
       "Player Name": t.playerName,
-      "Amount": t.betAmount,
+      "Bet Amount": t.betAmount,
+      "Potential Win": t.potentialWin || "-",
+      "Payout": t.payout || t.payOut || "-",
       "Game Type": t.gameType,
-      "Outcome": t.outcome,
-      "Created At": t.createdAt,
+      "Game Name": t.gameName || "-",
+      "Provider": t.provider || "-",
+      "Round ID": t.roundId || "-",
+      "Date": t.createdAt,
       "Balance Before": t.balanceBefore || "-",
       "Balance After": t.balanceAfter || "-",
+      "Status": t.outcome,
     }));
 
     if (!dataToExport || dataToExport.length === 0) {
@@ -97,14 +102,19 @@ function TicketsPage() {
     const doc = new jsPDF("landscape");
     doc.text("Ticket History", 14, 15);
     autoTable(doc, {
-      head: [["Bet ID", "Player Name", "Amount", "Game Type", "Outcome", "Created At"]],
+      head: [["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Date", "Status"]],
       body: tickets.map((t) => [
         t.id,
         t.playerName,
         t.betAmount,
+        t.potentialWin || "-",
+        t.payout || t.payOut || "-",
         t.gameType,
-        t.outcome,
+        t.gameName || "-",
+        t.provider || "-",
+        t.roundId || "-",
         t.createdAt,
+        t.outcome,
       ]),
       startY: 20,
     });
@@ -136,7 +146,7 @@ function TicketsPage() {
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: [
                 new TableRow({
-                  children: ["Bet ID", "Player Name", "Amount", "Game Type", "Outcome", "Created At"].map(
+                  children: ["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Date", "Status"].map(
                     (header) =>
                       new TableCell({
                         children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
@@ -151,9 +161,14 @@ function TicketsPage() {
                         t.id,
                         t.playerName,
                         t.betAmount,
+                        t.potentialWin || "-",
+                        t.payout || t.payOut || "-",
                         t.gameType,
-                        t.outcome,
+                        t.gameName || "-",
+                        t.provider || "-",
+                        t.roundId || "-",
                         t.createdAt,
+                        t.outcome,
                       ].map(
                         (val) =>
                           new TableCell({
@@ -226,14 +241,31 @@ function TicketsPage() {
 
   const columns: Column<TicketRecord>[] = [
     {
-      header: "Player ID",
-      accessor: "id",
-      cellClassName: "font-mono text-gray-700",
+      header: "Bet ID",
+      accessor: (t) => (
+        <div className="flex items-center gap-1.5 font-mono text-xs">
+          <span className="font-medium text-gray-900 truncate max-w-[90px]" title={t.id}>
+            {t.id.length > 10 ? `${t.id.substring(0, 10)}...` : t.id}
+          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(t.id);
+              toast.success("Bet ID copied to clipboard");
+            }}
+            className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+            title="Copy Bet ID"
+          >
+            <Copy className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ),
     },
     {
       header: "Player Name",
       accessor: (t) => (
-        <span className="text-gray-500 text-xs leading-relaxed" title={t.playerName}>
+        <span className="text-gray-900 font-medium text-xs leading-relaxed" title={t.playerName}>
           {t.playerName}
         </span>
       ),
@@ -241,8 +273,24 @@ function TicketsPage() {
     {
       header: "Bet Amount",
       accessor: (t) => (
-        <span className="text-gray-500 text-xs leading-relaxed">
+        <span className="text-gray-900 font-bold text-xs leading-relaxed">
           {t.betAmount}
+        </span>
+      ),
+    },
+    {
+      header: "Potential Win",
+      accessor: (t) => (
+        <span className="text-gray-700 text-xs leading-relaxed font-semibold">
+          {t.potentialWin ?? "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Payout",
+      accessor: (t) => (
+        <span className="text-gray-700 text-xs leading-relaxed font-semibold">
+          {t.payout || t.payOut || "—"}
         </span>
       ),
     },
@@ -252,6 +300,48 @@ function TicketsPage() {
         <span className="text-gray-500 text-xs leading-relaxed">
           {t.gameType}
         </span>
+      ),
+    },
+    {
+      header: "Game Name",
+      accessor: (t) => (
+        <span className="text-gray-500 text-xs leading-relaxed">
+          {t.gameName ?? "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Provider",
+      accessor: (t) => (
+        <span className="text-gray-500 text-xs leading-relaxed font-mono">
+          {t.provider ?? "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Round ID",
+      accessor: (t) => (
+        t.roundId ? (
+          <div className="flex items-center gap-1.5 font-mono text-xs">
+            <span className="text-gray-500 truncate max-w-[80px]" title={t.roundId}>
+              {t.roundId.length > 8 ? `${t.roundId.substring(0, 8)}...` : t.roundId}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(t.roundId!);
+                toast.success("Round ID copied to clipboard");
+              }}
+              className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              title="Copy Round ID"
+            >
+              <Copy className="w-3 h-3" />
+            </button>
+          </div>
+        ) : (
+          <span className="text-gray-400 text-xs">—</span>
+        )
       ),
     },
     {
@@ -266,7 +356,7 @@ function TicketsPage() {
       header: "Balance Before",
       accessor: (t) => (
         <span className="text-gray-500 text-xs leading-relaxed">
-          {t.balanceBefore ?? "N/A"}
+          {t.balanceBefore ?? "—"}
         </span>
       ),
     },
@@ -274,19 +364,22 @@ function TicketsPage() {
       header: "Balance After",
       accessor: (t) => (
         <span className="text-gray-500 text-xs leading-relaxed">
-          {t.balanceAfter ?? "N/A"}
+          {t.balanceAfter ?? "—"}
         </span>
       ),
     },
     {
       header: "Status",
-      accessor: (t) => (
-        <span
-          className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${OUTCOME_STYLES[t.outcome]}`}
-        >
-          {t.outcome}
-        </span>
-      ),
+      accessor: (t) => {
+        const outcomeKey = (t.outcome === "Won" ? "Won" : (t.outcome as any) === "Active" || (t.outcome as any) === "Pending" ? "Active" : "Lost") as TicketOutcome;
+        return (
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${OUTCOME_STYLES[outcomeKey] || "bg-gray-100 text-gray-700"}`}
+          >
+            {t.outcome}
+          </span>
+        );
+      },
     },
   ];
 
