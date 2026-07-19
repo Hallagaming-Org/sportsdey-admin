@@ -9,6 +9,7 @@ import {
   Mail,
   Phone,
   Copy,
+  XCircle,
 } from "lucide-react";
 import { FaFileExport, FaFilePdf, FaFileWord, FaFileExcel } from "react-icons/fa6";
 import { toast } from "sonner";
@@ -454,34 +455,41 @@ export function TicketDetailsView({
                 <th className="py-3 px-4 rounded-l-xl w-12 font-normal">#</th>
                 <th className="py-3 px-4 font-normal">Match</th>
                 <th className="py-3 px-4 font-normal">Pick</th>
-                <th className="py-3 px-4 rounded-r-xl text-right font-normal">Odds</th>
+                <th className="py-3 px-4 font-normal">Odds</th>
+                <th className="py-3 px-4 rounded-r-xl w-12 text-center font-normal"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-gray-800">
               {details.selections?.map((sel: MatchSelection, idx: number) => (
                 <tr key={idx}>
-                  <td className="py-3.5 pr-4 font-medium text-gray-400">
+                  <td className="py-3.5 px-4 font-medium text-gray-400">
                     {idx + 1}
                   </td>
                   <td className="py-3.5 px-4 font-semibold text-gray-900">
                     {sel.match}
                   </td>
                   <td className="py-3.5 px-4 text-gray-700">{sel.pick}</td>
-                  <td className="py-3.5 pl-4 text-right">
-                    <div className="inline-flex items-center gap-1.5 font-semibold text-gray-900">
-                      <span>{sel.odds}</span>
-                      <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white" />
-                    </div>
+                  <td className="py-3.5 px-4 font-semibold text-gray-900">
+                    {sel.odds}
+                  </td>
+                  <td className="py-3.5 px-4 text-center">
+                    {sel.status === "Lost" ? (
+                      <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
+                    )}
                   </td>
                 </tr>
               ))}
-              <tr className="border-t border-gray-200">
-                <td colSpan={3} className="py-4 pr-4 font-bold text-gray-900">
+              <tr className="bg-[#E8F8E5]/50 border-t border-gray-100 font-bold">
+                <td className="py-3.5 px-4"></td>
+                <td colSpan={2} className="py-3.5 px-4 text-[#10C300] font-bold">
                   Total Odds
                 </td>
-                <td className="py-4 pl-4 text-right font-bold text-base text-[#10C300]">
+                <td className="py-3.5 px-4 text-[#10C300] font-bold text-sm">
                   {details.totalOdds}
                 </td>
+                <td className="py-3.5 px-4"></td>
               </tr>
             </tbody>
           </table>
