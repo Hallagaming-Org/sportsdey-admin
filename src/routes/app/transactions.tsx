@@ -177,6 +177,7 @@ function WalletPage() {
 	const initialViewTxn = (location.state as unknown as Record<string, unknown>)?.viewTransaction as string | undefined;
 
 	const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(initialViewTxn ?? null);
+	const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 	const [isDetailsOpen, setIsDetailsOpen] = useState(!!initialViewTxn);
 	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
 
