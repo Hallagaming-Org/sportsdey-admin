@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter, redirect } from "@tanstack/react-router";
-import { ChevronDown, Eye, PauseCircle, Search } from "lucide-react";
+import { Eye, PauseCircle, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import NotificationIcon from "#/assets/NotificationIcon";
@@ -45,11 +45,11 @@ function UsersPage() {
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
-	const [sort, setSort] = useState<"asc" | "desc">("asc");
+	const [sort] = useState<"asc" | "desc">("asc");
 const [activeTab, setActiveTab] = useState<Tab>("all");
-	const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
-		"all",
-	);
+	// const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
+	// 	"all",
+	// );
 	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
 	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 	const [showAddModal, setShowAddModal] = useState(false);
