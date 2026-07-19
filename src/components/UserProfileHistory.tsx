@@ -313,7 +313,8 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
             ) : (
               <p className="text-xl md:text-2xl font-bold text-gray-900">
                 {formatMoney(
-                  ticketOverview?.currentActiveBetAmount ??
+                  ticketOverview?.currentBet ??
+                    ticketOverview?.currentActiveBetAmount ??
                     ticketOverview?.activeBetAmount ??
                     ticketOverview?.currentActiveBet
                 )}
