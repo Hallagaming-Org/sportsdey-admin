@@ -181,14 +181,19 @@ function Content({
 }) {
   const isDeposit = summary.type === "deposit";
 
+  const actualUserId =
+    userId ||
+    (summary as any).userId ||
+    (summary as any).user_id ||
+    (summary as any).user?.id ||
+    (summary as any).user_Id ||
+    (summary as any).playerId ||
+    (summary as any).player_id ||
+    "";
+
   const handleViewProfile = () => {
     if (onViewProfile) {
-      const resolvedUserId = 
-        userId || 
-        (summary as any).userId || 
-        (summary as any).user_id || 
-        (summary as any).user?.id || 
-        summary.transactionId;
+      const resolvedUserId = actualUserId || summary.transactionId;
 
       const resolvedName = 
         (summary as any).userName || 
@@ -377,7 +382,7 @@ function Content({
             {/* Transaction ID */}
             <div className="flex justify-between items-center text-sm">
               <span className="text-[#82869A] shrink-0">Transaction ID:</span>
-              <span className="font-medium text-[#030229] text-xs flex items-center gap-1.5">
+              <span className="font-medium text-[#030229] text-xs flex items-center gap-1.5 font-mono">
                 {summary.transactionId}
                 <button 
                   onClick={() => handleCopy(summary.transactionId, "Transaction ID")}
@@ -386,6 +391,23 @@ function Content({
                 >
                   <Copy className="h-3.5 w-3.5 text-[#1E9E24]" />
                 </button>
+              </span>
+            </div>
+
+            {/* User ID */}
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-[#82869A] shrink-0">User ID:</span>
+              <span className="font-medium text-[#030229] text-xs flex items-center gap-1.5 font-mono">
+                {actualUserId || "N/A"}
+                {actualUserId && (
+                  <button 
+                    onClick={() => handleCopy(actualUserId, "User ID")}
+                    className="hover:opacity-80 transition-opacity cursor-pointer"
+                    title="Copy User ID"
+                  >
+                    <Copy className="h-3.5 w-3.5 text-[#1E9E24]" />
+                  </button>
+                )}
               </span>
             </div>
 
