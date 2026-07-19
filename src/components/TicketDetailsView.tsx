@@ -426,10 +426,10 @@ export function TicketDetailsView({
                 <td className="py-4 px-4">{details.bonusUsed}</td>
                 <td className="py-4 px-4">{details.cashOut}</td>
                 <td className="py-4 pl-4">
-                  <div className="flex flex-col">
-                    <span className="text-[11px] text-gray-500">
+                  <div className="flex flex-col space-y-1">
+                    <button className="w-max p-1 text-[11px] border border-[#757979] rounded-full bg-[#F0F0F0] text-gray-500">
                       {details.deviceInfo}
-                    </span>
+                    </button>
                     <span className="font-mono text-[11px] text-gray-700">
                       {details.ipAddress}
                     </span>
