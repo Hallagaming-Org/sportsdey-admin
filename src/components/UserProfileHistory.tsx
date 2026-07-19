@@ -18,10 +18,10 @@ interface UserProfileHistoryProps {
   userId: string;
 }
 
-function calcDynamicCardFontSize(val: string | number | null | undefined, maxPx = 24, minPx = 10, baseChars = 9) {
-  const str = String(val ?? "");
-  if (!str || str.length <= baseChars) return { fontSize: `${maxPx}px`, lineHeight: "1.2" };
-  const scale = baseChars / str.length;
+function getUniformCardFontSize(values: Array<string | number | null | undefined>, maxPx = 22, minPx = 10, baseChars = 9) {
+  const maxLen = Math.max(0, ...values.map(val => String(val ?? "").length));
+  if (!maxLen || maxLen <= baseChars) return { fontSize: `${maxPx}px`, lineHeight: "1.2" };
+  const scale = baseChars / maxLen;
   const fontPx = Math.max(minPx, Math.min(maxPx, Math.round(scale * maxPx * 10) / 10));
   return { fontSize: `${fontPx}px`, lineHeight: "1.2", wordBreak: "break-all" as const };
 }
@@ -323,83 +323,73 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div>
-            <p className="text-gray-500 text-sm mb-1">Current Bets placed</p>
-            {isOverviewLoading ? (
-              <Skeleton className="h-7 w-28 mt-1" />
-            ) : (
-              (() => {
-                const valStr = formatMoney(
-                  ticketOverview?.currentBet ??
-                    ticketOverview?.currentActiveBetAmount ??
-                    ticketOverview?.activeBetAmount ??
-                    ticketOverview?.currentActiveBet
-                );
-                return (
-                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
-                    {valStr}
+        {(() => {
+          const val1 = formatMoney(
+            ticketOverview?.currentBet ??
+              ticketOverview?.currentActiveBetAmount ??
+              ticketOverview?.activeBetAmount ??
+              ticketOverview?.currentActiveBet
+          );
+          const val2 = formatMoney(
+            ticketOverview?.totalGamesWon ??
+              ticketOverview?.gamesWon
+          );
+          const val3 = formatMoney(
+            ticketOverview?.totalGamesLost ??
+              ticketOverview?.gamesLost
+          );
+          const val4 = formatMoney(
+            ticketOverview?.grossGamingRevenue ??
+              ticketOverview?.ggr ??
+              ticketOverview?.netPosition
+          );
+          const cardStyle = getUniformCardFontSize([val1, val2, val3, val4]);
+
+          return (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Current Bets placed</p>
+                {isOverviewLoading ? (
+                  <Skeleton className="h-7 w-28 mt-1" />
+                ) : (
+                  <p style={cardStyle} className="font-bold text-gray-900 tracking-tight">
+                    {val1}
                   </p>
-                );
-              })()
-            )}
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm mb-1">Total Games won</p>
-            {isOverviewLoading ? (
-              <Skeleton className="h-7 w-28 mt-1" />
-            ) : (
-              (() => {
-                const valStr = formatMoney(
-                  ticketOverview?.totalGamesWon ??
-                    ticketOverview?.gamesWon
-                );
-                return (
-                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
-                    {valStr}
+                )}
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Total Games won</p>
+                {isOverviewLoading ? (
+                  <Skeleton className="h-7 w-28 mt-1" />
+                ) : (
+                  <p style={cardStyle} className="font-bold text-gray-900 tracking-tight">
+                    {val2}
                   </p>
-                );
-              })()
-            )}
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm mb-1">Total Games Lost</p>
-            {isOverviewLoading ? (
-              <Skeleton className="h-7 w-28 mt-1" />
-            ) : (
-              (() => {
-                const valStr = formatMoney(
-                  ticketOverview?.totalGamesLost ??
-                    ticketOverview?.gamesLost
-                );
-                return (
-                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
-                    {valStr}
+                )}
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Total Games Lost</p>
+                {isOverviewLoading ? (
+                  <Skeleton className="h-7 w-28 mt-1" />
+                ) : (
+                  <p style={cardStyle} className="font-bold text-gray-900 tracking-tight">
+                    {val3}
                   </p>
-                );
-              })()
-            )}
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm mb-1">Net Position (GGR)</p>
-            {isOverviewLoading ? (
-              <Skeleton className="h-7 w-28 mt-1" />
-            ) : (
-              (() => {
-                const valStr = formatMoney(
-                  ticketOverview?.grossGamingRevenue ??
-                    ticketOverview?.ggr ??
-                    ticketOverview?.netPosition
-                );
-                return (
-                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
-                    {valStr}
+                )}
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Net Position (GGR)</p>
+                {isOverviewLoading ? (
+                  <Skeleton className="h-7 w-28 mt-1" />
+                ) : (
+                  <p style={cardStyle} className="font-bold text-gray-900 tracking-tight">
+                    {val4}
                   </p>
-                );
-              })()
-            )}
-          </div>
-        </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Tickets (bet) Summary */}
