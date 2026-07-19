@@ -27,7 +27,38 @@ import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, Width
 
 
 
+const copyToClipboard = (text: string, label = "Ticket ID") => {
+  if (navigator?.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => toast.success(`${label} copied to clipboard`),
+      () => fallbackCopy(text, label)
+    );
+  } else {
+    fallbackCopy(text, label);
+  }
+};
+
+const fallbackCopy = (text: string, label: string) => {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.left = "-9999px";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand("copy");
+    toast.success(`${label} copied to clipboard`);
+  } catch {
+    toast.error(`Failed to copy ${label}`);
+  }
+  document.body.removeChild(textArea);
+};
+
 export const Route = createFileRoute("/app/tickets")({
+  validateSearch: (search: Record<string, unknown>): { ticketId?: string } => ({
+    ticketId: (search.ticketId as string) || undefined,
+  }),
   beforeLoad: ({ context }) => {
     const admin = (context as any).admin;
     if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("view_ticket_history")) {
@@ -54,6 +85,8 @@ const ITEMS_PER_PAGE = 10;
 
 function TicketsPage() {
   const navigate = useNavigate();
+  const searchParams = Route.useSearch();
+  const ticketIdFromUrl = searchParams?.ticketId;
   const [activeTab, setActiveTab] = useState<TicketTab>("all");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -202,7 +235,7 @@ function TicketsPage() {
       if (!result.success) throw new Error(result.error || "Failed to toggle suspend status");
       return result;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       toast.success(variables.isReactivate ? "User reactivated successfully" : "User suspended successfully");
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
     },
@@ -402,12 +435,28 @@ function TicketsPage() {
   const totalPages = data?.pagination.totalPages ?? 1;
   const totalItems = data?.pagination.total ?? 0;
 
-  if (selectedTicketDetails) {
+  const { data: ticketDetailsData } = useQuery({
+    queryKey: ["url-ticket-details", ticketIdFromUrl],
+    queryFn: async () => {
+      if (!ticketIdFromUrl) return null;
+      const res = await ticketService.getTicketDetails(ticketIdFromUrl);
+      if (res.success && res.data) return res.data;
+      return null;
+    },
+    enabled: !!ticketIdFromUrl,
+  });
+
+  const activeTicketDetails = selectedTicketDetails || ticketDetailsData || (ticketIdFromUrl ? tickets.find(t => t.id === ticketIdFromUrl) : null);
+
+  if (activeTicketDetails) {
     return (
       <>
         <TicketDetailsView
-          ticket={selectedTicketDetails}
-          onBack={() => setSelectedTicketDetails(null)}
+          ticket={activeTicketDetails}
+          onBack={() => {
+            setSelectedTicketDetails(null);
+            navigate({ to: "/app/tickets", search: { ticketId: undefined }, replace: true });
+          }}
           onViewPlayerProfile={(user) => {
             setSelectedProfileUser(user);
           }}
@@ -615,8 +664,7 @@ function TicketsPage() {
               icon: <Copy className="w-4 h-4" />,
               label: "Copy ticket ID",
               onClick: () => {
-                navigator.clipboard.writeText(actionDropdown.ticket.id);
-                toast.success("Ticket ID copied to clipboard");
+                copyToClipboard(actionDropdown.ticket.id, "Ticket ID");
                 setActionDropdown(null);
               },
             },
