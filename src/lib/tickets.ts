@@ -33,6 +33,7 @@ export interface TicketsResponse {
 }
 
 export interface UserTicketOverview {
+	currentBet?: number | string;
 	currentActiveBetAmount?: number | string;
 	activeBetAmount?: number | string;
 	currentActiveBet?: number | string;
