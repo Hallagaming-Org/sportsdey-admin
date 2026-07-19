@@ -45,16 +45,20 @@ export function TicketDetailsView({
     enabled: !!ticket.id,
   });
 
+  const isCasino =
+    ticket.gameType?.toLowerCase() === "casino" ||
+    fetchedDetails?.gameType?.toLowerCase() === "casino";
+
   // Construct full display details with fallbacks matching Figma design when fields are missing
   const details: DetailedTicket = {
     ...ticket,
     ...fetchedDetails,
     placedAt: fetchedDetails?.placedAt || "Aug 8, 2025 , 10:42 pm",
     settledAt: fetchedDetails?.settledAt || "Aug 8, 2025 , 11:58 pm",
-    stakeAmount: fetchedDetails?.stakeAmount || ticket.betAmount || "₦50,000",
+    stakeAmount: fetchedDetails?.stakeAmount || ticket.betAmount || (isCasino ? "₦20,000" : "₦50,000"),
     potentialWin: fetchedDetails?.potentialWin || ticket.potentialWin || "₦225,000",
-    actualPayout: fetchedDetails?.actualPayout || ticket.payout || ticket.payOut || (ticket.outcome === "Won" ? (ticket.potentialWin || "₦225,000") : "₦0.00"),
-    profit: fetchedDetails?.profit || "+₦175,000",
+    actualPayout: fetchedDetails?.actualPayout || ticket.payout || ticket.payOut || (ticket.outcome === "Won" ? (ticket.potentialWin || (isCasino ? "₦168,600" : "₦225,000")) : "₦0.00"),
+    profit: fetchedDetails?.profit || (isCasino ? "+₦148,600" : "+₦175,000"),
     playerEmail: fetchedDetails?.playerEmail || `${ticket.playerName.toLowerCase().replace(/\s+/g, "")}@gmail.com`,
     playerPhone: fetchedDetails?.playerPhone || "+234 812 345 6789",
     playerVerified: fetchedDetails?.playerVerified ?? true,
@@ -66,6 +70,24 @@ export function TicketDetailsView({
     cashOut: fetchedDetails?.cashOut || "Not Used",
     ipAddress: fetchedDetails?.ipAddress || "Safari 105.112.23.191",
     deviceInfo: fetchedDetails?.deviceInfo || "iPhone 13",
+    // Casino specific fields with fallback defaults matching Figma mockup
+    gameName: fetchedDetails?.gameName || ticket.gameName || "Aviator",
+    provider: fetchedDetails?.provider || ticket.provider || "Spribe",
+    roundId: fetchedDetails?.roundId || ticket.roundId || "AV-1234567",
+    sessionId: fetchedDetails?.sessionId || ticket.sessionId || "123456789",
+    betTime: fetchedDetails?.betTime || "Aug 8, 2025 10:42 pm",
+    cashOutTime: fetchedDetails?.cashOutTime || "Aug 8, 2025 11:58 pm",
+    multiplier: fetchedDetails?.multiplier || ticket.multiplier || "8.43x",
+    winAmount: fetchedDetails?.winAmount || ticket.winAmount || "₦168,600",
+    roundSummary: fetchedDetails?.roundSummary || [
+      {
+        id: "-",
+        betAmount: "₦168,600",
+        cashedOutAt: "8.43x",
+        winAmount: "₦168,600",
+        status: ticket.outcome === "Won" ? "Won" : "Lost",
+      },
+    ],
     selections: fetchedDetails?.selections || [
       { id: 1, match: "Arsenal vs Chelsea", pick: "Arsenal Win", odds: "1.75", status: "Won" },
       { id: 2, match: "Real Madrid vs Barcelona", pick: "Over 2.5 Goals", odds: "1.60", status: "Won" },
@@ -93,18 +115,32 @@ export function TicketDetailsView({
     doc.text(`Ticket Details - ${details.id}`, 14, 15);
     doc.setFontSize(10);
     doc.text(`Player: ${details.playerName} | Status: ${details.outcome}`, 14, 23);
-    doc.text(`Stake: ${details.stakeAmount} | Payout: ${details.actualPayout} | Profit: ${details.profit}`, 14, 30);
 
-    autoTable(doc, {
-      head: [["#", "Match", "Pick", "Odds"]],
-      body: details.selections?.map((s: MatchSelection, idx: number) => [
-        idx + 1,
-        s.match,
-        s.pick,
-        s.odds,
-      ]) || [],
-      startY: 38,
-    });
+    if (isCasino) {
+      doc.text(`Stake: ${details.stakeAmount} | Win Amount: ${details.winAmount || details.actualPayout} | Profit: ${details.profit}`, 14, 30);
+      autoTable(doc, {
+        head: [["#", "Bet Amount", "Cashed out at", "Win Amount"]],
+        body: details.roundSummary?.map((r, idx) => [
+          r.id || idx + 1,
+          r.betAmount,
+          r.cashedOutAt,
+          r.winAmount,
+        ]) || [],
+        startY: 38,
+      });
+    } else {
+      doc.text(`Stake: ${details.stakeAmount} | Payout: ${details.actualPayout} | Profit: ${details.profit}`, 14, 30);
+      autoTable(doc, {
+        head: [["#", "Match", "Pick", "Odds"]],
+        body: details.selections?.map((s: MatchSelection, idx: number) => [
+          idx + 1,
+          s.match,
+          s.pick,
+          s.odds,
+        ]) || [],
+        startY: 38,
+      });
+    }
 
     doc.save(`Ticket_${details.id}.pdf`);
   };
@@ -161,7 +197,7 @@ export function TicketDetailsView({
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-0.5">
-              Placed: {details.placedAt} . Settled: {details.settledAt}
+              Placed: {details.placedAt} . Cash out: {details.settledAt}
             </p>
           </div>
         </div>
@@ -253,24 +289,6 @@ export function TicketDetailsView({
                     </>
                   )}
                 </button>
-                {/* <button
-                  onClick={() => {
-                    setShowTopMenu(false);
-                    toast.success(`Ticket ${details.id} voided`);
-                  }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer"
-                >
-                  <ShieldAlert className="w-3.5 h-3.5 text-orange-500" /> Void Ticket
-                </button>
-                <button
-                  onClick={() => {
-                    setShowTopMenu(false);
-                    toast.success(`Ticket ${details.id} flagged for investigation`);
-                  }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
-                >
-                  <Flag className="w-3.5 h-3.5 text-red-600" /> Flag for Investigation
-                </button> */}
               </div>
             )}
           </div>
@@ -278,35 +296,60 @@ export function TicketDetailsView({
       </div>
 
       {/* Summary Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-          <p className="text-xs text-gray-500 font-medium">Stake Amount</p>
-          <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
-            {details.stakeAmount}
-          </h4>
-        </div>
+      {isCasino ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+            <p className="text-xs text-gray-500 font-medium">Stake Amount</p>
+            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
+              {details.stakeAmount}
+            </h4>
+          </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-          <p className="text-xs text-gray-500 font-medium">Potential Win</p>
-          <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
-            {details.potentialWin}
-          </h4>
-        </div>
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+            <p className="text-xs text-gray-500 font-medium">Win Amount</p>
+            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
+              {details.winAmount || details.actualPayout}
+            </h4>
+          </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-          <p className="text-xs text-gray-500 font-medium">Actual Payout</p>
-          <h4 className="text-xl md:text-2xl font-bold text-[#10C300] mt-1.5">
-            {details.actualPayout}
-          </h4>
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+            <p className="text-xs text-gray-500 font-medium">Profit</p>
+            <h4 className="text-xl md:text-2xl font-bold text-[#10C300] mt-1.5">
+              {details.profit}
+            </h4>
+          </div>
         </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+            <p className="text-xs text-gray-500 font-medium">Stake Amount</p>
+            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
+              {details.stakeAmount}
+            </h4>
+          </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-          <p className="text-xs text-gray-500 font-medium">Profit</p>
-          <h4 className="text-xl md:text-2xl font-bold text-[#10C300] mt-1.5">
-            {details.profit}
-          </h4>
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+            <p className="text-xs text-gray-500 font-medium">Potential Win</p>
+            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
+              {details.potentialWin}
+            </h4>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+            <p className="text-xs text-gray-500 font-medium">Actual Payout</p>
+            <h4 className="text-xl md:text-2xl font-bold text-[#10C300] mt-1.5">
+              {details.actualPayout}
+            </h4>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+            <p className="text-xs text-gray-500 font-medium">Profit</p>
+            <h4 className="text-xl md:text-2xl font-bold text-[#10C300] mt-1.5">
+              {details.profit}
+            </h4>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Player Information Card */}
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
@@ -376,121 +419,205 @@ export function TicketDetailsView({
             <div className="flex items-center gap-4">
               <span className="text-gray-400 min-w-[75px]">Bal. Before:</span>
               <span className="font-semibold text-gray-900">
-                {details.balanceBefore || "₦225,000"}
+                {details.balanceBefore || "₦300,000"}
               </span>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-gray-400 min-w-[75px]">Bal. After:</span>
               <span className="font-semibold text-gray-900">
-                {details.balanceAfter || "₦400,000"}
+                {details.balanceAfter || "₦468,600"}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Betting Details Table */}
+      {/* Details Table */}
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
         <h4 className="text-base font-bold text-gray-900 mb-5">
-          Betting Details
+          {isCasino ? "Game Details" : "Betting Details"}
         </h4>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead className="bg-[#F9F9F9]">
-              <tr className="text-gray-400 font-medium">
-                <th className="py-3 px-4 rounded-l-xl font-normal">Bet Type</th>
-                <th className="py-3 px-4 font-normal">Selection</th>
-                <th className="py-3 px-4 font-normal">Stake amount</th>
-                <th className="py-3 px-4 font-normal">Total Odds</th>
-                <th className="py-3 px-4 font-normal">Free Bet</th>
-                <th className="py-3 px-4 font-normal">Bonus used</th>
-                <th className="py-3 px-4 font-normal">Cash out</th>
-                <th className="py-3 px-4 rounded-r-xl font-normal">IP address</th>
-              </tr>
+              {isCasino ? (
+                <tr className="text-gray-400 font-medium">
+                  <th className="py-3 px-4 rounded-l-xl font-normal">Game Name</th>
+                  <th className="py-3 px-4 font-normal">Provider</th>
+                  <th className="py-3 px-4 font-normal">Round ID</th>
+                  <th className="py-3 px-4 font-normal">Session ID</th>
+                  <th className="py-3 px-4 font-normal">Bet Time</th>
+                  <th className="py-3 px-4 font-normal">Cash out Time</th>
+                  <th className="py-3 px-4 font-normal">Bet Amount</th>
+                  <th className="py-3 px-4 font-normal">Multiplier</th>
+                  <th className="py-3 px-4 rounded-r-xl font-normal">Win Amount</th>
+                </tr>
+              ) : (
+                <tr className="text-gray-400 font-medium">
+                  <th className="py-3 px-4 rounded-l-xl font-normal">Bet Type</th>
+                  <th className="py-3 px-4 font-normal">Selection</th>
+                  <th className="py-3 px-4 font-normal">Stake amount</th>
+                  <th className="py-3 px-4 font-normal">Total Odds</th>
+                  <th className="py-3 px-4 font-normal">Free Bet</th>
+                  <th className="py-3 px-4 font-normal">Bonus used</th>
+                  <th className="py-3 px-4 font-normal">Cash out</th>
+                  <th className="py-3 px-4 rounded-r-xl font-normal">IP address</th>
+                </tr>
+              )}
             </thead>
             <tbody className="divide-y divide-gray-50 text-gray-800">
-              <tr>
-                <td className="py-4 px-4 font-semibold text-gray-900">
-                  {details.betType}
-                </td>
-                <td className="py-4 px-4 font-medium">
-                  {details.selectionCount}
-                </td>
-                <td className="py-4 px-4 font-medium">
-                  {details.stakeAmount}
-                </td>
-                <td className="py-4 px-4 font-semibold text-gray-900">
-                  {details.totalOdds}
-                </td>
-                <td className="py-4 px-4">{details.freeBet}</td>
-                <td className="py-4 px-4">{details.bonusUsed}</td>
-                <td className="py-4 px-4">{details.cashOut}</td>
-                <td className="py-4 px-4">
-                  <div className="flex flex-col space-y-1">
-                    <button className="w-max p-1 text-[11px] border border-[#757979] rounded-full bg-[#F0F0F0] text-gray-500">
-                      {details.deviceInfo}
-                    </button>
-                    <span className="font-mono text-[11px] text-gray-700">
-                      {details.ipAddress}
-                    </span>
-                  </div>
-                </td>
-              </tr>
+              {isCasino ? (
+                <tr>
+                  <td className="py-4 px-4 font-semibold text-gray-900">
+                    {details.gameName}
+                  </td>
+                  <td className="py-4 px-4 font-medium text-gray-700">
+                    {details.provider}
+                  </td>
+                  <td className="py-4 px-4 font-medium text-gray-900">
+                    {details.roundId}
+                  </td>
+                  <td className="py-4 px-4 font-medium text-gray-900">
+                    {details.sessionId}
+                  </td>
+                  <td className="py-4 px-4 text-gray-700">
+                    {details.betTime}
+                  </td>
+                  <td className="py-4 px-4 text-gray-700">
+                    {details.cashOutTime}
+                  </td>
+                  <td className="py-4 px-4 font-semibold text-gray-900">
+                    {details.stakeAmount}
+                  </td>
+                  <td className="py-4 px-4 font-semibold text-[#10C300]">
+                    {details.multiplier}
+                  </td>
+                  <td className="py-4 px-4 font-semibold text-[#10C300]">
+                    {details.winAmount}
+                  </td>
+                </tr>
+              ) : (
+                <tr>
+                  <td className="py-4 px-4 font-semibold text-gray-900">
+                    {details.betType}
+                  </td>
+                  <td className="py-4 px-4 font-medium">
+                    {details.selectionCount}
+                  </td>
+                  <td className="py-4 px-4 font-medium">
+                    {details.stakeAmount}
+                  </td>
+                  <td className="py-4 px-4 font-semibold text-gray-900">
+                    {details.totalOdds}
+                  </td>
+                  <td className="py-4 px-4">{details.freeBet}</td>
+                  <td className="py-4 px-4">{details.bonusUsed}</td>
+                  <td className="py-4 px-4">{details.cashOut}</td>
+                  <td className="py-4 px-4">
+                    <div className="flex flex-col space-y-1">
+                      <button className="w-max p-1 text-[11px] border border-[#757979] rounded-full bg-[#F0F0F0] text-gray-500">
+                        {details.deviceInfo}
+                      </button>
+                      <span className="font-mono text-[11px] text-gray-700">
+                        {details.ipAddress}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Match Selections Table */}
+      {/* Bottom Table: Round Summary for Casino / Match Selections for Sportsbook */}
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs mb-6">
         <h4 className="text-base font-bold text-gray-900 mb-5">
-          Match Selections
+          {isCasino ? `${details.gameName} - Round Summary` : "Match Selections"}
         </h4>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead className="bg-[#F9F9F9]">
-              <tr className="text-gray-400 font-medium">
-                <th className="py-3 px-4 rounded-l-xl w-12 font-normal">#</th>
-                <th className="py-3 px-4 font-normal">Match</th>
-                <th className="py-3 px-4 font-normal">Pick</th>
-                <th className="py-3 px-4 font-normal">Odds</th>
-                <th className="py-3 px-4 rounded-r-xl w-12 text-center font-normal"></th>
-              </tr>
+              {isCasino ? (
+                <tr className="text-gray-400 font-medium">
+                  <th className="py-3 px-4 rounded-l-xl w-12 font-normal">#</th>
+                  <th className="py-3 px-4 font-normal">Bet Amount</th>
+                  <th className="py-3 px-4 font-normal">Cashed out at</th>
+                  <th className="py-3 px-4 font-normal">Win Amount</th>
+                  <th className="py-3 px-4 rounded-r-xl w-12 text-center font-normal"></th>
+                </tr>
+              ) : (
+                <tr className="text-gray-400 font-medium">
+                  <th className="py-3 px-4 rounded-l-xl w-12 font-normal">#</th>
+                  <th className="py-3 px-4 font-normal">Match</th>
+                  <th className="py-3 px-4 font-normal">Pick</th>
+                  <th className="py-3 px-4 font-normal">Odds</th>
+                  <th className="py-3 px-4 rounded-r-xl w-12 text-center font-normal"></th>
+                </tr>
+              )}
             </thead>
             <tbody className="divide-y divide-gray-100 text-gray-800">
-              {details.selections?.map((sel: MatchSelection, idx: number) => (
-                <tr key={idx}>
-                  <td className="py-3.5 px-4 font-medium text-gray-400">
-                    {idx + 1}
-                  </td>
-                  <td className="py-3.5 px-4 font-semibold text-gray-900">
-                    {sel.match}
-                  </td>
-                  <td className="py-3.5 px-4 text-gray-700">{sel.pick}</td>
-                  <td className="py-3.5 px-4 font-semibold text-gray-900">
-                    {sel.odds}
-                  </td>
-                  <td className="py-3.5 px-4 text-center">
-                    {sel.status === "Lost" ? (
-                      <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
-                    ) : (
-                      <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
-                    )}
-                  </td>
-                </tr>
-              ))}
-              <tr className="bg-[#E8F8E5]/50 border-t border-gray-100 font-bold">
-                <td className="py-3.5 px-4"></td>
-                <td colSpan={2} className="py-3.5 px-4 text-[#10C300] font-bold">
-                  Total Odds
-                </td>
-                <td className="py-3.5 px-4 text-[#10C300] font-bold text-sm">
-                  {details.totalOdds}
-                </td>
-                <td className="py-3.5 px-4"></td>
-              </tr>
+              {isCasino ? (
+                details.roundSummary?.map((round, idx: number) => (
+                  <tr key={idx}>
+                    <td className="py-3.5 px-4 font-medium text-gray-400">
+                      {round.id || idx + 1}
+                    </td>
+                    <td className="py-3.5 px-4 font-semibold text-gray-900">
+                      {round.betAmount}
+                    </td>
+                    <td className="py-3.5 px-4 font-medium text-gray-700">
+                      {round.cashedOutAt}
+                    </td>
+                    <td className="py-3.5 px-4 font-semibold text-[#10C300]">
+                      {round.winAmount}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      {round.status === "Lost" ? (
+                        <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <>
+                  {details.selections?.map((sel: MatchSelection, idx: number) => (
+                    <tr key={idx}>
+                      <td className="py-3.5 px-4 font-medium text-gray-400">
+                        {idx + 1}
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-gray-900">
+                        {sel.match}
+                      </td>
+                      <td className="py-3.5 px-4 text-gray-700">{sel.pick}</td>
+                      <td className="py-3.5 px-4 font-semibold text-gray-900">
+                        {sel.odds}
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        {sel.status === "Lost" ? (
+                          <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="bg-[#E8F8E5]/50 border-t border-gray-100 font-bold">
+                    <td className="py-3.5 px-4"></td>
+                    <td colSpan={2} className="py-3.5 px-4 text-[#10C300] font-bold">
+                      Total Odds
+                    </td>
+                    <td className="py-3.5 px-4 text-[#10C300] font-bold text-sm">
+                      {details.totalOdds}
+                    </td>
+                    <td className="py-3.5 px-4"></td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>
