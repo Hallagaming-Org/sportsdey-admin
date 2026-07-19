@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
 import { ticketService, type TicketRecord } from "../lib/tickets";
 import { ActionDropdown } from "./ActionDropdown";
-import { TicketDetailsModal } from "./TicketDetailsModal";
+import { TicketDetailsView } from "./TicketDetailsView";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 
 import * as XLSX from "xlsx";
@@ -661,14 +661,13 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
       )}
 
       {selectedTicketDetails && (
-        <TicketDetailsModal
-          ticket={selectedTicketDetails}
-          open={!!selectedTicketDetails}
-          onClose={() => setSelectedTicketDetails(null)}
-          onViewPlayerProfile={() => {
-            setSelectedTicketDetails(null);
-          }}
-        />
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+          <TicketDetailsView
+            ticket={selectedTicketDetails}
+            onBack={() => setSelectedTicketDetails(null)}
+            onViewPlayerProfile={() => setSelectedTicketDetails(null)}
+          />
+        </div>
       )}
     </div>
   );
