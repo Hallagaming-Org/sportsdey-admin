@@ -3,10 +3,40 @@ import { fetchApi } from "./api";
 export type TicketOutcome = "Won" | "Active" | "Lost";
 export type TicketTab = "all" | "casino" | "sportsbook";
 
+export interface MatchSelection {
+	id?: string | number;
+	match: string;
+	pick: string;
+	odds: number | string;
+	status?: "Won" | "Lost" | "Pending" | "Void";
+}
+
+export interface DetailedTicket extends TicketRecord {
+	placedAt?: string;
+	settledAt?: string;
+	stakeAmount?: string | number;
+	potentialWin?: string | null;
+	actualPayout?: string | null;
+	profit?: string | number;
+	playerEmail?: string;
+	playerPhone?: string;
+	playerVerified?: boolean;
+	betType?: string;
+	selectionCount?: number;
+	totalOdds?: number | string;
+	freeBet?: boolean | string;
+	bonusUsed?: boolean | string;
+	cashOut?: string;
+	ipAddress?: string;
+	deviceInfo?: string;
+	selections?: MatchSelection[];
+}
+
 export interface TicketRecord {
 	id: string;
 	userId?: string;
 	playerName: string;
+	image?: string;
 	betAmount: string;
 	potentialWin?: string | null;
 	payout?: string | null;
@@ -111,6 +141,12 @@ class TicketService {
 		return fetchApi<UserTicketOverview>(
 			`/admin/ticket-overview/user/${userId}${qs ? `?${qs}` : ""}`,
 		);
+	}
+
+	async getTicketDetails(
+		ticketId: string,
+	): Promise<{ success: boolean; data?: DetailedTicket; error?: string }> {
+		return fetchApi<DetailedTicket>(`/admin/tickets/${ticketId}`);
 	}
 }
 
