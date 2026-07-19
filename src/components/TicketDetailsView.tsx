@@ -8,6 +8,7 @@ import {
   PauseCircle,
   Mail,
   Phone,
+  Copy,
 } from "lucide-react";
 import { FaFileExport, FaFilePdf, FaFileWord, FaFileExcel } from "react-icons/fa6";
 import { toast } from "sonner";
@@ -130,9 +131,22 @@ export function TicketDetailsView({
 
           <div>
             <div className="flex items-center gap-2.5">
-              <h2 className="font-bold text-2xl text-gray-900">
-                Ticket ID - {details.id}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="font-bold text-2xl text-gray-900" title={details.id}>
+                  Ticket ID - {details.id && details.id.length > 16 ? `${details.id.substring(0, 12)}...` : details.id}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(details.id);
+                    toast.success("Ticket ID copied to clipboard");
+                  }}
+                  className="text-gray-400 hover:text-gray-700 transition-colors cursor-pointer p-1 rounded-md hover:bg-gray-100"
+                  title="Copy Ticket ID"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
               <span
                 className={`px-3 py-0.5 rounded-full text-xs font-semibold ${
                   outcomeKey === "Won"
@@ -327,9 +341,22 @@ export function TicketDetailsView({
                   Verified
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5 font-mono">
-                Player ID: {userForProfile.id}
-              </p>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5 font-mono">
+                <span title={userForProfile.id}>
+                  Player ID: {userForProfile.id && userForProfile.id.length > 14 ? `${userForProfile.id.substring(0, 10)}...` : userForProfile.id}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(userForProfile.id);
+                    toast.success("Player ID copied to clipboard");
+                  }}
+                  className="text-gray-400 hover:text-gray-700 transition-colors cursor-pointer p-0.5 rounded hover:bg-gray-100"
+                  title="Copy Player ID"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
 
