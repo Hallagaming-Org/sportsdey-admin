@@ -7,6 +7,12 @@ import { ticketService, type TicketRecord } from "../lib/tickets";
 import { userService } from "../lib/users";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 
+import * as XLSX from "xlsx";
+import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
+
 interface UserProfileHistoryProps {
   userId: string;
 }
@@ -19,6 +25,7 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("All");
   const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
   const [page, setPage] = useState(1);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const limit = 10;
 
   const { fromDate, toDate } = getDateRangeForPeriod(timePeriod, customRange, { output: "date" });
@@ -55,7 +62,8 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
       id: "012345",
       dateTime: "Aug 8, 2025\n10:42 pm",
       amount: "₦150,000.00",
-      oddsGameType: "0.5 Casino",
+      gameType: "Casino",
+      odds: "0.50",
       potentialWin: "₦150,000.00",
       payOut: "₦150,000.00",
       status: "Won",
@@ -64,7 +72,8 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
       id: "012345",
       dateTime: "Aug 8, 2025\n10:42 pm",
       amount: "₦80,000.00",
-      oddsGameType: "0.5 Casino",
+      gameType: "Casino",
+      odds: "0.50",
       potentialWin: "₦80,000.00",
       payOut: "₦80,000.00",
       status: "Pending",
@@ -73,37 +82,21 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
       id: "012345",
       dateTime: "Aug 8, 2025\n10:42 pm",
       amount: "₦50,000.00",
-      oddsGameType: "0.5 Casino",
-      potentialWin: "₦0",
-      payOut: "₦0",
+      gameType: "Casino",
+      odds: "0.50",
+      potentialWin: "₦0.00",
+      payOut: "₦0.00",
       status: "Lost",
     },
     {
       id: "012345",
       dateTime: "Aug 8, 2025\n10:42 pm",
       amount: "₦150,000.00",
-      oddsGameType: "0.5 Casino",
+      gameType: "Sportsbook",
+      odds: "1.85",
       potentialWin: "₦150,000.00",
       payOut: "₦150,000.00",
       status: "Won",
-    },
-    {
-      id: "012345",
-      dateTime: "Aug 8, 2025\n10:42 pm",
-      amount: "₦80,000.00",
-      oddsGameType: "0.5 Casino",
-      potentialWin: "₦80,000.00",
-      payOut: "₦80,000.00",
-      status: "Pending",
-    },
-    {
-      id: "012345",
-      dateTime: "Aug 8, 2025\n10:42 pm",
-      amount: "₦50,000.00",
-      oddsGameType: "0.5 Casino",
-      potentialWin: "₦0",
-      payOut: "₦0",
-      status: "Lost",
     },
   ];
 
@@ -149,15 +142,19 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
   const ticketsToDisplay = hasLoadedTickets
     ? rawTicketList.map((t: TicketRecord) => {
         const amount = formatMoney(t.betAmount);
-        const potWin = (t as any).potentialWin != null ? formatMoney((t as any).potentialWin) : (t.outcome === "Won" ? amount : "₦0");
-        const payOut = (t as any).payOut != null ? formatMoney((t as any).payOut) : (t.outcome === "Won" ? amount : "₦0");
+        const potWin = (t as any).potentialWin != null ? formatMoney((t as any).potentialWin) : (t.outcome === "Won" ? amount : "₦0.00");
+        const payOut = (t as any).payOut != null ? formatMoney((t as any).payOut) : (t.outcome === "Won" ? amount : "₦0.00");
         const status = t.outcome === "Won" ? "Won" : (t.outcome === "Active" || (t.outcome as any) === "Pending") ? "Pending" : "Lost";
+
+        const gameType = t.gameType || "Sportsbook";
+        const oddsVal = (t as any).odd || (t as any).odds || (t as any).oddValue || "1.00";
 
         return {
           id: t.id,
           dateTime: formatTicketDate(t.createdAt),
           amount,
-          oddsGameType: t.gameType || "Casino",
+          gameType,
+          odds: String(oddsVal),
           potentialWin: potWin,
           payOut,
           status,
@@ -171,6 +168,122 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
   const formatCurrency = (val?: number | null) => {
     if (val == null) return "₦1,500.00";
     return `₦${val.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const exportToExcel = () => {
+    const dataToExport = ticketsToDisplay.map((t) => ({
+      "Bet ID": t.id,
+      "Date & Time": t.dateTime.replace("\n", " "),
+      "Amount": t.amount,
+      "Game Type": t.gameType,
+      "Odds": t.odds,
+      "Potential Win": t.potentialWin,
+      "Pay Out": t.payOut,
+      "Status": t.status,
+    }));
+
+    if (!dataToExport || dataToExport.length === 0) {
+      toast.error("No ticket history to export");
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Bet History");
+    XLSX.writeFile(workbook, `Bet_History_${userId}_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
+  const exportToPdf = () => {
+    if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
+      toast.error("No ticket history to export");
+      return;
+    }
+    const doc = new jsPDF("landscape");
+    doc.text("Bet History Summary", 14, 15);
+    autoTable(doc, {
+      head: [["Bet ID", "Date & Time", "Amount", "Game Type", "Odds", "Potential Win", "Pay Out", "Status"]],
+      body: ticketsToDisplay.map((t) => [
+        t.id,
+        t.dateTime.replace("\n", " "),
+        t.amount,
+        t.gameType,
+        t.odds,
+        t.potentialWin,
+        t.payOut,
+        t.status,
+      ]),
+      startY: 20,
+    });
+    doc.save(`Bet_History_${userId}_${new Date().toISOString().split("T")[0]}.pdf`);
+  };
+
+  const exportToDocx = async () => {
+    if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
+      toast.error("No ticket history to export");
+      return;
+    }
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Bet History Summary",
+                  bold: true,
+                  size: 28,
+                }),
+              ],
+              spacing: { after: 300 },
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                new TableRow({
+                  children: ["Bet ID", "Date & Time", "Amount", "Game Type", "Odds", "Potential Win", "Pay Out", "Status"].map(
+                    (header) =>
+                      new TableCell({
+                        children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
+                        shading: { fill: "f3f4f6" },
+                      })
+                  ),
+                }),
+                ...ticketsToDisplay.map(
+                  (t) =>
+                    new TableRow({
+                      children: [
+                        t.id,
+                        t.dateTime.replace("\n", " "),
+                        t.amount,
+                        t.gameType,
+                        t.odds,
+                        t.potentialWin,
+                        t.payOut,
+                        t.status,
+                      ].map(
+                        (val) =>
+                          new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: String(val) })] })],
+                          })
+                      ),
+                    })
+                ),
+              ],
+            }),
+          ],
+        },
+      ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Bet_History_${userId}_${new Date().toISOString().split("T")[0]}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -234,7 +347,67 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
 
       {/* Tickets (bet) Summary */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h4 className="font-bold text-xl text-gray-900 mb-6">Tickets (bet) Summary</h4>
+        <div className="flex items-center justify-between mb-6">
+          <h4 className="font-bold text-xl text-gray-900">Tickets (bet) Summary</h4>
+          
+          <div className="relative">
+            <button 
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (e.nativeEvent) {
+                  e.nativeEvent.stopImmediatePropagation();
+                }
+                setShowExportDropdown(!showExportDropdown);
+              }}
+              className="inline-flex items-center h-9 gap-1.5 rounded-full bg-[#1BAA04] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
+            >
+              Export File as
+              <FaFileExport className="h-3 w-3 text-white" />
+            </button>
+
+            {showExportDropdown && (
+              <div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportDropdown(false);
+                    exportToPdf();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <FaFilePdf className="text-red-500 w-4 h-4" />
+                  PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportDropdown(false);
+                    exportToDocx();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <FaFileWord className="text-blue-600 w-4 h-4" />
+                  DOCX
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportDropdown(false);
+                    exportToExcel();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <FaFileExcel className="text-green-600 w-4 h-4" />
+                  Excel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
         
         <div className="overflow-x-auto overflow-y-auto max-h-[380px] custom-scrollbar">
           <table className="min-w-full text-sm whitespace-nowrap">
@@ -243,7 +416,8 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                 <th className="pb-4 pt-2 pr-4 bg-white">Bet ID</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Date &amp; Time</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Amount</th>
-                <th className="pb-4 pt-2 pr-4 bg-white">Odds Game type</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Game type</th>
+                <th className="pb-4 pt-2 pr-4 bg-white">Odds</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Potential win</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Pay out</th>
                 <th className="pb-4 pt-2 pr-4 bg-white">Status</th>
@@ -261,6 +435,7 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                     </td>
                     <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
                     <td className="py-4 pr-4"><Skeleton className="h-4 w-20" /></td>
+                    <td className="py-4 pr-4"><Skeleton className="h-4 w-12" /></td>
                     <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
                     <td className="py-4 pr-4"><Skeleton className="h-4 w-24" /></td>
                     <td className="py-4 pr-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
@@ -269,7 +444,7 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                 ))
               ) : ticketsToDisplay.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-gray-400 text-sm">
+                  <td colSpan={9} className="py-8 text-center text-gray-400 text-sm">
                     No ticket history found for this user
                   </td>
                 </tr>
@@ -306,7 +481,8 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                       )}
                     </td>
                     <td className="py-4 pr-4 font-bold text-gray-900 text-xs">{ticket.amount}</td>
-                    <td className="py-4 pr-4 text-gray-700 text-xs">{ticket.oddsGameType}</td>
+                    <td className="py-4 pr-4 text-gray-700 text-xs">{ticket.gameType}</td>
+                    <td className="py-4 pr-4 font-mono text-gray-700 text-xs">{ticket.odds}</td>
                     <td className="py-4 pr-4 font-semibold text-gray-900 text-xs">{ticket.potentialWin}</td>
                     <td className="py-4 pr-4 font-semibold text-gray-900 text-xs">{ticket.payOut}</td>
                     <td className="py-4 pr-4">
