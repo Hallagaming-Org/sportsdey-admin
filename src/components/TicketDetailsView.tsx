@@ -123,7 +123,7 @@ export function TicketDetailsView({
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#1BAA04] text-white hover:bg-[#158903] transition-colors cursor-pointer shadow-sm"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#757575] text-[#757575] transition-colors cursor-pointer"
             title="Back to Ticket History"
           >
             <ArrowLeft className="w-4 h-4" />
