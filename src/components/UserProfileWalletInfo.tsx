@@ -9,6 +9,12 @@ import { userService, type UserTransaction } from "../lib/users";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 import { toast } from "sonner";
 
+import * as XLSX from "xlsx";
+import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
+
 interface UserProfileWalletInfoProps {
   userId: string;
   balance: number;
@@ -27,6 +33,7 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [successData, setSuccessData] = useState<{ type: "credit" | "debit"; amount: string } | null>(null);
 
   const { fromDate, toDate } = getDateRangeForPeriod(selectedTimePeriod, customRange, { output: "iso" });
@@ -164,6 +171,113 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
     return `₦${val.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
+  const exportToExcel = () => {
+    const dataToExport = transactions.map((t) => ({
+      "Type": String(t.type || ""),
+      "Amount": typeof t.amount === "number" ? `₦${t.amount.toLocaleString()}` : String(t.amount || 0),
+      "Reference ID": t.referenceId || t.id || "-",
+      "Date & Time": t.dateTime || "-",
+      "Status": t.status || "Completed",
+    }));
+
+    if (!dataToExport || dataToExport.length === 0) {
+      toast.error("No transactions to export");
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+    XLSX.writeFile(workbook, `Transactions_${userId}_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
+  const exportToPdf = () => {
+    if (!transactions || transactions.length === 0) {
+      toast.error("No transactions to export");
+      return;
+    }
+    const doc = new jsPDF("landscape");
+    doc.text("Transaction Summary", 14, 15);
+    autoTable(doc, {
+      head: [["Type", "Amount", "Reference ID", "Date & Time", "Status"]],
+      body: transactions.map((t) => [
+        String(t.type || ""),
+        typeof t.amount === "number" ? `₦${t.amount.toLocaleString()}` : String(t.amount || 0),
+        t.referenceId || t.id || "-",
+        t.dateTime || "-",
+        t.status || "Completed",
+      ]),
+      startY: 20,
+    });
+    doc.save(`Transactions_${userId}_${new Date().toISOString().split("T")[0]}.pdf`);
+  };
+
+  const exportToDocx = async () => {
+    if (!transactions || transactions.length === 0) {
+      toast.error("No transactions to export");
+      return;
+    }
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Transaction Summary",
+                  bold: true,
+                  size: 28,
+                }),
+              ],
+              spacing: { after: 300 },
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                new TableRow({
+                  children: ["Type", "Amount", "Reference ID", "Date & Time", "Status"].map(
+                    (header) =>
+                      new TableCell({
+                        children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
+                        shading: { fill: "f3f4f6" },
+                      })
+                  ),
+                }),
+                ...transactions.map(
+                  (t) =>
+                    new TableRow({
+                      children: [
+                        String(t.type || ""),
+                        typeof t.amount === "number" ? `₦${t.amount.toLocaleString()}` : String(t.amount || 0),
+                        t.referenceId || t.id || "-",
+                        t.dateTime || "-",
+                        t.status || "Completed",
+                      ].map(
+                        (val) =>
+                          new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: String(val) })] })],
+                          })
+                      ),
+                    })
+                ),
+              ],
+            }),
+          ],
+        },
+      ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Transactions_${userId}_${new Date().toISOString().split("T")[0]}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* Wallet Overview */}
@@ -224,7 +338,66 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
 
       {/* Transaction Summary */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col min-h-[300px]">
-        <h4 className="font-bold text-xl text-gray-900 mb-6">Transaction Summary</h4>
+        <div className="flex items-center justify-between mb-6">
+          <h4 className="font-bold text-xl text-gray-900">Transaction Summary</h4>
+          <div className="relative">
+            <button 
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (e.nativeEvent) {
+                  e.nativeEvent.stopImmediatePropagation();
+                }
+                setShowExportDropdown(!showExportDropdown);
+              }}
+              className="inline-flex items-center h-9 gap-1.5 rounded-full bg-[#1BAA04] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
+            >
+              Export File as
+              <FaFileExport className="h-3 w-3 text-white" />
+            </button>
+
+            {showExportDropdown && (
+              <div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportDropdown(false);
+                    exportToPdf();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <FaFilePdf className="text-red-500 w-4 h-4" />
+                  PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportDropdown(false);
+                    exportToDocx();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <FaFileWord className="text-blue-600 w-4 h-4" />
+                  DOCX
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportDropdown(false);
+                    exportToExcel();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <FaFileExcel className="text-green-600 w-4 h-4" />
+                  Excel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
         <div className="flex-1 min-h-0">
           <DataTable 
             columns={columns}
