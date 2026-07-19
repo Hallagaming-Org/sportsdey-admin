@@ -18,6 +18,11 @@ import { notificationService } from "#/lib/notifications";
 import { ticketService, type TicketRecord, type TicketOutcome, type TicketTab } from "#/lib/tickets";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
 
 
 
@@ -58,7 +63,120 @@ function TicketsPage() {
   const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
   const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const queryClient = useQueryClient();
+
+  const exportToExcel = () => {
+    const dataToExport = tickets.map((t) => ({
+      "Bet ID": t.id,
+      "Player Name": t.playerName,
+      "Amount": t.betAmount,
+      "Game Type": t.gameType,
+      "Outcome": t.outcome,
+      "Created At": t.createdAt,
+      "Balance Before": t.balanceBefore || "-",
+      "Balance After": t.balanceAfter || "-",
+    }));
+
+    if (!dataToExport || dataToExport.length === 0) {
+      toast.error("No tickets to export");
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tickets");
+    XLSX.writeFile(workbook, `Tickets_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
+  const exportToPdf = () => {
+    if (!tickets || tickets.length === 0) {
+      toast.error("No tickets to export");
+      return;
+    }
+    const doc = new jsPDF("landscape");
+    doc.text("Ticket History", 14, 15);
+    autoTable(doc, {
+      head: [["Bet ID", "Player Name", "Amount", "Game Type", "Outcome", "Created At"]],
+      body: tickets.map((t) => [
+        t.id,
+        t.playerName,
+        t.betAmount,
+        t.gameType,
+        t.outcome,
+        t.createdAt,
+      ]),
+      startY: 20,
+    });
+    doc.save(`Tickets_Export_${new Date().toISOString().split("T")[0]}.pdf`);
+  };
+
+  const exportToDocx = async () => {
+    if (!tickets || tickets.length === 0) {
+      toast.error("No tickets to export");
+      return;
+    }
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Ticket History",
+                  bold: true,
+                  size: 32,
+                }),
+              ],
+              spacing: { after: 400 },
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                new TableRow({
+                  children: ["Bet ID", "Player Name", "Amount", "Game Type", "Outcome", "Created At"].map(
+                    (header) =>
+                      new TableCell({
+                        children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
+                        shading: { fill: "f3f4f6" },
+                      }),
+                  ),
+                }),
+                ...tickets.map(
+                  (t) =>
+                    new TableRow({
+                      children: [
+                        t.id,
+                        t.playerName,
+                        t.betAmount,
+                        t.gameType,
+                        t.outcome,
+                        t.createdAt,
+                      ].map(
+                        (val) =>
+                          new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: String(val) })] })],
+                          }),
+                      ),
+                    }),
+                ),
+              ],
+            }),
+          ],
+        },
+      ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Tickets_Export_${new Date().toISOString().split("T")[0]}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const toggleSuspendMutation = useMutation({
     mutationFn: async ({ userId }: { userId: string; isReactivate?: boolean }) => {
@@ -247,6 +365,64 @@ function TicketsPage() {
             }}
             buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
           />
+
+          <div className="relative">
+            <button 
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (e.nativeEvent) {
+                  e.nativeEvent.stopImmediatePropagation();
+                }
+                setShowExportDropdown(!showExportDropdown);
+              }}
+              className="inline-flex items-center h-8 gap-1.5 rounded-full bg-[#1BAA04] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors whitespace-nowrap"
+            >
+              Export File as
+              <FaFileExport className="h-3 w-3 text-white" />
+            </button>
+
+            {showExportDropdown && (
+              <div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportDropdown(false);
+                    exportToPdf();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <FaFilePdf className="text-red-500 w-4 h-4" />
+                  PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportDropdown(false);
+                    exportToDocx();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <FaFileWord className="text-blue-600 w-4 h-4" />
+                  DOCX
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExportDropdown(false);
+                    exportToExcel();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <FaFileExcel className="text-green-600 w-4 h-4" />
+                  Excel
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
