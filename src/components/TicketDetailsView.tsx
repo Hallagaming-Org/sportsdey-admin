@@ -6,6 +6,8 @@ import {
   MoreHorizontal, 
   CheckCircle2, 
   PauseCircle,
+  Mail,
+  Phone,
 } from "lucide-react";
 import { FaFileExport, FaFilePdf, FaFileWord, FaFileExcel } from "react-icons/fa6";
 import { toast } from "sonner";
@@ -293,12 +295,21 @@ export function TicketDetailsView({
 
       {/* Player Information Card */}
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-        <h4 className="text-base font-bold text-gray-900 mb-5">
-          Player Information
-        </h4>
+        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+          <h4 className="text-base font-bold text-gray-900">
+            Player Information
+          </h4>
+          <button
+            type="button"
+            onClick={() => onViewPlayerProfile(userForProfile)}
+            className="bg-[#1BAA04] hover:bg-[#158903] text-white px-5 py-2 rounded-full text-xs font-semibold shadow-sm transition-colors cursor-pointer whitespace-nowrap"
+          >
+            View Player Profile
+          </button>
+        </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-6">
-          <div className="flex items-center gap-4 min-w-[240px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-100 items-center">
+          <div className="flex items-center gap-4 pr-0 md:pr-4">
             <img
               src={
                 ticket.image ||
@@ -322,39 +333,31 @@ export function TicketDetailsView({
             </div>
           </div>
 
-          <div className="text-xs text-gray-600 space-y-1.5 min-w-[200px]">
-            <p className="truncate">
-              <span className="text-gray-400">Email: </span>
-              {details.playerEmail}
-            </p>
-            <p>
-              <span className="text-gray-400">Phone: </span>
-              {details.playerPhone}
-            </p>
+          <div className="pt-4 md:pt-0 md:pl-6 space-y-2 text-xs text-gray-600">
+            <div className="flex items-center gap-2.5">
+              <Mail className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="truncate">{details.playerEmail}</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <Phone className="w-4 h-4 text-gray-400 shrink-0" />
+              <span>{details.playerPhone}</span>
+            </div>
           </div>
 
-          <div className="text-xs text-gray-600 space-y-1.5 min-w-[150px]">
-            <p>
-              <span className="text-gray-400">Bal. Before: </span>
+          <div className="pt-4 md:pt-0 md:pl-6 space-y-2 text-xs text-gray-600">
+            <div className="flex items-center gap-4">
+              <span className="text-gray-400 min-w-[75px]">Bal. Before:</span>
               <span className="font-semibold text-gray-900">
                 {details.balanceBefore || "₦225,000"}
               </span>
-            </p>
-            <p>
-              <span className="text-gray-400">Bal. After: </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-gray-400 min-w-[75px]">Bal. After:</span>
               <span className="font-semibold text-gray-900">
                 {details.balanceAfter || "₦400,000"}
               </span>
-            </p>
+            </div>
           </div>
-
-          <button
-            type="button"
-            onClick={() => onViewPlayerProfile(userForProfile)}
-            className="bg-[#1BAA04] hover:bg-[#158903] text-white px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm transition-colors cursor-pointer whitespace-nowrap ml-auto"
-          >
-            View Player Profile
-          </button>
         </div>
       </div>
 
