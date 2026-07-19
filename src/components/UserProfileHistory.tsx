@@ -18,6 +18,14 @@ interface UserProfileHistoryProps {
   userId: string;
 }
 
+function calcDynamicCardFontSize(val: string | number | null | undefined, maxPx = 24, minPx = 10, baseChars = 9) {
+  const str = String(val ?? "");
+  if (!str || str.length <= baseChars) return { fontSize: `${maxPx}px`, lineHeight: "1.2" };
+  const scale = baseChars / str.length;
+  const fontPx = Math.max(minPx, Math.min(maxPx, Math.round(scale * maxPx * 10) / 10));
+  return { fontSize: `${fontPx}px`, lineHeight: "1.2", wordBreak: "break-all" as const };
+}
+
 function Skeleton({ className }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
 }
@@ -321,14 +329,19 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
             {isOverviewLoading ? (
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
-              <p className="text-xl md:text-2xl font-bold text-gray-900">
-                {formatMoney(
+              (() => {
+                const valStr = formatMoney(
                   ticketOverview?.currentBet ??
                     ticketOverview?.currentActiveBetAmount ??
                     ticketOverview?.activeBetAmount ??
                     ticketOverview?.currentActiveBet
-                )}
-              </p>
+                );
+                return (
+                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
+                    {valStr}
+                  </p>
+                );
+              })()
             )}
           </div>
           <div>
@@ -336,12 +349,17 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
             {isOverviewLoading ? (
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
-              <p className="text-xl md:text-2xl font-bold text-gray-900">
-                {formatMoney(
+              (() => {
+                const valStr = formatMoney(
                   ticketOverview?.totalGamesWon ??
                     ticketOverview?.gamesWon
-                )}
-              </p>
+                );
+                return (
+                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
+                    {valStr}
+                  </p>
+                );
+              })()
             )}
           </div>
           <div>
@@ -349,12 +367,17 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
             {isOverviewLoading ? (
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
-              <p className="text-xl md:text-2xl font-bold text-gray-900">
-                {formatMoney(
+              (() => {
+                const valStr = formatMoney(
                   ticketOverview?.totalGamesLost ??
                     ticketOverview?.gamesLost
-                )}
-              </p>
+                );
+                return (
+                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
+                    {valStr}
+                  </p>
+                );
+              })()
             )}
           </div>
           <div>
@@ -362,13 +385,18 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
             {isOverviewLoading ? (
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
-              <p className="text-xl md:text-2xl font-bold text-gray-900">
-                {formatMoney(
+              (() => {
+                const valStr = formatMoney(
                   ticketOverview?.grossGamingRevenue ??
                     ticketOverview?.ggr ??
                     ticketOverview?.netPosition
-                )}
-              </p>
+                );
+                return (
+                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
+                    {valStr}
+                  </p>
+                );
+              })()
             )}
           </div>
         </div>
