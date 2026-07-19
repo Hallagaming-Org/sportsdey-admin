@@ -410,8 +410,11 @@ function TicketsPage() {
           onViewPlayerProfile={(user) => {
             setSelectedProfileUser(user);
           }}
-          onSuspendPlayer={(userId) => {
-            toggleSuspendMutation.mutate({ userId });
+          onSuspendPlayer={(userId, isReactivate) => {
+            toggleSuspendMutation.mutate({ userId, isReactivate });
+            setSelectedTicketDetails((prev) =>
+              prev ? { ...prev, userSuspended: !isReactivate } : null
+            );
           }}
         />
 
