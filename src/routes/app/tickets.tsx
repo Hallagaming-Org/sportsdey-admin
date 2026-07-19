@@ -35,6 +35,7 @@ const OUTCOME_STYLES: Record<TicketOutcome, string> = {
   Won: "bg-[#E8F8E5] text-[#10C300]",
   Active: "bg-[#FFF8E5] text-[#FFB000]",
   Lost: "bg-[#FEECEB] text-[#EE201C]",
+  Declined: "bg-[#F0F0F0] text-[#6B7280]",
 };
 
 const TABS: { key: TicketTab; label: string }[] = [
