@@ -1,98 +1,228 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DataTable, type Column } from "./DataTable";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
-import { ChevronDown, Plus, Minus } from "lucide-react";
+import { ChevronDown, Plus, Minus, Loader2 } from "lucide-react";
 import { SuccessModal } from "./SuccessModal";
 import { useHasPermission } from "../hooks/useCurrentUser";
+import { userService, type UserTransaction } from "../lib/users";
+import { getDateRangeForPeriod } from "#/lib/time-period";
+import { toast } from "sonner";
 
 interface UserProfileWalletInfoProps {
   userId: string;
   balance: number;
 }
 
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
+}
+
 export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfoProps) {
   const canManualCreditDebit = useHasPermission("manual_credit_debit");
+  const queryClient = useQueryClient();
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
+  const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
   const [transactionType, setTransactionType] = useState<"credit" | "debit">("credit");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState<{ type: "credit" | "debit"; amount: string } | null>(null);
 
+  const { fromDate, toDate } = getDateRangeForPeriod(selectedTimePeriod, customRange, { output: "iso" });
+
+  const { data: overview, isLoading: isOverviewLoading } = useQuery({
+    queryKey: ["user-wallet-overview", userId, fromDate, toDate],
+    queryFn: async () => {
+      const res = await userService.getUserWalletOverview(userId, { fromDate, toDate });
+      if (!res.success) return null;
+      return res.data;
+    },
+    enabled: !!userId,
+  });
+
+  const { data: txData, isLoading: isTxLoading } = useQuery({
+    queryKey: ["user-wallet-transactions", userId, fromDate, toDate],
+    queryFn: async () => {
+      const res = await userService.getUserWalletTransactions(userId, { fromDate, toDate, limit: 10 });
+      if (!res.success) return null;
+      return res.data;
+    },
+    enabled: !!userId,
+  });
+
+  const manualMutation = useMutation({
+    mutationFn: async () => {
+      const numAmount = Number(amount);
+      if (!amount || Number.isNaN(numAmount) || numAmount <= 0) {
+        throw new Error("Please enter a valid amount");
+      }
+      if (!reason.trim()) {
+        throw new Error("Please select a reason");
+      }
+      const res = await userService.processManualTransaction(userId, {
+        type: transactionType,
+        amount: numAmount,
+        reason: reason.trim(),
+      });
+      if (!res.success) throw new Error(res.error || "Failed to process manual transaction");
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-wallet-overview", userId] });
+      queryClient.invalidateQueries({ queryKey: ["user-wallet-transactions", userId] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile", userId] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setSuccessData({ type: transactionType, amount });
+      setShowSuccessModal(true);
+      setAmount("");
+      setReason("");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message);
+    },
+  });
+
   const handleProcessTransaction = () => {
-    if (!amount) return;
-    setSuccessData({ type: transactionType, amount });
-    setShowSuccessModal(true);
-    setAmount("");
-    setReason("");
+    manualMutation.mutate();
   };
 
-  const transactions = [
-    { type: "Deposit", amount: 150000, referenceId: "DEP-2025-000123", dateTime: "Aug 8, 2025\n10:42 pm", status: "Success" },
-    { type: "Withdrawal", amount: 80000, referenceId: "WDR-2025-000123", dateTime: "Aug 8, 2025\n10:42 pm", status: "Success" },
-    { type: "Manual Credit", amount: 50000, referenceId: "MCR-2025-000123", dateTime: "Aug 8, 2025\n10:42 pm", status: "Success" },
-  ];
+  const rawTxList = (txData as any)?.transactions || (txData as any)?.data || (Array.isArray(txData) ? txData : []);
+  const transactions: UserTransaction[] = Array.isArray(rawTxList) ? rawTxList : [];
 
-  const columns: Column<typeof transactions[0]>[] = [
+  const columns: Column<UserTransaction>[] = [
     {
       header: "Type",
-      accessor: "type",
+      accessor: (t) => {
+        const typeStr = String(t.type || "").toLowerCase();
+        if (typeStr === "deposit") return "Deposit";
+        if (typeStr === "withdrawal") return "Withdrawal";
+        if (typeStr === "manual_credit" || typeStr === "credit") return "Manual Credit";
+        if (typeStr === "manual_debit" || typeStr === "debit") return "Manual Debit";
+        return t.type || "Transaction";
+      },
       cellClassName: "font-medium text-gray-900",
     },
     {
       header: "Amount",
-      accessor: (t) => `₦${t.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
+      accessor: (t) => {
+        const amt = typeof t.amount === "number" ? t.amount : parseFloat(String(t.amount || 0));
+        return `₦${(isNaN(amt) ? 0 : amt).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      },
       cellClassName: "font-bold text-gray-900",
     },
     {
       header: "Reference ID",
-      accessor: "referenceId",
+      accessor: (t) => t.referenceId || t.id || "-",
       cellClassName: "font-mono text-gray-500",
     },
     {
       header: "Date & Time",
-      accessor: (t) => <span className="whitespace-pre-line text-gray-500 text-xs">{t.dateTime}</span>,
+      accessor: (t) => {
+        if (!t.dateTime) return <span className="text-gray-400 text-xs">-</span>;
+        const d = new Date(t.dateTime);
+        if (isNaN(d.getTime())) {
+          return <span className="whitespace-pre-line text-gray-500 text-xs">{t.dateTime}</span>;
+        }
+        const dateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
+        return (
+          <span className="block text-gray-500 text-xs">
+            <span className="font-semibold text-gray-900 block">{dateStr}</span>
+            <span>{timeStr}</span>
+          </span>
+        );
+      },
     },
     {
       header: "Status",
-      accessor: (t) => (
-        <span className="inline-flex items-center rounded-full bg-[#E8F8E5] px-2.5 py-1 text-xs font-medium text-[#10C300]">
-          {t.status}
-        </span>
-      ),
+      accessor: (t) => {
+        const s = String(t.status || "").toLowerCase();
+        const isSuccess = s === "success" || s === "completed";
+        const isPending = s === "pending" || s === "processing";
+        const isFailed = s === "failed" || s === "rejected";
+
+        const badgeCls = isSuccess
+          ? "bg-[#E8F8E5] text-[#10C300]"
+          : isPending
+            ? "bg-[#FFF8E5] text-[#FFB000]"
+            : isFailed
+              ? "bg-[#FEECEB] text-[#EE201C]"
+              : "bg-gray-100 text-gray-600";
+
+        return (
+          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${badgeCls}`}>
+            {isSuccess ? "Success" : isPending ? "Pending" : isFailed ? "Failed" : t.status || "Completed"}
+          </span>
+        );
+      },
     },
   ];
 
+  const formatCurrency = (val?: number | null) => {
+    if (val == null) return null;
+    return `₦${val.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
   return (
     <div className="space-y-6">
+      {/* Wallet Overview */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <div className="flex items-center justify-between mb-6">
           <h4 className="font-bold text-xl text-gray-900">Wallet Overview</h4>
           <TimePeriodFilter 
-            onFilterChange={(period) => setSelectedTimePeriod(period)}
+            onFilterChange={(period, range) => {
+              setSelectedTimePeriod(period);
+              setCustomRange(range);
+            }}
             buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           />
         </div>
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div>
             <p className="text-gray-500 text-sm mb-1">Current Balance</p>
-            <p className="text-2xl font-bold text-gray-900">₦{balance.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+            {isOverviewLoading ? (
+              <Skeleton className="h-7 w-28 mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(overview?.currentBalance) ?? `₦${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-gray-500 text-sm mb-1">Total Deposits</p>
-            <p className="text-2xl font-bold text-gray-900">₦1,500.00</p>
+            {isOverviewLoading ? (
+              <Skeleton className="h-7 w-28 mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(overview?.totalDeposits) ?? "₦0.00"}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-gray-500 text-sm mb-1">Total Withdrawals</p>
-            <p className="text-2xl font-bold text-gray-900">₦1,500.00</p>
+            {isOverviewLoading ? (
+              <Skeleton className="h-7 w-28 mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(overview?.totalWithdrawals) ?? "₦0.00"}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-gray-500 text-sm mb-1">Net Position (GGR)</p>
-            <p className="text-2xl font-bold text-gray-900">₦1,500.00</p>
+            {isOverviewLoading ? (
+              <Skeleton className="h-7 w-28 mt-1" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(overview?.netPosition) ?? "₦0.00"}
+              </p>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Transaction Summary */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col min-h-[300px]">
         <h4 className="font-bold text-xl text-gray-900 mb-6">Transaction Summary</h4>
         <div className="flex-1 min-h-0">
@@ -103,11 +233,12 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
             onActionClick={() => {}}
             actionMenuItems={[]}
             emptyMessage="No transactions found"
-            isLoading={false}
+            isLoading={isTxLoading}
           />
         </div>
       </div>
 
+      {/* Manual Credit/Debits */}
       {canManualCreditDebit && (
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h4 className="font-bold text-xl text-gray-900">Manual Credit/Debits</h4>
@@ -148,6 +279,7 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
               <p className="text-gray-700 text-sm font-medium mb-2">Amount (₦)</p>
               <input 
                 type="number" 
+                min="1"
                 placeholder="Enter amount"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -167,6 +299,10 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
                   <option value="bonus">Bonus</option>
                   <option value="refund">Refund</option>
                   <option value="correction">Correction</option>
+                  <option value="promotional_credit">Promotional Credit</option>
+                  <option value="compensation">Compensation</option>
+                  <option value="fraud_reversal">Fraud Reversal</option>
+                  <option value="other">Other</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 w-4 h-4 -translate-y-1/2 text-gray-500 pointer-events-none" />
               </div>
@@ -175,11 +311,19 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
 
           <div className="mt-8 flex justify-center">
             <button 
+              type="button"
               onClick={handleProcessTransaction}
-              className="bg-[#1BAA04] text-white font-bold px-8 py-3 rounded-[6px] transition-colors cursor-pointer disabled:opacity-50"
-              disabled={!amount}
+              disabled={!amount || !reason || manualMutation.isPending}
+              className="bg-[#1BAA04] hover:bg-[#0ea800] text-white font-bold px-8 py-3 rounded-[6px] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Process Transaction
+              {manualMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                "Process Transaction"
+              )}
             </button>
           </div>
         </div>
