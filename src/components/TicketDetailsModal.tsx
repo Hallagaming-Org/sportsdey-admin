@@ -402,21 +402,21 @@ export function TicketDetailsModal({
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-100 text-gray-400 font-medium pb-2">
-                    <th className="pb-3 pr-4 font-normal">Bet Type</th>
-                    <th className="pb-3 px-4 font-normal">Selection</th>
-                    <th className="pb-3 px-4 font-normal">Stake amount</th>
-                    <th className="pb-3 px-4 font-normal">Total Odds</th>
-                    <th className="pb-3 px-4 font-normal">Free Bet</th>
-                    <th className="pb-3 px-4 font-normal">Bonus used</th>
-                    <th className="pb-3 px-4 font-normal">Cash out</th>
-                    <th className="pb-3 pl-4 font-normal">IP address</th>
+                <thead className="bg-[#F9F9F9]">
+                  <tr className="text-gray-400 font-medium">
+                    <th className="py-3 px-4 rounded-l-xl font-normal">Bet Type</th>
+                    <th className="py-3 px-4 font-normal">Selection</th>
+                    <th className="py-3 px-4 font-normal">Stake amount</th>
+                    <th className="py-3 px-4 font-normal">Total Odds</th>
+                    <th className="py-3 px-4 font-normal">Free Bet</th>
+                    <th className="py-3 px-4 font-normal">Bonus used</th>
+                    <th className="py-3 px-4 font-normal">Cash out</th>
+                    <th className="py-3 px-4 rounded-r-xl font-normal">IP address</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 text-gray-800">
                   <tr>
-                    <td className="py-3.5 pr-4 font-semibold text-gray-900">
+                    <td className="py-3.5 px-4 font-semibold text-gray-900">
                       {details.betType}
                     </td>
                     <td className="py-3.5 px-4 font-medium">
@@ -431,7 +431,7 @@ export function TicketDetailsModal({
                     <td className="py-3.5 px-4">{details.freeBet}</td>
                     <td className="py-3.5 px-4">{details.bonusUsed}</td>
                     <td className="py-3.5 px-4">{details.cashOut}</td>
-                    <td className="py-3.5 pl-4">
+                    <td className="py-3.5 px-4">
                       <div className="flex flex-col">
                         <span className="text-[11px] text-gray-500 font-sans">
                           {details.deviceInfo}
@@ -455,12 +455,12 @@ export function TicketDetailsModal({
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-100 text-gray-400 font-medium">
-                    <th className="pb-3 pr-4 w-10 font-normal">#</th>
-                    <th className="pb-3 px-4 font-normal">Match</th>
-                    <th className="pb-3 px-4 font-normal">Pick</th>
-                    <th className="pb-3 pl-4 text-right font-normal">Odds</th>
+                <thead className="bg-[#F9F9F9]">
+                  <tr className="text-gray-400 font-medium">
+                    <th className="py-3 px-4 rounded-l-xl w-10 font-normal">#</th>
+                    <th className="py-3 px-4 font-normal">Match</th>
+                    <th className="py-3 px-4 font-normal">Pick</th>
+                    <th className="py-3 px-4 rounded-r-xl text-right font-normal">Odds</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-gray-800">
