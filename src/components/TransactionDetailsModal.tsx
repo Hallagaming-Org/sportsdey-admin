@@ -136,6 +136,7 @@ export function TransactionDetailsModal({
                 mutate: () => rejectMutation.mutate(undefined),
               }}
               onViewProfile={onViewProfile}
+              userId={userId}
             />
           ) : null}
         </div>
