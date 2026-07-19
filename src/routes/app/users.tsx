@@ -324,10 +324,29 @@ useEffect(() => {
 		},
 		{
 			header: "Registration Date",
-			accessor: (user) =>
-				user.registeredDate
-					? new Date(user.registeredDate).toLocaleDateString()
-					: "-",
+			accessor: (user) => {
+				if (!user.registeredDate) return "-";
+				const dateObj = new Date(user.registeredDate);
+				if (isNaN(dateObj.getTime())) return String(user.registeredDate);
+
+				const formattedDate = dateObj.toLocaleDateString("en-US", {
+					month: "short",
+					day: "numeric",
+					year: "numeric",
+				});
+				const formattedTime = dateObj.toLocaleTimeString("en-US", {
+					hour: "numeric",
+					minute: "2-digit",
+					hour12: true,
+				}).toLowerCase();
+
+				return (
+					<div className="flex flex-col">
+						<span className="font-medium text-gray-900">{formattedDate}</span>
+						<span className="text-xs text-gray-500">{formattedTime}</span>
+					</div>
+				);
+			},
 			cellClassName: "text-gray-500",
 		},
 		{
