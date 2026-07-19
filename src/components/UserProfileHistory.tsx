@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MoreHorizontal, Copy } from "lucide-react";
+import { MoreHorizontal, Copy, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
 import { ticketService, type TicketRecord } from "../lib/tickets";
+import { ActionDropdown } from "./ActionDropdown";
+import { TicketDetailsModal } from "./TicketDetailsModal";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 
 import * as XLSX from "xlsx";
@@ -25,7 +27,15 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
   const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const [selectedTicketDetails, setSelectedTicketDetails] = useState<TicketRecord | null>(null);
+  const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
   const limit = 10;
+
+  useEffect(() => {
+    const handleClickOutside = () => setActionDropdown(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   const { fromDate, toDate } = getDateRangeForPeriod(timePeriod, customRange, { output: "date" });
 
@@ -561,7 +571,34 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
                       )}
                     </td>
                     <td className="py-4 text-right">
-                      <button type="button" className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                      <button 
+                        type="button" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.nativeEvent.stopImmediatePropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setActionDropdown({
+                            ticket: {
+                              id: ticket.id,
+                              playerName: "User",
+                              betAmount: ticket.amount,
+                              potentialWin: ticket.potentialWin,
+                              payout: ticket.payOut,
+                              gameType: ticket.gameType,
+                              gameName: ticket.gameName,
+                              provider: ticket.provider,
+                              roundId: ticket.roundId,
+                              outcome: ticket.status as any,
+                              createdAt: ticket.dateTime,
+                              balanceBefore: ticket.balanceBefore,
+                              balanceAfter: ticket.balanceAfter,
+                            },
+                            top: rect.bottom + window.scrollY,
+                            right: window.innerWidth - rect.right,
+                          });
+                        }}
+                        className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                      >
                         <MoreHorizontal className="w-4 h-4" />
                       </button>
                     </td>
@@ -595,6 +632,44 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
           </div>
         </div>
       </div>
+
+      {actionDropdown && (
+        <ActionDropdown
+          top={actionDropdown.top}
+          right={actionDropdown.right}
+          onClose={() => setActionDropdown(null)}
+          items={[
+            {
+              icon: <Copy className="w-4 h-4" />,
+              label: "Copy ticket ID",
+              onClick: () => {
+                navigator.clipboard.writeText(actionDropdown.ticket.id);
+                toast.success("Ticket ID copied to clipboard");
+                setActionDropdown(null);
+              },
+            },
+            {
+              icon: <Eye className="w-4 h-4" />,
+              label: "View ticket details",
+              onClick: () => {
+                setSelectedTicketDetails(actionDropdown.ticket);
+                setActionDropdown(null);
+              },
+            },
+          ]}
+        />
+      )}
+
+      {selectedTicketDetails && (
+        <TicketDetailsModal
+          ticket={selectedTicketDetails}
+          open={!!selectedTicketDetails}
+          onClose={() => setSelectedTicketDetails(null)}
+          onViewPlayerProfile={() => {
+            setSelectedTicketDetails(null);
+          }}
+        />
+      )}
     </div>
   );
 }
