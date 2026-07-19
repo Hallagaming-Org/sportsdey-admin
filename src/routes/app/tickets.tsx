@@ -11,6 +11,7 @@ import SortIcon from "@/logo/sort.svg?react";
 import FilterIcon from "@/logo/filter.svg?react";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import { UserProfileModal } from "#/components/UserProfileModal";
+import { TicketDetailsModal } from "#/components/TicketDetailsModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { userService, type User } from "#/lib/users";
@@ -61,6 +62,7 @@ function TicketsPage() {
   const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 
   const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
+  const [selectedTicketDetails, setSelectedTicketDetails] = useState<TicketRecord | null>(null);
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
   const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
@@ -555,8 +557,25 @@ function TicketsPage() {
           onClose={() => setActionDropdown(null)}
           items={[
             {
+              icon: <Copy className="w-4 h-4" />,
+              label: "Copy ticket ID",
+              onClick: () => {
+                navigator.clipboard.writeText(actionDropdown.ticket.id);
+                toast.success("Ticket ID copied to clipboard");
+                setActionDropdown(null);
+              },
+            },
+            {
               icon: <Eye className="w-4 h-4" />,
-              label: "View ticket",
+              label: "View ticket details",
+              onClick: () => {
+                setSelectedTicketDetails(actionDropdown.ticket);
+                setActionDropdown(null);
+              },
+            },
+            {
+              icon: <Eye className="w-4 h-4" />,
+              label: "View player profile",
               onClick: () => {
                 setSelectedProfileUser(getMockUserFromTicket(actionDropdown.ticket));
                 setActionDropdown(null);
@@ -582,6 +601,21 @@ function TicketsPage() {
               },
             },
           ]}
+        />
+      )}
+
+      {selectedTicketDetails && (
+        <TicketDetailsModal
+          ticket={selectedTicketDetails}
+          open={!!selectedTicketDetails}
+          onClose={() => setSelectedTicketDetails(null)}
+          onViewPlayerProfile={(user) => {
+            setSelectedTicketDetails(null);
+            setSelectedProfileUser(user);
+          }}
+          onSuspendPlayer={(userId) => {
+            toggleSuspendMutation.mutate({ userId });
+          }}
         />
       )}
 
