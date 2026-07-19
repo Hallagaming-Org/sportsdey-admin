@@ -7,7 +7,7 @@ type HeaderProps = {
 
 export default function Header({ admin }: HeaderProps) {
 	return (
-		<header className="flex h-16 shrink-0 items-center gap-6 bg-black px-6 text-white">
+		<header className="flex h-16 shrink-0 items-center gap-6 bg-black px-6 text-white print:hidden">
 			<div className="flex flex-1 justify-center">
 				<div className="relative flex h-10 w-full max-w-[480px] items-center rounded-full border border-white/10 bg-white px-4">
 					<input
