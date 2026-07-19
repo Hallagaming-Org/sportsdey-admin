@@ -144,7 +144,7 @@ export function UserProfileModal({ user, profile, isLoading, onClose, onSendNoti
 			className: activeView === "wallet" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-[#EDF1F9] text-gray-500"
 		},
 		{
-			label: "User history",
+			label: "Bet history",
 			icon: <History className={`w-4 h-4 ${activeView === 'history' ? 'text-white' : 'text-gray-500'}`} />,
 			onClick: () => setActiveView("history"),
 			className: activeView === "history" ? "bg-[#10C300] text-white border border-transparent shadow-[0_4px_14px_0_rgba(16,195,0,0.39)]" : "bg-[#EDF1F9] text-gray-500"
