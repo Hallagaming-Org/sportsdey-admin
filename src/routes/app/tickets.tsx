@@ -11,7 +11,7 @@ import SortIcon from "@/logo/sort.svg?react";
 import FilterIcon from "@/logo/filter.svg?react";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import { UserProfileModal } from "#/components/UserProfileModal";
-import { TicketDetailsModal } from "#/components/TicketDetailsModal";
+import { TicketDetailsView } from "#/components/TicketDetailsView";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { userService, type User } from "#/lib/users";
@@ -401,6 +401,57 @@ function TicketsPage() {
   const totalPages = data?.pagination.totalPages ?? 1;
   const totalItems = data?.pagination.total ?? 0;
 
+  if (selectedTicketDetails) {
+    return (
+      <>
+        <TicketDetailsView
+          ticket={selectedTicketDetails}
+          onBack={() => setSelectedTicketDetails(null)}
+          onViewPlayerProfile={(user) => {
+            setSelectedProfileUser(user);
+          }}
+          onSuspendPlayer={(userId) => {
+            toggleSuspendMutation.mutate({ userId });
+          }}
+        />
+
+        {selectedProfileUser && (
+          <UserProfileModal
+            user={selectedProfileUser}
+            onClose={() => setSelectedProfileUser(null)}
+            onSendNotice={(user) => {
+              setNoticeModalUser(user);
+              setSelectedProfileUser(null);
+            }}
+            onSuspend={(user) => {
+              toggleSuspendMutation.mutate({ userId: user.id, isReactivate: user.suspended });
+            }}
+          />
+        )}
+
+        {noticeModalUser && (
+          <SendNoticeModal
+            user={noticeModalUser}
+            availableUsers={[noticeModalUser]}
+            onClose={() => setNoticeModalUser(null)}
+            onSubmit={async (data) => {
+              const result = await notificationService.sendNotification({
+                title: data.title,
+                message: data.message,
+                userId: noticeModalUser.id,
+              });
+              if (result.success) {
+                toast.success(`Notice sent to ${noticeModalUser.name}`);
+              } else {
+                toast.error(result.error || "Failed to send notice");
+              }
+            }}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-8">
       <div className="flex-none flex items-center justify-between">
@@ -604,20 +655,7 @@ function TicketsPage() {
         />
       )}
 
-      {selectedTicketDetails && (
-        <TicketDetailsModal
-          ticket={selectedTicketDetails}
-          open={!!selectedTicketDetails}
-          onClose={() => setSelectedTicketDetails(null)}
-          onViewPlayerProfile={(user) => {
-            setSelectedTicketDetails(null);
-            setSelectedProfileUser(user);
-          }}
-          onSuspendPlayer={(userId) => {
-            toggleSuspendMutation.mutate({ userId });
-          }}
-        />
-      )}
+
 
       {selectedProfileUser && (
         <UserProfileModal
