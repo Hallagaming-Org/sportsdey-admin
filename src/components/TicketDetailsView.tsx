@@ -5,9 +5,7 @@ import {
   Printer, 
   MoreHorizontal, 
   CheckCircle2, 
-  ShieldAlert, 
-  Ban, 
-  Flag 
+  PauseCircle,
 } from "lucide-react";
 import { FaFileExport, FaFilePdf, FaFileWord, FaFileExcel } from "react-icons/fa6";
 import { toast } from "sonner";
@@ -21,7 +19,7 @@ interface TicketDetailsViewProps {
   ticket: TicketRecord;
   onBack: () => void;
   onViewPlayerProfile: (user: User) => void;
-  onSuspendPlayer?: (userId: string) => void;
+  onSuspendPlayer?: (userId: string, isReactivate?: boolean) => void;
 }
 
 export function TicketDetailsView({
@@ -83,6 +81,7 @@ export function TicketDetailsView({
     suspended: ticket.userSuspended,
   };
 
+  const isUserSuspended = Boolean(ticket.userSuspended || details.userSuspended);
   const outcomeKey = ticket.outcome === "Won" ? "Won" : (ticket.outcome as any) === "Active" || (ticket.outcome as any) === "Pending" ? "Active" : "Lost";
 
   const exportToPdf = () => {
@@ -220,14 +219,22 @@ export function TicketDetailsView({
                   onClick={() => {
                     setShowTopMenu(false);
                     if (onSuspendPlayer) {
-                      onSuspendPlayer(userForProfile.id);
+                      onSuspendPlayer(userForProfile.id, isUserSuspended);
                     } else {
-                      toast.info("Suspend action triggered");
+                      toast.info(isUserSuspended ? "Reactivate action triggered" : "Suspend action triggered");
                     }
                   }}
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer"
                 >
-                  <Ban className="w-3.5 h-3.5 text-gray-500" /> Suspend Player
+                  {isUserSuspended ? (
+                    <>
+                      <PauseCircle className="w-3.5 h-3.5 text-[#10C300]" /> Reactivate Player
+                    </>
+                  ) : (
+                    <>
+                      <PauseCircle className="w-3.5 h-3.5 text-gray-500" /> Suspend Player
+                    </>
+                  )}
                 </button>
                 {/* <button
                   onClick={() => {
