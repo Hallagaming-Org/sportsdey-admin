@@ -460,6 +460,7 @@ function WalletPage() {
 								label: "View transaction info",
 								onClick: (t: Transaction) => {
 									setSelectedTransactionId(t.id);
+									setSelectedTransaction(t);
 									setIsDetailsOpen(true);
 								},
 							},
@@ -477,6 +478,7 @@ function WalletPage() {
 					{selectedTransactionId && (
 						<TransactionDetailsModal
 							transactionId={selectedTransactionId}
+							userId={selectedTransaction?.user_id}
 							open={isDetailsOpen}
 							onClose={() => setIsDetailsOpen(false)}
 							onActionSuccess={() => {
