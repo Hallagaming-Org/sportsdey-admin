@@ -26,6 +26,14 @@ interface TicketDetailsViewProps {
   onSuspendPlayer?: (userId: string, isReactivate?: boolean) => void;
 }
 
+function getUniformCardFontSize(values: Array<string | number | null | undefined>, maxPx = 22, minPx = 10, baseChars = 9) {
+  const maxLen = Math.max(0, ...values.map(val => String(val ?? "").length));
+  if (!maxLen || maxLen <= baseChars) return { fontSize: `${maxPx}px`, lineHeight: "1.2" };
+  const scale = baseChars / maxLen;
+  const fontPx = Math.max(minPx, Math.min(maxPx, Math.round(scale * maxPx * 10) / 10));
+  return { fontSize: `${fontPx}px`, lineHeight: "1.2", wordBreak: "break-all" as const };
+}
+
 export function TicketDetailsView({
   ticket,
   onBack,
@@ -298,58 +306,68 @@ export function TicketDetailsView({
 
       {/* Summary Stat Cards */}
       {isCasino ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-            <p className="text-xs text-gray-500 font-medium">Stake Amount</p>
-            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
-              {details.stakeAmount}
-            </h4>
-          </div>
+        (() => {
+          const cardStyle = getUniformCardFontSize([details.stakeAmount, details.winAmount || details.actualPayout, details.profit]);
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+                <p className="text-xs text-gray-500 font-medium">Stake Amount</p>
+                <h4 style={cardStyle} className="font-bold text-gray-900 mt-1.5">
+                  {details.stakeAmount}
+                </h4>
+              </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-            <p className="text-xs text-gray-500 font-medium">Win Amount</p>
-            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
-              {details.winAmount || details.actualPayout}
-            </h4>
-          </div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+                <p className="text-xs text-gray-500 font-medium">Win Amount</p>
+                <h4 style={cardStyle} className="font-bold text-gray-900 mt-1.5">
+                  {details.winAmount || details.actualPayout}
+                </h4>
+              </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-            <p className="text-xs text-gray-500 font-medium">Profit</p>
-            <h4 className="text-xl md:text-2xl font-bold text-[#10C300] mt-1.5">
-              {details.profit}
-            </h4>
-          </div>
-        </div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+                <p className="text-xs text-gray-500 font-medium">Profit</p>
+                <h4 style={cardStyle} className="font-bold text-[#10C300] mt-1.5">
+                  {details.profit}
+                </h4>
+              </div>
+            </div>
+          );
+        })()
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-            <p className="text-xs text-gray-500 font-medium">Stake Amount</p>
-            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
-              {details.stakeAmount}
-            </h4>
-          </div>
+        (() => {
+          const cardStyle = getUniformCardFontSize([details.stakeAmount, details.potentialWin, details.actualPayout, details.profit]);
+          return (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+                <p className="text-xs text-gray-500 font-medium">Stake Amount</p>
+                <h4 style={cardStyle} className="font-bold text-gray-900 mt-1.5">
+                  {details.stakeAmount}
+                </h4>
+              </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-            <p className="text-xs text-gray-500 font-medium">Potential Win</p>
-            <h4 className="text-xl md:text-2xl font-bold text-gray-900 mt-1.5">
-              {details.potentialWin}
-            </h4>
-          </div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+                <p className="text-xs text-gray-500 font-medium">Potential Win</p>
+                <h4 style={cardStyle} className="font-bold text-gray-900 mt-1.5">
+                  {details.potentialWin}
+                </h4>
+              </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-            <p className="text-xs text-gray-500 font-medium">Actual Payout</p>
-            <h4 className="text-xl md:text-2xl font-bold text-[#10C300] mt-1.5">
-              {details.actualPayout}
-            </h4>
-          </div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+                <p className="text-xs text-gray-500 font-medium">Actual Payout</p>
+                <h4 style={cardStyle} className="font-bold text-[#10C300] mt-1.5">
+                  {details.actualPayout}
+                </h4>
+              </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
-            <p className="text-xs text-gray-500 font-medium">Profit</p>
-            <h4 className="text-xl md:text-2xl font-bold text-[#10C300] mt-1.5">
-              {details.profit}
-            </h4>
-          </div>
-        </div>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
+                <p className="text-xs text-gray-500 font-medium">Profit</p>
+                <h4 style={cardStyle} className="font-bold text-[#10C300] mt-1.5">
+                  {details.profit}
+                </h4>
+              </div>
+            </div>
+          );
+        })()
       )}
 
       {/* Player Information Card */}
