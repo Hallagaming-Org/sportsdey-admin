@@ -20,6 +20,14 @@ interface UserProfileWalletInfoProps {
   balance: number;
 }
 
+function getUniformCardFontSize(values: Array<string | number | null | undefined>, maxPx = 22, minPx = 10, baseChars = 9) {
+  const maxLen = Math.max(0, ...values.map(val => String(val ?? "").length));
+  if (!maxLen || maxLen <= baseChars) return { fontSize: `${maxPx}px`, lineHeight: "1.2" };
+  const scale = baseChars / maxLen;
+  const fontPx = Math.max(minPx, Math.min(maxPx, Math.round(scale * maxPx * 10) / 10));
+  return { fontSize: `${fontPx}px`, lineHeight: "1.2", wordBreak: "break-all" as const };
+}
+
 function Skeleton({ className }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
 }
@@ -298,9 +306,14 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
             {isOverviewLoading ? (
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(overview?.currentBalance) ?? `₦${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-              </p>
+              (() => {
+                const valStr = formatCurrency(overview?.currentBalance) ?? `₦${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+                return (
+                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
+                    {valStr}
+                  </p>
+                );
+              })()
             )}
           </div>
           <div>
@@ -308,9 +321,14 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
             {isOverviewLoading ? (
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(overview?.totalDeposits) ?? "₦0.00"}
-              </p>
+              (() => {
+                const valStr = formatCurrency(overview?.totalDeposits) ?? "₦0.00";
+                return (
+                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
+                    {valStr}
+                  </p>
+                );
+              })()
             )}
           </div>
           <div>
@@ -318,9 +336,14 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
             {isOverviewLoading ? (
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(overview?.totalWithdrawals) ?? "₦0.00"}
-              </p>
+              (() => {
+                const valStr = formatCurrency(overview?.totalWithdrawals) ?? "₦0.00";
+                return (
+                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
+                    {valStr}
+                  </p>
+                );
+              })()
             )}
           </div>
           <div>
@@ -328,9 +351,14 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
             {isOverviewLoading ? (
               <Skeleton className="h-7 w-28 mt-1" />
             ) : (
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(overview?.netPosition) ?? "₦0.00"}
-              </p>
+              (() => {
+                const valStr = formatCurrency(overview?.netPosition) ?? "₦0.00";
+                return (
+                  <p style={calcDynamicCardFontSize(valStr)} className="font-bold text-gray-900 tracking-tight">
+                    {valStr}
+                  </p>
+                );
+              })()
             )}
           </div>
         </div>
