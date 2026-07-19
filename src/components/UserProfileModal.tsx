@@ -1,9 +1,10 @@
 import { X, AlertTriangle, MessageCircle, Wallet, ChevronDown, Copy, History } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { PauseCircle } from "lucide-react";
-import { type User, type UserProfile } from "../lib/users";
+import { type User, type UserProfile, userService } from "../lib/users";
 import { LuMessageSquareDot } from "react-icons/lu";
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { UserProfileWalletInfo } from "./UserProfileWalletInfo";
 import { UserProfileLogNotes } from "./UserProfileLogNotes";
 import { UserProfileHistory } from "./UserProfileHistory";
@@ -51,10 +52,24 @@ function Skeleton({ className }: { className?: string }) {
 // 	);
 // }
 
-export function UserProfileModal({ user, profile, isLoading, onClose, onSendNotice, onSuspend }: UserProfileModalProps) {
+export function UserProfileModal({ user, profile: externalProfile, isLoading: externalLoading, onClose, onSendNotice, onSuspend }: UserProfileModalProps) {
 	const [activeView, setActiveView] = useState<"personal" | "wallet" | "history">("personal");
 	const [showDevices, setShowDevices] = useState(false);
 	const [showLoginIps, setShowLoginIps] = useState(false);
+
+	const { data: fetchedProfile, isLoading: isProfileQueryLoading } = useQuery({
+		queryKey: ["user-profile-auto", user.id],
+		queryFn: async () => {
+			if (!user.id) return null;
+			const res = await userService.getUserProfile(user.id);
+			if (!res.success) return null;
+			return res.data;
+		},
+		enabled: !externalProfile && !!user.id,
+	});
+
+	const profile = externalProfile || fetchedProfile;
+	const isLoading = externalLoading || isProfileQueryLoading;
 	const displayData = profile || user;
 	const status = profile?.verificationStatus || user.status;
 	const registeredDate = profile?.createdAt ? new Date(profile.createdAt).getTime() : user.registeredDate;
