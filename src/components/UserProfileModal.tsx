@@ -427,7 +427,7 @@ export function UserProfileModal({ user, profile: externalProfile, isLoading: ex
 					) : activeView === "wallet" ? (
 						<UserProfileWalletInfo userId={user.id} balance={walletBalance} />
 					) : (
-						<UserProfileHistory userId={user.id} />
+						<UserProfileHistory userId={user.id} onCloseModal={onClose} />
 					)}
 				</div>
 			</div>
