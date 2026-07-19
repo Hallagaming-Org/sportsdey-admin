@@ -10,6 +10,8 @@ export interface User {
 	image?: string;
 	photo?: string;
 	suspended?: boolean;
+	ipAddress?: string | null;
+	registeredIpAddress?: string | null;
 }
 
 export interface UsersResponse {
@@ -39,6 +41,24 @@ export interface UserProfile {
 	deviceType?: string | null;
 	browser?: string | null;
 	ipAddress?: string | null;
+	registeredIpAddress?: string | null;
+	recentSessions?: {
+		ipAddresses: any[];
+		devices: any[];
+	} | null;
+}
+
+export interface LogNoteDetail {
+	id: string;
+	userId: string;
+	note: string;
+	adminId: string;
+	admin?: {
+		name: string;
+		email: string;
+		role: string;
+	} | null;
+	createdAt: string;
 }
 
 export interface WalletOverview {
@@ -85,6 +105,7 @@ class UserService {
 		sort?: "asc" | "desc";
 		tab?: "all" | "recent" | "pending";
 		search?: string;
+		status?: string;
 		fromDate?: string;
 		toDate?: string;
 	}): Promise<{ success: boolean; data?: UsersResponse; error?: string }> {
@@ -94,6 +115,7 @@ class UserService {
 		if (params.sort) searchParams.set("sort", params.sort);
 		if (params.tab && params.tab !== "all") searchParams.set("tab", params.tab);
 		if (params.search) searchParams.set("search", params.search);
+		if (params.status && params.status !== "all") searchParams.set("status", params.status);
 		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
 		if (params.toDate) searchParams.set("toDate", params.toDate);
 
@@ -166,6 +188,29 @@ class UserService {
 		return fetchApi(`/user/${userId}/wallet/manual`, {
 			method: "POST",
 			body: data,
+		});
+	}
+
+	async getUserLogNotes(userId: string): Promise<{ success: boolean; data?: LogNoteDetail[]; error?: string }> {
+		return fetchApi<LogNoteDetail[]>(`/admin/log-notes/user/${userId}`);
+	}
+
+	async createUserLogNote(userId: string, note: string): Promise<{ success: boolean; data?: LogNoteDetail; error?: string }> {
+		return fetchApi<LogNoteDetail>("/admin/log-notes", {
+			method: "POST",
+			body: { userId, note },
+		});
+	}
+
+	async deleteUserLogNote(noteId: string): Promise<{ success: boolean; error?: string }> {
+		return fetchApi(`/admin/log-notes/${noteId}`, {
+			method: "DELETE",
+		});
+	}
+
+	async deleteAllUserLogNotes(userId: string): Promise<{ success: boolean; error?: string }> {
+		return fetchApi(`/admin/log-notes/user/${userId}`, {
+			method: "DELETE",
 		});
 	}
 }

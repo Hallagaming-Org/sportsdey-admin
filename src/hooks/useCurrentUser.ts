@@ -8,7 +8,7 @@ export function useCurrentUser(): Admin | null {
 		if (!cookieData) return null;
 		try {
 			const parsed = JSON.parse(decodeURIComponent(cookieData));
-			return parsed?.admin || parsed;
+			return parsed?.data?.admin || parsed?.admin || parsed;
 		} catch (e) {
 			return null;
 		}

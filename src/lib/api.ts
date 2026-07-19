@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_BASE as string;
+let API_BASE = import.meta.env.VITE_API_BASE as string;
+if (import.meta.env.DEV && import.meta.env.MODE === "staging") {
+	API_BASE = "/staging-api";
+}
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 

@@ -10,6 +10,7 @@ import { truncateText } from "#/lib/utils";
 
 interface Props {
   transactionId: string;
+  userId?: string;
   open: boolean;
   onClose: () => void;
   onActionSuccess?: () => void;
@@ -18,6 +19,7 @@ interface Props {
 
 export function TransactionDetailsModal({
   transactionId,
+  userId,
   open,
   onClose,
   onActionSuccess,
@@ -134,6 +136,7 @@ export function TransactionDetailsModal({
                 mutate: () => rejectMutation.mutate(undefined),
               }}
               onViewProfile={onViewProfile}
+              userId={userId}
             />
           ) : null}
         </div>
@@ -160,6 +163,7 @@ function Content({
   approveMutation,
   rejectMutation,
   onViewProfile,
+  userId,
 }: {
   summary: DepositSummary | WithdrawalSummary;
   showRejectInput: boolean;
@@ -173,16 +177,44 @@ function Content({
   approveMutation: MutationState;
   rejectMutation: MutationState;
   onViewProfile?: (user: User) => void;
+  userId?: string;
 }) {
   const isDeposit = summary.type === "deposit";
 
+  const actualUserId =
+    userId ||
+    (summary as any).userId ||
+    (summary as any).user_id ||
+    (summary as any).user?.id ||
+    (summary as any).user_Id ||
+    (summary as any).playerId ||
+    (summary as any).player_id ||
+    "";
+
   const handleViewProfile = () => {
     if (onViewProfile) {
-      const name = isDeposit ? "Unknown Player" : ((summary as WithdrawalSummary).accountName || "Unknown Player");
+      const resolvedUserId = actualUserId || summary.transactionId;
+
+      const resolvedName = 
+        (summary as any).userName || 
+        (summary as any).user_name || 
+        (summary as any).accountName || 
+        (summary as any).user?.name || 
+        (summary as any).playerName || 
+        (summary as any).player_name || 
+        "Player";
+
+      const resolvedEmail = 
+        (summary as any).userEmail || 
+        (summary as any).user_email || 
+        (summary as any).user?.email || 
+        (summary as any).email || 
+        `${resolvedName.split(" ")[0].toLowerCase()}@example.com`;
+
       const user: User = {
-        id: (summary as any).userId || `USR-${summary.transactionId}`,
-        name: name,
-        email: `${name.split(" ")[0].toLowerCase()}@example.com`,
+        id: resolvedUserId,
+        name: resolvedName,
+        email: resolvedEmail,
         wallet: 0,
         status: "verified",
         registeredDate: Date.now(),
@@ -219,9 +251,39 @@ function Content({
     ? (summary as DepositSummary).provider ?? (summary as any).providerName ?? "N/A"
     : null;
 
-  const description = isDeposit
-    ? (summary as DepositSummary).description ?? (summary as any).note ?? ""
-    : null;
+  const rawDesc =
+    (summary as any).description ||
+    (summary as any).note ||
+    (summary as any).narration ||
+    (summary as any).reason ||
+    "";
+
+  const formatDescriptionText = (desc: string, isDepositType: boolean, method: string) => {
+    if (!desc || desc.trim() === "") {
+      if (isDepositType) {
+        return `Wallet deposit via ${method || "Payment Gateway"}`;
+      }
+      return `Wallet withdrawal request via ${method || "Bank Transfer"}`;
+    }
+
+    const trimmed = desc.trim();
+    let formatted = trimmed;
+
+    if (formatted.includes("_") || formatted.includes("-")) {
+      formatted = formatted
+        .split(/[-_]/)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+    }
+
+    if (formatted.length > 0) {
+      formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+    }
+
+    return formatted;
+  };
+
+  const description = formatDescriptionText(rawDesc, isDeposit, summary.paymentMethod);
 
   const balanceBefore = !isDeposit
     ? (summary as WithdrawalSummary).balanceBefore
@@ -308,21 +370,19 @@ function Content({
         <div className="p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-[16px] font-bold text-[#030229]">Transaction Summary</h4>
-            {!isDeposit && (
-              <button 
-                onClick={handleViewProfile}
-                className="text-sm font-semibold text-[#1E9E24] underline hover:text-[#15803D] cursor-pointer"
-              >
-                View Player profile
-              </button>
-            )}
+            <button 
+              onClick={handleViewProfile}
+              className="text-sm font-semibold text-[#1E9E24] underline hover:text-[#15803D] cursor-pointer"
+            >
+              View Player profile
+            </button>
           </div>
 
           <div className="space-y-3.5">
             {/* Transaction ID */}
             <div className="flex justify-between items-center text-sm">
               <span className="text-[#82869A] shrink-0">Transaction ID:</span>
-              <span className="font-medium text-[#030229] text-xs flex items-center gap-1.5">
+              <span className="font-medium text-[#030229] text-xs flex items-center gap-1.5 font-mono">
                 {summary.transactionId}
                 <button 
                   onClick={() => handleCopy(summary.transactionId, "Transaction ID")}
@@ -331,6 +391,23 @@ function Content({
                 >
                   <Copy className="h-3.5 w-3.5 text-[#1E9E24]" />
                 </button>
+              </span>
+            </div>
+
+            {/* User ID */}
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-[#82869A] shrink-0">User ID:</span>
+              <span className="font-medium text-[#030229] text-xs flex items-center gap-1.5 font-mono">
+                {actualUserId || "N/A"}
+                {actualUserId && (
+                  <button 
+                    onClick={() => handleCopy(actualUserId, "User ID")}
+                    className="hover:opacity-80 transition-opacity cursor-pointer"
+                    title="Copy User ID"
+                  >
+                    <Copy className="h-3.5 w-3.5 text-[#1E9E24]" />
+                  </button>
+                )}
               </span>
             </div>
 
@@ -505,22 +582,19 @@ function Content({
             )}
           </div>
           <div className="space-y-3.5 text-sm">
-            {isDeposit ? (
-              <>
-                {/* Description/Note */}
-                <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] text-xs shrink-0">Description/Note:</span>
-                  <span className="font-medium text-[#030229] text-xs">{description || "Deposit to main Wallet"}</span>
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Balance Before */}
-                <div className="flex justify-between items-center">
-                  <span className="text-[#82869A] text-xs shrink-0">Balance Before:</span>
-                  <span className="font-bold text-[#030229] text-xs">{formattedBalanceBefore}</span>
-                </div>
-              </>
+            {/* Description/Note */}
+            <div className="flex justify-between items-start gap-4">
+              <span className="text-[#82869A] text-xs shrink-0">Description / Note:</span>
+              <span className="font-medium text-[#030229] text-xs text-right leading-relaxed" title={description}>
+                {description}
+              </span>
+            </div>
+            {/* Balance Before */}
+            {!isDeposit && (
+              <div className="flex justify-between items-center">
+                <span className="text-[#82869A] text-xs shrink-0">Balance Before:</span>
+                <span className="font-bold text-[#030229] text-xs">{formattedBalanceBefore}</span>
+              </div>
             )}
             {/* IP Address */}
             <div className="flex justify-between items-center">

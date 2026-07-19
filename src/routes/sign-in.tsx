@@ -135,7 +135,7 @@ function SignInPage() {
 							</button>
 						</div>
 
-						<div className="mt-2 text-right">
+						{/* <div className="mt-2 text-right">
 							<a
 								href="#"
 								className="text-sm font-medium text-accent hover:underline"
@@ -145,7 +145,7 @@ function SignInPage() {
 							>
 								Forgot password?
 							</a>
-						</div>
+						</div> */}
 					</div>
 
 					<button

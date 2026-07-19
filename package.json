@@ -9,6 +9,7 @@
 		"build:production": "pnpm run clean && vite build --mode production",
 		"serve": "vite preview",
 		"dev": "vite dev --port=3002",
+		"dev:staging": "vite dev --mode staging --port=3002",
 		"deploy:staging": "pnpm run build:staging && wrangler deploy dist/server/index.js --assets dist/client --env staging --config wrangler.jsonc",
 		"deploy:production": "pnpm run build:production && wrangler deploy dist/server/index.js --assets dist/client --env production --config wrangler.jsonc",
 		"cf-typegen": "wrangler types --env-interface Env"
@@ -44,7 +45,8 @@
 		"sonner": "^2.0.3",
 		"tailwind-merge": "^3.3.1",
 		"tailwindcss": "^4.1.3",
-		"vite-tsconfig-paths": "^5.1.4"
+		"vite-tsconfig-paths": "^5.1.4",
+		"xlsx": "^0.18.5"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.5",

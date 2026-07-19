@@ -20,6 +20,8 @@ export const PERMISSIONS_LIST = [
 	{ id: "reports_issues", label: "Reports & issues" },
 	{ id: "payments", label: "Payments" },
 	{ id: "view_kyc_document", label: "View KYC document" },
+	{ id: "create_log_note", label: "Add log note" },
+	{ id: "manual_credit_debit", label: "Manual credit/debit" },
 ];
 
 interface AdminProfileModalProps {

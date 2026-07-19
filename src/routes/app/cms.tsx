@@ -14,6 +14,11 @@ import { TimePeriodFilter, type TimePeriod } from "@/components/TimePeriodFilter
 import { CmsAddModal } from "../../components/CmsAddModal";
 import { CmsEditModal } from "../../components/CmsEditModal";
 import { ActionDropdown } from "@/components/ActionDropdown";
+import * as XLSX from "xlsx";
+import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
 
 
 export const Route = createFileRoute("/app/cms")({
@@ -48,6 +53,114 @@ function CmsPage() {
 		[selectedTimePeriod, customDateRange],
 	);
 	const [actionDropdown, setActionDropdown] = useState<{ item: any; top: number; right: number } | null>(null);
+	const [showExportDropdown, setShowExportDropdown] = useState(false);
+
+	const exportToExcel = () => {
+		const dataToExport = contents.map((c: any) => ({
+			"Title": c.title || "-",
+			"Author": c.authorName || c.author || "-",
+			"Type": c.type || "-",
+			"Published Date": c.publishedAt ? new Date(c.publishedAt).toLocaleDateString() : "-",
+			"Status": c.status || "Published",
+		}));
+
+		if (!dataToExport || dataToExport.length === 0) {
+			toast.error("No CMS content to export");
+			return;
+		}
+
+		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, "CMS Contents");
+		XLSX.writeFile(workbook, `CMS_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
+	};
+
+	const exportToPdf = () => {
+		if (!contents || contents.length === 0) {
+			toast.error("No CMS content to export");
+			return;
+		}
+		const doc = new jsPDF("landscape");
+		doc.text("CMS Content List", 14, 15);
+		autoTable(doc, {
+			head: [["Title", "Author", "Type", "Published Date", "Status"]],
+			body: contents.map((c: any) => [
+				c.title || "-",
+				c.authorName || c.author || "-",
+				c.type || "-",
+				c.publishedAt ? new Date(c.publishedAt).toLocaleDateString() : "-",
+				c.status || "Published",
+			]),
+			startY: 20,
+		});
+		doc.save(`CMS_Export_${new Date().toISOString().split("T")[0]}.pdf`);
+	};
+
+	const exportToDocx = async () => {
+		if (!contents || contents.length === 0) {
+			toast.error("No CMS content to export");
+			return;
+		}
+
+		const doc = new Document({
+			sections: [
+				{
+					properties: {},
+					children: [
+						new Paragraph({
+							children: [
+								new TextRun({
+									text: "CMS Content List",
+									bold: true,
+									size: 32,
+								}),
+							],
+							spacing: { after: 400 },
+						}),
+						new Table({
+							width: { size: 100, type: WidthType.PERCENTAGE },
+							rows: [
+								new TableRow({
+									children: ["Title", "Author", "Type", "Published Date", "Status"].map(
+										(header) =>
+											new TableCell({
+												children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
+												shading: { fill: "f3f4f6" },
+											}),
+									),
+								}),
+								...contents.map(
+									(c: any) =>
+										new TableRow({
+											children: [
+												c.title || "-",
+												c.authorName || c.author || "-",
+												c.type || "-",
+												c.publishedAt ? new Date(c.publishedAt).toLocaleDateString() : "-",
+												c.status || "Published",
+											].map(
+												(val) =>
+													new TableCell({
+														children: [new Paragraph({ children: [new TextRun({ text: String(val) })] })],
+													}),
+											),
+										}),
+								),
+							],
+						}),
+					],
+				},
+			],
+		});
+
+		const blob = await Packer.toBlob(doc);
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `CMS_Export_${new Date().toISOString().split("T")[0]}.docx`;
+		a.click();
+		URL.revokeObjectURL(url);
+	};
 
 	useEffect(() => {
 		const handleClickOutside = () => setActionDropdown(null);
@@ -308,6 +421,66 @@ function CmsPage() {
 									}}
 									buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
 								/>
+
+								{contents.length > 0 && (
+									<div className="relative">
+										<button 
+											type="button"
+											onClick={(e) => {
+												e.stopPropagation();
+												if (e.nativeEvent) {
+													e.nativeEvent.stopImmediatePropagation();
+												}
+												setShowExportDropdown(!showExportDropdown);
+											}}
+											className="inline-flex items-center h-8 gap-1.5 rounded-full bg-[#1BAA04] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors whitespace-nowrap"
+										>
+											Export File as
+											<FaFileExport className="h-3 w-3 text-white" />
+										</button>
+
+										{showExportDropdown && (
+											<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														setShowExportDropdown(false);
+														exportToPdf();
+													}}
+													className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+												>
+													<FaFilePdf className="text-red-500 w-4 h-4" />
+													PDF
+												</button>
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														setShowExportDropdown(false);
+														exportToDocx();
+													}}
+													className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+												>
+													<FaFileWord className="text-blue-600 w-4 h-4" />
+													DOCX
+												</button>
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														setShowExportDropdown(false);
+														exportToExcel();
+													}}
+													className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+												>
+													<FaFileExcel className="text-green-600 w-4 h-4" />
+													Excel
+												</button>
+											</div>
+										)}
+									</div>
+								)}
 							</form>
 						)}
 					</div>

@@ -31,6 +31,8 @@ export interface ListKycParams {
 	limit?: number;
 	search?: string;
 	status?: KycStatusFilter;
+	fromDate?: string;
+	toDate?: string;
 }
 
 export interface KycDocument {
@@ -53,6 +55,8 @@ class KycService {
 		if (params.limit) searchParams.set("limit", params.limit.toString());
 		if (params.search) searchParams.set("search", params.search);
 		if (params.status) searchParams.set("status", params.status);
+		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params.toDate) searchParams.set("toDate", params.toDate);
 
 		const queryString = searchParams.toString();
 		const endpoint = queryString ? `/kyc/all?${queryString}` : "/kyc/all";

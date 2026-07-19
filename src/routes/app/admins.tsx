@@ -15,6 +15,11 @@ import { notificationService } from "#/lib/notifications";
 import { adminAuth } from "#/lib/auth";
 import { TimePeriodFilter, type TimePeriod } from "#/components/TimePeriodFilter";
 import { useCurrentUser } from "#/hooks/useCurrentUser";
+import * as XLSX from "xlsx";
+import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
 export const Route = createFileRoute("/app/admins")({
 	beforeLoad: ({ context }) => {
 		const admin = (context as any).admin;
@@ -62,6 +67,111 @@ function AdminsPage() {
 	const [selectedProfileAdmin, setSelectedProfileAdmin] = useState<AdminUser | null>(null);
 	const [noticeModalAdmin, setNoticeModalAdmin] = useState<AdminUser | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
+	const [showExportDropdown, setShowExportDropdown] = useState(false);
+
+	const exportToExcel = () => {
+		const dataToExport = admins.map((a) => ({
+			"Admin ID": a.id,
+			"Name": a.name,
+			"Email Address": a.email,
+			"Role": a.role === "super_admin" ? "Super Admin" : a.role === "csr-admin" ? "CSR Admin" : a.role,
+		}));
+
+		if (!dataToExport || dataToExport.length === 0) {
+			toast.error("No admins to export");
+			return;
+		}
+
+		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, "Admins");
+		XLSX.writeFile(workbook, `Admins_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
+	};
+
+	const exportToPdf = () => {
+		if (!admins || admins.length === 0) {
+			toast.error("No admins to export");
+			return;
+		}
+		const doc = new jsPDF("landscape");
+		doc.text("Other Admins List", 14, 15);
+		autoTable(doc, {
+			head: [["Admin ID", "Name", "Email Address", "Role"]],
+			body: admins.map((a) => [
+				a.id,
+				a.name,
+				a.email,
+				a.role === "super_admin" ? "Super Admin" : a.role === "csr-admin" ? "CSR Admin" : a.role,
+			]),
+			startY: 20,
+		});
+		doc.save(`Admins_Export_${new Date().toISOString().split("T")[0]}.pdf`);
+	};
+
+	const exportToDocx = async () => {
+		if (!admins || admins.length === 0) {
+			toast.error("No admins to export");
+			return;
+		}
+
+		const doc = new Document({
+			sections: [
+				{
+					properties: {},
+					children: [
+						new Paragraph({
+							children: [
+								new TextRun({
+									text: "Other Admins List",
+									bold: true,
+									size: 32,
+								}),
+							],
+							spacing: { after: 400 },
+						}),
+						new Table({
+							width: { size: 100, type: WidthType.PERCENTAGE },
+							rows: [
+								new TableRow({
+									children: ["Admin ID", "Name", "Email Address", "Role"].map(
+										(header) =>
+											new TableCell({
+												children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
+												shading: { fill: "f3f4f6" },
+											}),
+									),
+								}),
+								...admins.map(
+									(a) =>
+										new TableRow({
+											children: [
+												a.id,
+												a.name,
+												a.email,
+												a.role === "super_admin" ? "Super Admin" : a.role === "csr-admin" ? "CSR Admin" : a.role,
+											].map(
+												(val) =>
+													new TableCell({
+														children: [new Paragraph({ children: [new TextRun({ text: String(val) })] })],
+													}),
+											),
+										}),
+								),
+							],
+						}),
+					],
+				},
+			],
+		});
+
+		const blob = await Packer.toBlob(doc);
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `Admins_Export_${new Date().toISOString().split("T")[0]}.docx`;
+		a.click();
+		URL.revokeObjectURL(url);
+	};
 
 	const handleCreateAdmin = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -233,6 +343,66 @@ function AdminsPage() {
 						</svg>
 						Add new user
 					</button>
+
+					{admins.length > 0 && (
+						<div className="relative">
+							<button 
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation();
+									if (e.nativeEvent) {
+										e.nativeEvent.stopImmediatePropagation();
+									}
+									setShowExportDropdown(!showExportDropdown);
+								}}
+								className="inline-flex items-center h-9 gap-1.5 rounded-full bg-[#1BAA04] px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
+							>
+								Export File as
+								<FaFileExport className="h-3.5 w-3.5 text-white" />
+							</button>
+							
+							{showExportDropdown && (
+								<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowExportDropdown(false);
+											exportToPdf();
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									>
+										<FaFilePdf className="text-red-500 w-4 h-4" />
+										PDF
+									</button>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowExportDropdown(false);
+											exportToDocx();
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									>
+										<FaFileWord className="text-blue-600 w-4 h-4" />
+										DOCX
+									</button>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowExportDropdown(false);
+											exportToExcel();
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									>
+										<FaFileExcel className="text-green-600 w-4 h-4" />
+										Excel
+									</button>
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 

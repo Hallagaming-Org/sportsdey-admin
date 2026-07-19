@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   TimePeriodFilter,
   type TimePeriod,
 } from "#/components/TimePeriodFilter";
-import { Search, Eye, PauseCircle } from "lucide-react";
+import { Search, Eye, PauseCircle, Copy } from "lucide-react";
 import { DataTable, type Column } from "#/components/DataTable";
 import SortIcon from "@/logo/sort.svg?react";
 import FilterIcon from "@/logo/filter.svg?react";
@@ -13,11 +13,16 @@ import { ActionDropdown } from "#/components/ActionDropdown";
 import { UserProfileModal } from "#/components/UserProfileModal";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import NotificationIcon from "#/assets/NotificationIcon";
-import type { User } from "#/lib/users";
+import { userService, type User } from "#/lib/users";
 import { notificationService } from "#/lib/notifications";
 import { ticketService, type TicketRecord, type TicketOutcome, type TicketTab } from "#/lib/tickets";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
 
 
 
@@ -59,6 +64,150 @@ function TicketsPage() {
   const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
   const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const queryClient = useQueryClient();
+
+  const exportToExcel = () => {
+    const dataToExport = tickets.map((t) => ({
+      "Bet ID": t.id,
+      "Player Name": t.playerName,
+      "Bet Amount": t.betAmount,
+      "Potential Win": t.potentialWin || "-",
+      "Payout": t.payout || t.payOut || "-",
+      "Game Type": t.gameType,
+      "Game Name": t.gameName || "-",
+      "Provider": t.provider || "-",
+      "Round ID": t.roundId || "-",
+      "Date": t.createdAt,
+      "Balance Before": t.balanceBefore || "-",
+      "Balance After": t.balanceAfter || "-",
+      "Status": t.outcome,
+    }));
+
+    if (!dataToExport || dataToExport.length === 0) {
+      toast.error("No tickets to export");
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tickets");
+    XLSX.writeFile(workbook, `Tickets_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
+  const exportToPdf = () => {
+    if (!tickets || tickets.length === 0) {
+      toast.error("No tickets to export");
+      return;
+    }
+    const doc = new jsPDF("landscape");
+    doc.text("Ticket History", 14, 15);
+    autoTable(doc, {
+      head: [["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Date", "Status"]],
+      body: tickets.map((t) => [
+        t.id,
+        t.playerName,
+        t.betAmount,
+        t.potentialWin || "-",
+        t.payout || t.payOut || "-",
+        t.gameType,
+        t.gameName || "-",
+        t.provider || "-",
+        t.roundId || "-",
+        t.createdAt,
+        t.outcome,
+      ]),
+      startY: 20,
+    });
+    doc.save(`Tickets_Export_${new Date().toISOString().split("T")[0]}.pdf`);
+  };
+
+  const exportToDocx = async () => {
+    if (!tickets || tickets.length === 0) {
+      toast.error("No tickets to export");
+      return;
+    }
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Ticket History",
+                  bold: true,
+                  size: 32,
+                }),
+              ],
+              spacing: { after: 400 },
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                new TableRow({
+                  children: ["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Date", "Status"].map(
+                    (header) =>
+                      new TableCell({
+                        children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
+                        shading: { fill: "f3f4f6" },
+                      }),
+                  ),
+                }),
+                ...tickets.map(
+                  (t) =>
+                    new TableRow({
+                      children: [
+                        t.id,
+                        t.playerName,
+                        t.betAmount,
+                        t.potentialWin || "-",
+                        t.payout || t.payOut || "-",
+                        t.gameType,
+                        t.gameName || "-",
+                        t.provider || "-",
+                        t.roundId || "-",
+                        t.createdAt,
+                        t.outcome,
+                      ].map(
+                        (val) =>
+                          new TableCell({
+                            children: [new Paragraph({ children: [new TextRun({ text: String(val) })] })],
+                          }),
+                      ),
+                    }),
+                ),
+              ],
+            }),
+          ],
+        },
+      ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Tickets_Export_${new Date().toISOString().split("T")[0]}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const toggleSuspendMutation = useMutation({
+    mutationFn: async ({ userId }: { userId: string; isReactivate?: boolean }) => {
+      const result = await userService.toggleUserSuspend(userId);
+      if (!result.success) throw new Error(result.error || "Failed to toggle suspend status");
+      return result;
+    },
+    onSuccess: (data, variables) => {
+      toast.success(variables.isReactivate ? "User reactivated successfully" : "User suspended successfully");
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
 
   useEffect(() => {
     const handleClickOutside = () => setActionDropdown(null);
@@ -93,14 +242,31 @@ function TicketsPage() {
 
   const columns: Column<TicketRecord>[] = [
     {
-      header: "Player ID",
-      accessor: "id",
-      cellClassName: "font-mono text-gray-700",
+      header: "Bet ID",
+      accessor: (t) => (
+        <div className="flex items-center gap-1.5 font-mono text-xs">
+          <span className="font-medium text-gray-900 truncate max-w-[90px]" title={t.id}>
+            {t.id.length > 10 ? `${t.id.substring(0, 10)}...` : t.id}
+          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(t.id);
+              toast.success("Bet ID copied to clipboard");
+            }}
+            className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+            title="Copy Bet ID"
+          >
+            <Copy className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ),
     },
     {
       header: "Player Name",
       accessor: (t) => (
-        <span className="text-gray-500 text-xs leading-relaxed" title={t.playerName}>
+        <span className="text-gray-900 font-medium text-xs leading-relaxed" title={t.playerName}>
           {t.playerName}
         </span>
       ),
@@ -108,8 +274,24 @@ function TicketsPage() {
     {
       header: "Bet Amount",
       accessor: (t) => (
-        <span className="text-gray-500 text-xs leading-relaxed">
+        <span className="text-gray-900 font-bold text-xs leading-relaxed">
           {t.betAmount}
+        </span>
+      ),
+    },
+    {
+      header: "Potential Win",
+      accessor: (t) => (
+        <span className="text-gray-700 text-xs leading-relaxed font-semibold">
+          {t.potentialWin ?? "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Payout",
+      accessor: (t) => (
+        <span className="text-gray-700 text-xs leading-relaxed font-semibold">
+          {t.payout || t.payOut || "—"}
         </span>
       ),
     },
@@ -119,6 +301,48 @@ function TicketsPage() {
         <span className="text-gray-500 text-xs leading-relaxed">
           {t.gameType}
         </span>
+      ),
+    },
+    {
+      header: "Game Name",
+      accessor: (t) => (
+        <span className="text-gray-500 text-xs leading-relaxed">
+          {t.gameName ?? "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Provider",
+      accessor: (t) => (
+        <span className="text-gray-500 text-xs leading-relaxed font-mono">
+          {t.provider ?? "—"}
+        </span>
+      ),
+    },
+    {
+      header: "Round ID",
+      accessor: (t) => (
+        t.roundId ? (
+          <div className="flex items-center gap-1.5 font-mono text-xs">
+            <span className="text-gray-500 truncate max-w-[80px]" title={t.roundId}>
+              {t.roundId.length > 8 ? `${t.roundId.substring(0, 8)}...` : t.roundId}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(t.roundId!);
+                toast.success("Round ID copied to clipboard");
+              }}
+              className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              title="Copy Round ID"
+            >
+              <Copy className="w-3 h-3" />
+            </button>
+          </div>
+        ) : (
+          <span className="text-gray-400 text-xs">—</span>
+        )
       ),
     },
     {
@@ -133,7 +357,7 @@ function TicketsPage() {
       header: "Balance Before",
       accessor: (t) => (
         <span className="text-gray-500 text-xs leading-relaxed">
-          {t.balanceBefore ?? "N/A"}
+          {t.balanceBefore ?? "—"}
         </span>
       ),
     },
@@ -141,30 +365,34 @@ function TicketsPage() {
       header: "Balance After",
       accessor: (t) => (
         <span className="text-gray-500 text-xs leading-relaxed">
-          {t.balanceAfter ?? "N/A"}
+          {t.balanceAfter ?? "—"}
         </span>
       ),
     },
     {
       header: "Status",
-      accessor: (t) => (
-        <span
-          className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${OUTCOME_STYLES[t.outcome]}`}
-        >
-          {t.outcome}
-        </span>
-      ),
+      accessor: (t) => {
+        const outcomeKey = (t.outcome === "Won" ? "Won" : (t.outcome as any) === "Active" || (t.outcome as any) === "Pending" ? "Active" : "Lost") as TicketOutcome;
+        return (
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${OUTCOME_STYLES[outcomeKey] || "bg-gray-100 text-gray-700"}`}
+          >
+            {t.outcome}
+          </span>
+        );
+      },
     },
   ];
 
   const getMockUserFromTicket = (ticket: TicketRecord): User => {
     return {
-      id: `USR-${ticket.id}`,
+      id: ticket.userId || (ticket as any).playerId || ticket.id,
       name: ticket.playerName,
       email: `${ticket.playerName.split(" ")[0].toLowerCase()}@example.com`,
       wallet: 0,
       status: "verified",
       registeredDate: Date.now(),
+      suspended: ticket.userSuspended,
     };
   };
 
@@ -231,6 +459,66 @@ function TicketsPage() {
             }}
             buttonClassName="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer whitespace-nowrap"
           />
+
+          {tickets.length > 0 && (
+            <div className="relative">
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (e.nativeEvent) {
+                    e.nativeEvent.stopImmediatePropagation();
+                  }
+                  setShowExportDropdown(!showExportDropdown);
+                }}
+                className="inline-flex items-center h-8 gap-1.5 rounded-full bg-[#1BAA04] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors whitespace-nowrap"
+              >
+                Export File as
+                <FaFileExport className="h-3 w-3 text-white" />
+              </button>
+
+              {showExportDropdown && (
+                <div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowExportDropdown(false);
+                      exportToPdf();
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    <FaFilePdf className="text-red-500 w-4 h-4" />
+                    PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowExportDropdown(false);
+                      exportToDocx();
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    <FaFileWord className="text-blue-600 w-4 h-4" />
+                    DOCX
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowExportDropdown(false);
+                      exportToExcel();
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    <FaFileExcel className="text-green-600 w-4 h-4" />
+                    Excel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -285,9 +573,12 @@ function TicketsPage() {
             },
             {
               icon: <PauseCircle className="w-4 h-4" />,
-              label: "Suspend",
+              label: actionDropdown.ticket.userSuspended ? "Reactivate" : "Suspend",
               onClick: () => {
-                toast.success(`User suspended successfully`);
+                toggleSuspendMutation.mutate({ 
+                  userId: actionDropdown.ticket.userId || (actionDropdown.ticket as any).playerId || actionDropdown.ticket.id, 
+                  isReactivate: actionDropdown.ticket.userSuspended 
+                });
                 setActionDropdown(null);
               },
             },
@@ -303,8 +594,8 @@ function TicketsPage() {
             setNoticeModalUser(user);
             setSelectedProfileUser(null);
           }}
-          onSuspend={() => {
-            toast.success(`User suspended successfully`);
+          onSuspend={(user) => {
+            toggleSuspendMutation.mutate({ userId: user.id, isReactivate: user.suspended });
           }}
         />
       )}

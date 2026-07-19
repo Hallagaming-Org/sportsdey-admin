@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter, redirect } from "@tanstack/react-router";
-import { ChevronDown, Eye, PauseCircle, Search } from "lucide-react";
+import { Eye, PauseCircle, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import NotificationIcon from "#/assets/NotificationIcon";
@@ -15,6 +15,12 @@ import {
 import { type NewUser, type User, type UserProfile, userService } from "../../lib/users";
 import { notificationService } from "../../lib/notifications";
 import { getDateRangeForPeriod } from "../../lib/time-period";
+import { capitalizeName } from "../../lib/utils";
+import * as XLSX from "xlsx";
+import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
 
 import { useHasPermission } from "../../hooks/useCurrentUser";
 
@@ -39,11 +45,11 @@ function UsersPage() {
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
-	const [sort, setSort] = useState<"asc" | "desc">("asc");
+	const [sort] = useState<"asc" | "desc">("asc");
 const [activeTab, setActiveTab] = useState<Tab>("all");
-	const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
-		"all",
-	);
+	// const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
+	// 	"all",
+	// );
 	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
 	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 	const [showAddModal, setShowAddModal] = useState(false);
@@ -66,13 +72,128 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 	const [isProfileLoading, setIsProfileLoading] = useState(false);
 	const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
+	const [showExportDropdown, setShowExportDropdown] = useState(false);
+
+	const exportToExcel = () => {
+		const dataToExport = usersData?.users.map(user => ({
+			"User Id": user.id,
+			"Player Name": user.name,
+			"Email Address": user.email,
+			"Registration Date": user.registeredDate ? new Date(user.registeredDate).toLocaleDateString() : "-",
+			"Registration IP": user.registeredIpAddress || user.ipAddress || "-",
+			"Wallet Balance": user.wallet,
+			"Status": user.status === "verified" ? "Verified" : user.status === "pending_verification" ? "Pending" : "Not Verified",
+		}));
+
+		if (!dataToExport || dataToExport.length === 0) {
+			toast.error("No users to export");
+			return;
+		}
+
+		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+		XLSX.writeFile(workbook, `Users_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+	};
+
+	const exportToPdf = () => {
+		if (!usersData?.users || usersData.users.length === 0) {
+			toast.error("No users to export");
+			return;
+		}
+		const doc = new jsPDF("landscape");
+		doc.text("Users", 14, 15);
+		autoTable(doc, {
+			head: [["User Id", "Player Name", "Email Address", "Registration Date", "Registration IP", "Wallet Balance", "Status"]],
+			body: usersData.users.map(u => [
+				u.id,
+				u.name,
+				u.email,
+				u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : "-",
+				u.registeredIpAddress || u.ipAddress || "-",
+				u.wallet?.toString() || "0",
+				u.status === "verified" ? "Verified" : u.status === "pending_verification" ? "Pending" : "Not Verified"
+			]),
+			startY: 20,
+		});
+		doc.save(`Users_Export_${new Date().toISOString().split('T')[0]}.pdf`);
+	};
+
+	const exportToDocx = () => {
+		if (!usersData?.users || usersData.users.length === 0) {
+			toast.error("No users to export");
+			return;
+		}
+
+		const docx = new Document({
+			sections: [
+				{
+					properties: {},
+					children: [
+						new Paragraph({
+							children: [
+								new TextRun({
+									text: "Users",
+									bold: true,
+									size: 32,
+								}),
+							],
+							spacing: { after: 400 },
+						}),
+						new Table({
+							width: { size: 100, type: WidthType.PERCENTAGE },
+							rows: [
+								new TableRow({
+									children: ["User Id", "Player Name", "Email Address", "Registration Date", "Registration IP", "Wallet Balance", "Status"].map(
+										header => new TableCell({
+											children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
+											shading: { fill: "f3f4f6" },
+											margins: { top: 100, bottom: 100, left: 100, right: 100 }
+										})
+									),
+								}),
+								...usersData.users.map(u => new TableRow({
+									children: [
+										u.id,
+										u.name,
+										u.email,
+										u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : "-",
+										u.registeredIpAddress || u.ipAddress || "-",
+										u.wallet?.toString() || "0",
+										u.status === "verified" ? "Verified" : u.status === "pending_verification" ? "Pending" : "Not Verified"
+									].map(cell => new TableCell({
+										children: [new Paragraph(String(cell))],
+										margins: { top: 100, bottom: 100, left: 100, right: 100 }
+									})),
+								}))
+							],
+						}),
+					],
+				},
+			],
+		});
+
+		Packer.toBlob(docx).then((blob) => {
+			const link = document.createElement("a");
+			const url = URL.createObjectURL(blob);
+			link.setAttribute("href", url);
+			link.setAttribute("download", `Users_Export_${new Date().toISOString().split('T')[0]}.docx`);
+			link.style.visibility = 'hidden';
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		});
+	};
 
 	// Close dropdown when clicking outside
 	useEffect(() => {
-		const handleClickOutside = () => setActionDropdown(null);
+		const handleClickOutside = () => {
+			setActionDropdown(null);
+			setShowExportDropdown(false);
+		};
 		document.addEventListener("click", handleClickOutside);
 		return () => document.removeEventListener("click", handleClickOutside);
-}, []);
+	}, []);
 
 	const { fromDate, toDate } = useMemo(
 		() => getDateRangeForPeriod(selectedTimePeriod, customRange, { output: "iso" }),
@@ -189,9 +310,9 @@ useEffect(() => {
 					/> */}
 					<span
 						className="font-medium text-sm text-gray-900 hover:text-primary transition-colors truncate"
-						title={user.name}
+						title={capitalizeName(user.name)}
 					>
-						{user.name}
+						{capitalizeName(user.name)}
 					</span>
 				</div>
 			),
@@ -203,10 +324,34 @@ useEffect(() => {
 		},
 		{
 			header: "Registration Date",
-			accessor: (user) =>
-				user.registeredDate
-					? new Date(user.registeredDate).toLocaleDateString()
-					: "-",
+			accessor: (user) => {
+				if (!user.registeredDate) return "-";
+				const dateObj = new Date(user.registeredDate);
+				if (isNaN(dateObj.getTime())) return String(user.registeredDate);
+
+				const formattedDate = dateObj.toLocaleDateString("en-US", {
+					month: "short",
+					day: "numeric",
+					year: "numeric",
+				});
+				const formattedTime = dateObj.toLocaleTimeString("en-US", {
+					hour: "numeric",
+					minute: "2-digit",
+					hour12: true,
+				}).toLowerCase();
+
+				return (
+					<div className="flex flex-col">
+						<span className="font-medium text-gray-900">{formattedDate}</span>
+						<span className="text-xs text-gray-500">{formattedTime}</span>
+					</div>
+				);
+			},
+			cellClassName: "text-gray-500",
+		},
+		{
+			header: "Registration IP",
+			accessor: (user) => user.registeredIpAddress || user.ipAddress || "-",
 			cellClassName: "text-gray-500",
 		},
 		{
@@ -278,6 +423,66 @@ useEffect(() => {
 						</svg>
 						Add new user
 					</button>
+
+					{users.length > 0 && (
+						<div className="relative">
+							<button 
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation();
+									if (e.nativeEvent) {
+										e.nativeEvent.stopImmediatePropagation();
+									}
+									setShowExportDropdown(!showExportDropdown);
+								}}
+								className="inline-flex items-center h-11 gap-1.5 rounded-full bg-[#1BAA04] px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
+							>
+								Export File as
+								<FaFileExport className="h-3.5 w-3.5 text-white" />
+							</button>
+							
+							{showExportDropdown && (
+								<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowExportDropdown(false);
+											exportToPdf();
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									>
+										<FaFilePdf className="text-red-500 w-4 h-4" />
+										PDF
+									</button>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowExportDropdown(false);
+											exportToDocx();
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									>
+										<FaFileWord className="text-blue-600 w-4 h-4" />
+										DOCX
+									</button>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setShowExportDropdown(false);
+											exportToExcel();
+										}}
+										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									>
+										<FaFileExcel className="text-green-600 w-4 h-4" />
+										Excel
+									</button>
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 
@@ -308,8 +513,21 @@ useEffect(() => {
 					</div>
 				</div>
 
-				<form className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
-					<button
+				<form onSubmit={(e) => e.preventDefault()} className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+						<input
+							type="text"
+							placeholder="Search users..."
+							value={search}
+							onChange={(e) => {
+								setSearch(e.target.value);
+								setPage(1);
+							}}
+							className="h-9 w-64 rounded-full border border-gray-200 bg-white pl-9 pr-4 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+						/>
+					</div>
+					{/* <button
 						type="button"
 						onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
 						className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
@@ -334,7 +552,7 @@ useEffect(() => {
 								? "Verified"
 								: "Pending"}
 						<ChevronDown className="h-3.5 w-3.5" />
-					</button>
+					</button> */}
 						<TimePeriodFilter
 							onFilterChange={(period, range) => {
 								setSelectedTimePeriod(period);

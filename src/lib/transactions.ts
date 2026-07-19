@@ -11,10 +11,23 @@ export interface Transaction {
 	amount: string;
 	balanceAfter: string;
 	status: TransactionStatus;
+	user_id?: string;
+	user_email?: string;
 }
 
 export interface DepositSummary {
 	transactionId: string;
+	userId?: string;
+	user_id?: string;
+	userName?: string;
+	user_name?: string;
+	userEmail?: string;
+	user_email?: string;
+	user?: {
+		id: string;
+		name?: string;
+		email?: string;
+	};
 	type: "deposit";
 	status: string;
 	amount: number;
@@ -31,10 +44,24 @@ export interface DepositSummary {
 	cardType?: string | null;
 	cardLast4?: string | null;
 	description?: string;
+	note?: string;
+	narration?: string;
+	reason?: string;
 }
 
 export interface WithdrawalSummary {
 	transactionId: string;
+	userId?: string;
+	user_id?: string;
+	userName?: string;
+	user_name?: string;
+	userEmail?: string;
+	user_email?: string;
+	user?: {
+		id: string;
+		name?: string;
+		email?: string;
+	};
 	type: "withdrawal";
 	status: string;
 	amount: number;
@@ -51,6 +78,10 @@ export interface WithdrawalSummary {
 	accountNumber?: string;
 	accountName?: string;
 	balanceBefore?: number | null;
+	description?: string;
+	note?: string;
+	narration?: string;
+	reason?: string;
 }
 
 export type TransactionSummary = DepositSummary | WithdrawalSummary;
@@ -76,6 +107,8 @@ interface ServerTransaction {
 	amount: number | null;
 	balance_after: number | null;
 	status: string;
+	user_id?: string;
+	user_email?: string;
 }
 
 interface ServerTransactionsResponse {
@@ -135,6 +168,8 @@ const formatType = (type: "deposit" | "withdrawal" | "payment"): string => {
 const mapTransaction = (t: ServerTransaction): Transaction => {
 	return {
 		id: t.transaction_id,
+		user_id: t.user_id,
+		user_email: t.user_email,
 		dateTime: `${t.date_time.date}\n${t.date_time.time}`,
 		type: formatType(t.type) as TransactionType,
 		paymentMethod: formatPaymentMethod(t.payment_method),
