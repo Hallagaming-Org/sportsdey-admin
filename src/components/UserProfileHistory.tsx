@@ -14,8 +14,11 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
 
+import { useNavigate } from "@tanstack/react-router";
+
 interface UserProfileHistoryProps {
   userId: string;
+  onCloseModal?: () => void;
 }
 
 function getUniformCardFontSize(values: Array<string | number | null | undefined>, maxPx = 22, minPx = 10, baseChars = 9) {
@@ -30,7 +33,8 @@ function Skeleton({ className }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
 }
 
-export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
+export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryProps) {
+  const navigate = useNavigate();
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("All");
   const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
   const [page, setPage] = useState(1);
@@ -307,6 +311,46 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const copyToClipboard = (text: string, label = "Ticket ID") => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => toast.success(`${label} copied to clipboard`),
+        () => fallbackCopy(text, label)
+      );
+    } else {
+      fallbackCopy(text, label);
+    }
+  };
+
+  const fallbackCopy = (text: string, label: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand("copy");
+      toast.success(`${label} copied to clipboard`);
+    } catch {
+      toast.error(`Failed to copy ${label}`);
+    }
+    document.body.removeChild(textArea);
+  };
+
+  if (selectedTicketDetails) {
+    return (
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <TicketDetailsView
+          ticket={selectedTicketDetails}
+          onBack={() => setSelectedTicketDetails(null)}
+          onViewPlayerProfile={() => setSelectedTicketDetails(null)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -661,8 +705,7 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
               icon: <Copy className="w-4 h-4" />,
               label: "Copy ticket ID",
               onClick: () => {
-                navigator.clipboard.writeText(actionDropdown.ticket.id);
-                toast.success("Ticket ID copied to clipboard");
+                copyToClipboard(actionDropdown.ticket.id, "Ticket ID");
                 setActionDropdown(null);
               },
             },
@@ -670,22 +713,17 @@ export function UserProfileHistory({ userId }: UserProfileHistoryProps) {
               icon: <Eye className="w-4 h-4" />,
               label: "View ticket details",
               onClick: () => {
-                setSelectedTicketDetails(actionDropdown.ticket);
+                const tId = actionDropdown.ticket.id;
                 setActionDropdown(null);
+                onCloseModal?.();
+                navigate({
+                  to: "/app/tickets",
+                  search: { ticketId: tId },
+                });
               },
             },
           ]}
         />
-      )}
-
-      {selectedTicketDetails && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-          <TicketDetailsView
-            ticket={selectedTicketDetails}
-            onBack={() => setSelectedTicketDetails(null)}
-            onViewPlayerProfile={() => setSelectedTicketDetails(null)}
-          />
-        </div>
       )}
     </div>
   );
