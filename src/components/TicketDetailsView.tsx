@@ -229,7 +229,7 @@ export function TicketDetailsView({
                 >
                   <Ban className="w-3.5 h-3.5 text-gray-500" /> Suspend Player
                 </button>
-                <button
+                {/* <button
                   onClick={() => {
                     setShowTopMenu(false);
                     toast.success(`Ticket ${details.id} voided`);
@@ -246,7 +246,7 @@ export function TicketDetailsView({
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
                 >
                   <Flag className="w-3.5 h-3.5 text-red-600" /> Flag for Investigation
-                </button>
+                </button> */}
               </div>
             )}
           </div>
