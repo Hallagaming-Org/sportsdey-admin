@@ -113,6 +113,7 @@ function TicketsPage() {
       "Game Name": t.gameName || "-",
       "Provider": t.provider || "-",
       "Round ID": t.roundId || "-",
+      "Odds": t.odds ?? (t as any).odd ?? (t as any).totalOdds ?? (t as any).multiplier ?? "-",
       "Date": t.createdAt,
       "Balance Before": t.balanceBefore || "-",
       "Balance After": t.balanceAfter || "-",
@@ -138,7 +139,7 @@ function TicketsPage() {
     const doc = new jsPDF("landscape");
     doc.text("Ticket History", 14, 15);
     autoTable(doc, {
-      head: [["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Date", "Status"]],
+      head: [["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Odds", "Date", "Status"]],
       body: tickets.map((t) => [
         t.id,
         t.playerName,
@@ -149,6 +150,7 @@ function TicketsPage() {
         t.gameName || "-",
         t.provider || "-",
         t.roundId || "-",
+        t.odds ?? (t as any).odd ?? (t as any).totalOdds ?? (t as any).multiplier ?? "-",
         t.createdAt,
         t.outcome,
       ]),
@@ -182,7 +184,7 @@ function TicketsPage() {
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: [
                 new TableRow({
-                  children: ["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Date", "Status"].map(
+                  children: ["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Odds", "Date", "Status"].map(
                     (header) =>
                       new TableCell({
                         children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
@@ -203,6 +205,7 @@ function TicketsPage() {
                         t.gameName || "-",
                         t.provider || "-",
                         t.roundId || "-",
+                        t.odds ?? (t as any).odd ?? (t as any).totalOdds ?? (t as any).multiplier ?? "-",
                         t.createdAt,
                         t.outcome,
                       ].map(
@@ -378,6 +381,14 @@ function TicketsPage() {
         ) : (
           <span className="text-gray-400 text-xs">—</span>
         )
+      ),
+    },
+    {
+      header: "Odds",
+      accessor: (t) => (
+        <span className="text-gray-500 text-xs leading-relaxed font-mono">
+          {t.odds ?? (t as any).odd ?? (t as any).totalOdds ?? (t as any).multiplier ?? "—"}
+        </span>
       ),
     },
     {
