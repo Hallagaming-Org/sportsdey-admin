@@ -163,7 +163,7 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
         const roundId = t.roundId || null;
         const balanceBefore = t.balanceBefore ? formatMoney(t.balanceBefore) : "—";
         const balanceAfter = t.balanceAfter ? formatMoney(t.balanceAfter) : "—";
-        const oddsVal = (t as any).odd || (t as any).odds || (t as any).oddValue || "1.00";
+        const oddsVal = (t as any).odd || (t as any).odds || (t as any).oddValue || "-";
 
         return {
           id: t.id,
