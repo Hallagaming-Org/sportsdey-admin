@@ -48,3 +48,32 @@ export function formatDeviceInfo(uaOrDevice?: string | null): string {
 
 	return uaOrDevice;
 }
+
+/**
+ * Generates a random secure password of length between minLength and maxLength (default 8 to 12 chars),
+ * containing uppercase letters, lowercase letters, numbers, and symbols.
+ */
+export function generateRandomPassword(minLength = 8, maxLength = 12): string {
+	const uppers = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+	const lowers = "abcdefghijkmnopqrstuvwxyz";
+	const numbers = "23456789";
+	const symbols = "!@#$%^&*";
+	const allChars = uppers + lowers + numbers + symbols;
+
+	const range = Math.max(0, maxLength - minLength);
+	const length = Math.floor(Math.random() * (range + 1)) + minLength;
+
+	let password = [
+		uppers[Math.floor(Math.random() * uppers.length)],
+		lowers[Math.floor(Math.random() * lowers.length)],
+		numbers[Math.floor(Math.random() * numbers.length)],
+		symbols[Math.floor(Math.random() * symbols.length)],
+	];
+
+	for (let i = password.length; i < length; i++) {
+		password.push(allChars[Math.floor(Math.random() * allChars.length)]);
+	}
+
+	password = password.sort(() => Math.random() - 0.5);
+	return password.join("");
+}
