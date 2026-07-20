@@ -6,6 +6,9 @@ import { Sessions } from "@/components/settings/Sessions";
 import { type Admin, adminAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/app/settings")({
+	validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
+		tab: (search.tab as string) || undefined,
+	}),
 	component: SettingsPage,
 });
 
@@ -13,9 +16,21 @@ const tabs = ["My Account details", "Change password", "Sessions"];
 type Tabs = "my_account" | "change_password" | "sessions";
 
 function SettingsPage() {
+	const search = Route.useSearch();
 	const [admin, setAdmin] = useState<Admin | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
-	const [activeTab, setActiveTab] = useState<Tabs>("my_account");
+	const [activeTab, setActiveTab] = useState<Tabs>(() => {
+		if (search?.tab === "change_password" || search?.tab === "Change password") {
+			return "change_password";
+		}
+		return "my_account";
+	});
+
+	useEffect(() => {
+		if (search?.tab === "change_password" || search?.tab === "Change password") {
+			setActiveTab("change_password");
+		}
+	}, [search?.tab]);
 
 	useEffect(() => {
 		const fetchAdminData = async () => {
