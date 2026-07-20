@@ -23,6 +23,7 @@ export const PERMISSIONS_LIST = [
 	{ id: "view_kyc_document", label: "View KYC document" },
 	{ id: "create_log_note", label: "Add log note" },
 	{ id: "manual_credit_debit", label: "Manual credit/debit" },
+	{ id: "reset_password", label: "Reset password" },
 ];
 
 interface AdminProfileModalProps {
@@ -56,6 +57,12 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 	const [showPasswordText, setShowPasswordText] = useState(false);
 	const [isResettingPassword, setIsResettingPassword] = useState(false);
 	const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+	const canResetPassword =
+		currentUser?.role === "super_admin" ||
+		(currentUser as any)?.role === "Super Admin" ||
+		(currentUser?.permissions || []).includes("reset_password") ||
+		currentUser?.id === admin.id;
 
 	const handleAutoGeneratePassword = () => {
 		const newPwd = generateRandomPassword(8, 12);
@@ -187,17 +194,19 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 								Permissions
 							</button>
 
-							<button 
-								onClick={() => setActiveTab("resetPassword")}
-								className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 font-medium text-xs transition-colors whitespace-nowrap shrink-0 ${
-									activeTab === "resetPassword" 
-										? "bg-[#10C300] text-white" 
-										: "bg-[#E4FFEEB2] text-[#10C300] hover:bg-[#d7f0d3]"
-								}`}
-							>
-								<RotateCcw className="w-3.5 h-3.5" />
-								Reset Password
-							</button>
+							{canResetPassword && (
+								<button 
+									onClick={() => setActiveTab("resetPassword")}
+									className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 font-medium text-xs transition-colors whitespace-nowrap shrink-0 ${
+										activeTab === "resetPassword" 
+											? "bg-[#10C300] text-white" 
+											: "bg-[#E4FFEEB2] text-[#10C300] hover:bg-[#d7f0d3]"
+									}`}
+								>
+									<RotateCcw className="w-3.5 h-3.5" />
+									Reset Password
+								</button>
+							)}
 						</div>
 					</div>
 
