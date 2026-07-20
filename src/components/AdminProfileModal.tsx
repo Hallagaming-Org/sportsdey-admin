@@ -1,4 +1,4 @@
-import { X, AlertTriangle, MessageCircle, RotateCcw, Wand2, Eye, EyeOff } from "lucide-react";
+import { X, MessageCircle, RotateCcw, Wand2, Eye, EyeOff } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { useState } from "react";
 import type { AdminUser } from "../routes/app/admins";
