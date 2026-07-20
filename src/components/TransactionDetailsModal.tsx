@@ -182,6 +182,9 @@ function Content({
   userId?: string;
 }) {
   const isDeposit = summary.type === "deposit";
+  const rawMethod = String(summary.paymentMethod || (summary as any).payment_method || "").toLowerCase().trim();
+  const isWalletTransfer = rawMethod === "wallet_transfer" || rawMethod === "transfer" || rawMethod === "wallet transfer";
+  const showApprovalButtons = !isDeposit && !isWalletTransfer;
 
   const actualUserId =
     userId ||
@@ -670,22 +673,7 @@ function Content({
           Download Receipt
         </button>
         <div className="flex gap-4">
-          {isDeposit ? (
-            <>
-              <button 
-                onClick={() => toast.success("Transaction flagged successfully")}
-                className="flex-1 py-3.5 bg-[#FFEBEB] hover:bg-[#FDD8D8] text-[#E11D48] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
-              >
-                Flag/Mark as Fraud
-              </button>
-              <button 
-                onClick={handleViewProfile}
-                className="flex-1 py-3.5 bg-[#EEF0F3] hover:bg-[#E5E7EB] text-[#030229] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
-              >
-                View Player profile
-              </button>
-            </>
-          ) : (
+          {showApprovalButtons ? (
             <>
               <button
                 onClick={() => setShowRejectInput(true)}
@@ -708,6 +696,21 @@ function Content({
                 ) : (
                   "Approve Withdrawal"
                 )}
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => toast.success("Transaction flagged successfully")}
+                className="flex-1 py-3.5 bg-[#FFEBEB] hover:bg-[#FDD8D8] text-[#E11D48] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
+              >
+                Flag/Mark as Fraud
+              </button>
+              <button 
+                onClick={handleViewProfile}
+                className="flex-1 py-3.5 bg-[#EEF0F3] hover:bg-[#E5E7EB] text-[#030229] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
+              >
+                View Player profile
               </button>
             </>
           )}
