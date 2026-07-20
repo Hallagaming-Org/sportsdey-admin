@@ -61,6 +61,7 @@ export interface TicketRecord {
 	gameName?: string | null;
 	provider?: string | null;
 	roundId?: string | null;
+	odds?: number | string | null;
 	sessionId?: string | null;
 	multiplier?: string | number;
 	winAmount?: string | number;
