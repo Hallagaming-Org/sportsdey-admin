@@ -99,8 +99,12 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 				role: resetRole,
 				newPassword: resetPasswordValue || undefined,
 			});
+			localStorage.setItem(`must_change_password_${admin.id}`, "true");
+			localStorage.setItem("admin_must_change_password", "true");
 			setShowSuccessModal(true);
 		} catch {
+			localStorage.setItem(`must_change_password_${admin.id}`, "true");
+			localStorage.setItem("admin_must_change_password", "true");
 			setShowSuccessModal(true);
 		} finally {
 			setIsResettingPassword(false);
