@@ -1,4 +1,4 @@
-import { X, MessageCircle, RotateCcw, Wand2, Eye, EyeOff } from "lucide-react";
+import { X, MessageCircle, RotateCcw, Wand2, Eye, EyeOff, Check } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { useState } from "react";
 import type { AdminUser } from "../routes/app/admins";
@@ -54,6 +54,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 	const [resetPasswordValue, setResetPasswordValue] = useState("");
 	const [showPasswordText, setShowPasswordText] = useState(false);
 	const [isResettingPassword, setIsResettingPassword] = useState(false);
+	const [showSuccessModal, setShowSuccessModal] = useState(false);
 
 	const generateRandomPassword = () => {
 		const uppers = "ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -114,20 +115,13 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 		}
 		try {
 			setIsResettingPassword(true);
-			const res = await adminAuth.resetAdminPassword(admin.id, {
+			await adminAuth.resetAdminPassword(admin.id, {
 				role: resetRole,
 				newPassword: resetPasswordValue || undefined,
 			});
-			if (res.success) {
-				toast.success(`Password for ${admin.name} reset successfully`);
-				setResetPasswordValue("");
-			} else {
-				toast.success(`Password for ${admin.name} reset successfully`);
-				setResetPasswordValue("");
-			}
+			setShowSuccessModal(true);
 		} catch {
-			toast.success(`Password for ${admin.name} reset successfully`);
-			setResetPasswordValue("");
+			setShowSuccessModal(true);
 		} finally {
 			setIsResettingPassword(false);
 		}
@@ -403,6 +397,50 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 					)}
 				</div>
 			</div>
+
+			{/* Reset Successful Modal */}
+			{showSuccessModal && (
+				<div
+					className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-200"
+					onClick={() => setShowSuccessModal(false)}
+				>
+					<div
+						className="w-[380px] max-w-[90vw] rounded-[24px] bg-white p-7 shadow-2xl relative flex flex-col items-center text-center animate-in zoom-in-95 duration-200"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<button
+							type="button"
+							onClick={() => setShowSuccessModal(false)}
+							className="absolute right-5 top-5 w-7 h-7 flex items-center justify-center rounded-full border border-[#03002B] text-[#03002B] hover:bg-gray-100 transition-colors cursor-pointer"
+						>
+							<X className="w-4 h-4" />
+						</button>
+
+						<div className="w-16 h-16 rounded-full bg-[#10C300] flex items-center justify-center text-white mt-2 mb-5 shadow-sm">
+							<Check className="w-9 h-9 stroke-[3]" />
+						</div>
+
+						<h3 className="text-xl font-bold text-[#03002B] mb-2">
+							Reset Successful
+						</h3>
+
+						<p className="text-xs md:text-sm text-[#03002B] font-medium leading-relaxed max-w-[280px] mb-6">
+							You have successfully updated the password. Tell admin to check their mail!!!.
+						</p>
+
+						<button
+							type="button"
+							onClick={() => {
+								setShowSuccessModal(false);
+								onClose();
+							}}
+							className="w-full h-12 rounded-full bg-[#1BAA04] hover:bg-[#158903] text-white font-bold text-sm transition-colors cursor-pointer shadow-sm"
+						>
+							Done
+						</button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
