@@ -477,6 +477,8 @@ export function TicketDetailsView({
                   <th className="py-3 px-4 rounded-l-xl font-normal">Bet Type</th>
                   <th className="py-3 px-4 font-normal">Selection</th>
                   <th className="py-3 px-4 font-normal">Stake amount</th>
+                  <th className="py-3 px-4 font-normal">Potential Win</th>
+                  <th className="py-3 px-4 font-normal">Payout</th>
                   <th className="py-3 px-4 font-normal">Total Odds</th>
                   <th className="py-3 px-4 font-normal">Free Bet</th>
                   <th className="py-3 px-4 font-normal">Bonus used</th>
@@ -526,6 +528,12 @@ export function TicketDetailsView({
                   </td>
                   <td className="py-4 px-4 font-medium">
                     {details.stakeAmount}
+                  </td>
+                  <td className="py-4 px-4 font-semibold text-gray-900">
+                    {details.potentialWin ?? "—"}
+                  </td>
+                  <td className="py-4 px-4 font-semibold text-gray-900">
+                    {details.actualPayout || details.payout || details.payOut || "—"}
                   </td>
                   <td className="py-4 px-4 font-semibold text-gray-900">
                     {details.totalOdds}
