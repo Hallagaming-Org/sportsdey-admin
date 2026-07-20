@@ -106,7 +106,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 			onClick={onClose}
 		>
 			<div
-				className="w-full max-w-[620px] rounded-[20px] bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+				className="w-full max-w-[680px] rounded-[20px] bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Header */}
@@ -149,20 +149,20 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 						</p>
 
 						{/* Action Buttons / Tabs */}
-						<div className="flex flex-wrap items-center justify-center gap-2.5 mt-6">
+						<div className="flex flex-nowrap items-center justify-center gap-2 mt-6 w-full max-w-full overflow-x-auto custom-scrollbar pb-1">
 							{!isAdminLoggedIn() && (
 								<button 
 									onClick={() => onSendMessage(admin)}
-									className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#E0E8F980] px-4 py-2 font-medium text-gray-600 text-xs md:text-sm hover:bg-gray-200"
+									className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-[#E0E8F980] px-3.5 py-2 font-medium text-gray-600 text-xs hover:bg-gray-200 whitespace-nowrap shrink-0"
 								>
-									<MessageCircle className="h-4 w-4 text-gray-400" />
+									<MessageCircle className="h-3.5 w-3.5 text-gray-400" />
 									Send a message
 								</button>
 							)}
 							
 							<button 
 								onClick={() => setActiveTab("details")}
-								className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 font-medium text-xs md:text-sm transition-colors ${
+								className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 font-medium text-xs transition-colors whitespace-nowrap shrink-0 ${
 									activeTab === "details" 
 										? "bg-[#1BAA04] text-white" 
 										: "bg-[#E8F8E5] text-[#1BAA04] hover:bg-[#d7f0d3]"
@@ -173,7 +173,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 
 							<button 
 								onClick={() => setActiveTab("permissions")}
-								className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 font-medium text-xs md:text-sm transition-colors ${
+								className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 font-medium text-xs transition-colors whitespace-nowrap shrink-0 ${
 									activeTab === "permissions" 
 										? "bg-[#10C300] text-white" 
 										: "bg-[#E4FFEEB2] text-[#10C300] hover:bg-[#d7f0d3]"
@@ -184,7 +184,7 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 
 							<button 
 								onClick={() => setActiveTab("resetPassword")}
-								className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 font-medium text-xs md:text-sm transition-colors ${
+								className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 font-medium text-xs transition-colors whitespace-nowrap shrink-0 ${
 									activeTab === "resetPassword" 
 										? "bg-[#10C300] text-white" 
 										: "bg-[#E4FFEEB2] text-[#10C300] hover:bg-[#d7f0d3]"
