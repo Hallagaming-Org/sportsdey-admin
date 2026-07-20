@@ -188,6 +188,7 @@ function AdminsPage() {
 				role: newAdmin.role === "CSR Admin" ? "csr-admin" : "admin",
 			});
 
+			localStorage.setItem("admin_must_change_password", "true");
 			toast.success("Admin created successfully");
 			setShowAddModal(false);
 			setShowSuccessModal(true);
