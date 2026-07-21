@@ -340,7 +340,7 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
                 )}
               </div>
               <div>
-                <p className="text-gray-500 text-sm mb-1">Net Position (GGR)</p>
+                <p className="text-gray-500 text-sm mb-1">Profit and Loss (P&L) </p>
                 {isOverviewLoading ? (
                   <Skeleton className="h-7 w-28 mt-1" />
                 ) : (
