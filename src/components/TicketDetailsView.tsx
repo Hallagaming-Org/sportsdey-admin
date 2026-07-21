@@ -86,11 +86,19 @@ export function TicketDetailsView({
     provider: fetchedDetails?.provider || ticket.provider || "—",
     roundId: fetchedDetails?.roundId || ticket.roundId || "—",
     sessionId: fetchedDetails?.sessionId || ticket.sessionId || "—",
-    betTime: fetchedDetails?.betTime || "—",
-    cashOutTime: fetchedDetails?.cashOutTime || "—",
-    multiplier: fetchedDetails?.multiplier || ticket.multiplier || "—",
-    winAmount: fetchedDetails?.winAmount || ticket.winAmount || "—",
-    roundSummary: fetchedDetails?.roundSummary || [],
+    betTime: (fetchedDetails as any)?.createdAt || fetchedDetails?.betTime || "—",
+    cashOutTime: (fetchedDetails as any)?.settledAt || fetchedDetails?.cashOutTime || "—",
+    multiplier: (fetchedDetails as any)?.totalOdds || ticket.odds || "—",
+    winAmount: (fetchedDetails as any)?.actualPayout || ticket.payout || ticket.payOut || "—",
+    roundSummary: fetchedDetails?.roundSummary || (isCasino ? [
+      {
+        id: (fetchedDetails as any)?.roundId || ticket.roundId || "—",
+        betAmount: (fetchedDetails as any)?.stake || ticket.betAmount || "—",
+        cashedOutAt: (fetchedDetails as any)?.totalOdds || ticket.odds || "—",
+        winAmount: (fetchedDetails as any)?.actualPayout || ticket.payout || ticket.payOut || "—",
+        status: ticket.outcome === "Won" ? "Won" : "Lost",
+      }
+    ] : []),
     selections: fetchedDetails?.selections || [],
   };
 
@@ -119,7 +127,7 @@ export function TicketDetailsView({
       autoTable(doc, {
         head: [["#", "Bet Amount", "Cashed out at", "Win Amount"]],
         body: details.roundSummary?.map((r, idx) => [
-          r.id || idx + 1,
+          idx + 1,
           cleanCurr(r.betAmount),
           r.cashedOutAt,
           cleanCurr(r.winAmount),
