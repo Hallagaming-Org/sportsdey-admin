@@ -34,6 +34,16 @@ function getUniformCardFontSize(values: Array<string | number | null | undefined
   return { fontSize: `${fontPx}px`, lineHeight: "1.2", wordBreak: "break-all" as const };
 }
 
+const formatDate = (dateString?: string | number | null) => {
+  if (!dateString || dateString === "—") return "—";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return String(dateString);
+  return new Intl.DateTimeFormat('en-GB', { 
+    year: 'numeric', month: 'short', day: 'numeric', 
+    hour: '2-digit', minute: '2-digit' 
+  }).format(date);
+};
+
 export function TicketDetailsView({
   ticket,
   onBack,
@@ -94,7 +104,7 @@ export function TicketDetailsView({
       {
         id: (fetchedDetails as any)?.roundId || ticket.roundId || "—",
         betAmount: (fetchedDetails as any)?.stake || ticket.betAmount || "—",
-        cashedOutAt: (fetchedDetails as any)?.totalOdds || ticket.odds || "—",
+        cashedOutAt: (fetchedDetails as any)?.settledAt || fetchedDetails?.cashOutTime || ticket.createdAt || "—",
         winAmount: (fetchedDetails as any)?.actualPayout || ticket.payout || ticket.payOut || "—",
         status: ticket.outcome === "Won" ? "Won" : "Lost",
       }
@@ -129,7 +139,7 @@ export function TicketDetailsView({
         body: details.roundSummary?.map((r, idx) => [
           idx + 1,
           cleanCurr(r.betAmount),
-          r.cashedOutAt,
+          formatDate(r.cashedOutAt),
           cleanCurr(r.winAmount),
         ]) || [],
         startY: 38,
@@ -592,13 +602,13 @@ export function TicketDetailsView({
                 details.roundSummary?.map((round, idx: number) => (
                   <tr key={idx}>
                     <td className="py-3.5 px-4 font-medium text-gray-400">
-                      {round.id || idx + 1}
+                      {idx + 1}
                     </td>
                     <td className="py-3.5 px-4 font-semibold text-gray-900">
                       {round.betAmount}
                     </td>
                     <td className="py-3.5 px-4 font-medium text-gray-700">
-                      {round.cashedOutAt}
+                      {formatDate(round.cashedOutAt)}
                     </td>
                     <td className="py-3.5 px-4 font-semibold text-[#10C300]">
                       {round.winAmount}
