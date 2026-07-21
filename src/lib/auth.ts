@@ -258,13 +258,12 @@ class AdminAuth {
 	}
 
 	async resetAdminPassword(
-		adminId: string,
-		data: { role?: string; newPassword?: string },
-	): Promise<{ success: boolean; error?: string }> {
+		data: { email: string; name: string; role: string; password?: string }
+	): Promise<{ success: boolean; error?: string; message?: string }> {
 		try {
 			const token = getCookie("admin_session");
 			const response = await fetch(
-				`${this.baseUrl}/admin/users/${adminId}/reset-password`,
+				`${this.baseUrl}/admin/admins/reset-password`,
 				{
 					method: "POST",
 					headers: {
