@@ -58,11 +58,10 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 	const [isResettingPassword, setIsResettingPassword] = useState(false);
 	const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-	const canResetPassword =
+	const canResetPassword = 
 		currentUser?.role === "super_admin" ||
 		(currentUser as any)?.role === "Super Admin" ||
-		(currentUser?.permissions || []).includes("reset_password") ||
-		currentUser?.id === admin.id;
+		(currentUser?.permissions || []).includes("reset_password");
 
 	const handleAutoGeneratePassword = () => {
 		const newPwd = generateRandomPassword(8, 12);
@@ -102,17 +101,21 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 		}
 		try {
 			setIsResettingPassword(true);
-			await adminAuth.resetAdminPassword(admin.id, {
-				role: resetRole,
-				newPassword: resetPasswordValue || undefined,
+			const res = await adminAuth.resetAdminPassword({
+				email: admin.email,
+				name: admin.name,
+				role: admin.role,
+				password: resetPasswordValue || undefined,
 			});
+			if (!res?.success) {
+				toast.error(res?.error || res?.message || "Failed to reset password");
+				return;
+			}
 			localStorage.setItem(`must_change_password_${admin.id}`, "true");
 			localStorage.setItem("admin_must_change_password", "true");
 			setShowSuccessModal(true);
-		} catch {
-			localStorage.setItem(`must_change_password_${admin.id}`, "true");
-			localStorage.setItem("admin_must_change_password", "true");
-			setShowSuccessModal(true);
+		} catch (error) {
+			toast.error("Failed to reset password");
 		} finally {
 			setIsResettingPassword(false);
 		}
