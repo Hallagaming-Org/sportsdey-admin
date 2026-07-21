@@ -301,7 +301,7 @@ export function TicketDetailsView({
       {/* Summary Stat Cards */}
       {isCasino ? (
         (() => {
-          const cardStyle = getUniformCardFontSize([details.stakeAmount, details.winAmount || details.actualPayout, details.profit]);
+          const cardStyle = getUniformCardFontSize([details.stakeAmount, details.actualPayout, details.profit]);
           return (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
