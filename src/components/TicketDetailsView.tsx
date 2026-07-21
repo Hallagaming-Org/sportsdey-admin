@@ -151,9 +151,9 @@ export function TicketDetailsView({
         head: [["#", "Match", "Pick", "Odds"]],
         body: details.selections?.map((s: MatchSelection, idx: number) => [
           idx + 1,
-          s.match,
-          s.pick,
-          s.odds,
+          s.match ?? "-",
+          s.pick ?? s.oddId ?? "-",
+          s.odds ?? "-",
         ]) || [],
         startY: 38,
       });
@@ -633,7 +633,7 @@ export function TicketDetailsView({
                       <td className="py-3.5 px-4 font-semibold text-gray-900">
                         {sel.match}
                       </td>
-                      <td className="py-3.5 px-4 text-gray-700">{sel.pick}</td>
+                      <td className="py-3.5 px-4 text-gray-700">{sel.pick || sel.oddId}</td>
                       <td className="py-3.5 px-4 font-semibold text-gray-900">
                         {sel.odds}
                       </td>
