@@ -101,10 +101,11 @@ export function AdminProfileModal({ admin, onClose, onSendMessage, onForceLogout
 		}
 		try {
 			setIsResettingPassword(true);
+			const correctRole = admin.role === "Super Admin" ? "super_admin" : admin.role === "CSR Admin" ? "csr-admin" : "admin";
 			const res = await adminAuth.resetAdminPassword({
 				email: admin.email,
 				name: admin.name,
-				role: admin.role,
+				role: correctRole,
 				password: resetPasswordValue || undefined,
 			});
 			if (!res?.success) {
