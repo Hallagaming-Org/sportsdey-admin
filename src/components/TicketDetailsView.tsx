@@ -43,7 +43,7 @@ export function TicketDetailsView({
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [showTopMenu, setShowTopMenu] = useState(false);
 
-  const { data: fetchedDetails } = useQuery({
+  const { data: fetchedDetails, isLoading } = useQuery({
     queryKey: ["ticket-details", ticket.id],
     queryFn: async () => {
       const res = await ticketService.getTicketDetails(ticket.id);
@@ -61,48 +61,37 @@ export function TicketDetailsView({
   const details: DetailedTicket = {
     ...ticket,
     ...fetchedDetails,
-    placedAt: fetchedDetails?.placedAt || "Aug 8, 2025 , 10:42 pm",
-    settledAt: fetchedDetails?.settledAt || "Aug 8, 2025 , 11:58 pm",
-    stakeAmount: fetchedDetails?.stakeAmount || ticket.betAmount || (isCasino ? "₦20,000" : "₦50,000"),
-    potentialWin: fetchedDetails?.potentialWin || ticket.potentialWin || "₦225,000",
-    actualPayout: fetchedDetails?.actualPayout || ticket.payout || ticket.payOut || (ticket.outcome === "Won" ? (ticket.potentialWin || (isCasino ? "₦168,600" : "₦225,000")) : "₦0.00"),
-    profit: fetchedDetails?.profit || (isCasino ? "+₦148,600" : "+₦175,000"),
-    playerEmail: fetchedDetails?.playerEmail || `${ticket.playerName.toLowerCase().replace(/\s+/g, "")}@gmail.com`,
-    playerPhone: fetchedDetails?.playerPhone || "+234 812 345 6789",
-    playerVerified: fetchedDetails?.playerVerified ?? true,
-    betType: fetchedDetails?.betType || ticket.gameType || "Accumulator",
-    selectionCount: fetchedDetails?.selectionCount || 5,
-    totalOdds: fetchedDetails?.totalOdds || "4.52",
-    freeBet: fetchedDetails?.freeBet ?? "No",
-    bonusUsed: fetchedDetails?.bonusUsed ?? "No",
-    cashOut: fetchedDetails?.cashOut || "Not Used",
-    ipAddress: fetchedDetails?.ipAddress || "Safari 105.112.23.191",
-    deviceInfo: fetchedDetails?.deviceInfo || "iPhone 13",
-    // Casino specific fields with fallback defaults matching Figma mockup
-    gameName: fetchedDetails?.gameName || ticket.gameName || "Aviator",
-    provider: fetchedDetails?.provider || ticket.provider || "Spribe",
-    roundId: fetchedDetails?.roundId || ticket.roundId || "AV-1234567",
-    sessionId: fetchedDetails?.sessionId || ticket.sessionId || "123456789",
-    betTime: fetchedDetails?.betTime || "Aug 8, 2025 10:42 pm",
-    cashOutTime: fetchedDetails?.cashOutTime || "Aug 8, 2025 11:58 pm",
-    multiplier: fetchedDetails?.multiplier || ticket.multiplier || "8.43x",
-    winAmount: fetchedDetails?.winAmount || ticket.winAmount || "₦168,600",
-    roundSummary: fetchedDetails?.roundSummary || [
-      {
-        id: "-",
-        betAmount: "₦168,600",
-        cashedOutAt: "8.43x",
-        winAmount: "₦168,600",
-        status: ticket.outcome === "Won" ? "Won" : "Lost",
-      },
-    ],
-    selections: fetchedDetails?.selections || [
-      { id: 1, match: "Arsenal vs Chelsea", pick: "Arsenal Win", odds: "1.75", status: "Won" },
-      { id: 2, match: "Real Madrid vs Barcelona", pick: "Over 2.5 Goals", odds: "1.60", status: "Won" },
-      { id: 3, match: "PSG vs Lyon", pick: "PSG Win", odds: "1.45", status: "Won" },
-      { id: 4, match: "AC Milan vs AS Roma", pick: "Both Teams to Score", odds: "1.50", status: "Won" },
-      { id: 5, match: "Bayern vs Dortmund", pick: "Over 3.5 Goals", odds: "1.75", status: "Won" },
-    ],
+    placedAt: (fetchedDetails as any)?.createdAt || fetchedDetails?.placedAt || "—",
+    settledAt: fetchedDetails?.settledAt || "—",
+    stakeAmount: (fetchedDetails as any)?.stake || fetchedDetails?.stakeAmount || ticket.betAmount || "—",
+    potentialWin: fetchedDetails?.potentialWin || ticket.potentialWin || "—",
+    actualPayout: fetchedDetails?.actualPayout || ticket.payout || ticket.payOut || (ticket.outcome === "Won" ? ticket.potentialWin : "₦0.00") || "—",
+    profit: fetchedDetails?.profit || "—",
+    playerEmail: (fetchedDetails as any)?.player?.email || fetchedDetails?.playerEmail || "—",
+    playerPhone: (fetchedDetails as any)?.player?.mobileNumber || fetchedDetails?.playerPhone || "—",
+    playerVerified: (fetchedDetails as any)?.player?.verified ?? fetchedDetails?.playerVerified ?? true,
+    balanceBefore: (fetchedDetails as any)?.player?.balanceBefore || ticket.balanceBefore || "—",
+    balanceAfter: (fetchedDetails as any)?.player?.balanceAfter || ticket.balanceAfter || "—",
+    image: (fetchedDetails as any)?.player?.image || ticket.image,
+    betType: fetchedDetails?.betType || ticket.gameType || "—",
+    selectionCount: fetchedDetails?.selectionCount || 0,
+    totalOdds: fetchedDetails?.totalOdds || "—",
+    freeBet: fetchedDetails?.freeBet ?? "—",
+    bonusUsed: fetchedDetails?.bonusUsed ?? "—",
+    cashOut: (fetchedDetails as any)?.cashedOut ? "Yes" : (fetchedDetails?.cashOut || "—"),
+    ipAddress: fetchedDetails?.ipAddress || "—",
+    deviceInfo: fetchedDetails?.deviceInfo || "—",
+    // Casino specific fields
+    gameName: fetchedDetails?.gameName || ticket.gameName || "—",
+    provider: fetchedDetails?.provider || ticket.provider || "—",
+    roundId: fetchedDetails?.roundId || ticket.roundId || "—",
+    sessionId: fetchedDetails?.sessionId || ticket.sessionId || "—",
+    betTime: fetchedDetails?.betTime || "—",
+    cashOutTime: fetchedDetails?.cashOutTime || "—",
+    multiplier: fetchedDetails?.multiplier || ticket.multiplier || "—",
+    winAmount: fetchedDetails?.winAmount || ticket.winAmount || "—",
+    roundSummary: fetchedDetails?.roundSummary || [],
+    selections: fetchedDetails?.selections || [],
   };
 
   const userForProfile: User = {
@@ -163,7 +152,12 @@ export function TicketDetailsView({
   };
 
   return (
-    <div className="font-inter flex flex-col gap-6 px-8 py-2 overflow-y-auto max-h-[calc(100vh-100px)] print:max-h-none print:overflow-visible print:p-0 custom-scrollbar">
+    <div className="font-inter flex flex-col gap-6 px-8 py-2 overflow-y-auto max-h-[calc(100vh-100px)] print:max-h-none print:overflow-visible print:p-0 custom-scrollbar relative">
+      {isLoading && (
+        <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-gray-200 border-t-[#1BAA04] rounded-full animate-spin"></div>
+        </div>
+      )}
       {/* Header Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -320,7 +314,7 @@ export function TicketDetailsView({
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs">
                 <p className="text-xs text-gray-500 font-medium">Win Amount</p>
                 <h4 style={cardStyle} className="font-bold text-gray-900 mt-1.5">
-                  {details.winAmount || details.actualPayout}
+                  {details.actualPayout}
                 </h4>
               </div>
 
@@ -389,7 +383,7 @@ export function TicketDetailsView({
           <div className="flex items-center gap-4 pr-0 md:pr-4">
             <img
               src={
-                ticket.image ||
+                details.image ||
                 "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
               }
               alt={details.playerName}
@@ -438,13 +432,13 @@ export function TicketDetailsView({
             <div className="flex items-center gap-4">
               <span className="text-gray-400 min-w-[75px]">Bal. Before:</span>
               <span className="font-semibold text-gray-900">
-                {details.balanceBefore || "₦300,000"}
+                {details.balanceBefore}
               </span>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-gray-400 min-w-[75px]">Bal. After:</span>
               <span className="font-semibold text-gray-900">
-                {details.balanceAfter || "₦468,600"}
+                {details.balanceAfter}
               </span>
             </div>
           </div>
