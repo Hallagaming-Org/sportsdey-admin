@@ -40,7 +40,8 @@ const formatDate = (dateString?: string | number | null) => {
   if (isNaN(date.getTime())) return String(dateString);
   return new Intl.DateTimeFormat('en-GB', { 
     year: 'numeric', month: 'short', day: 'numeric', 
-    hour: '2-digit', minute: '2-digit' 
+    hour: 'numeric', minute: '2-digit',
+    hour12: true
   }).format(date);
 };
 
