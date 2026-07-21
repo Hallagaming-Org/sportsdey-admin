@@ -684,6 +684,7 @@ function TicketsPage() {
               label: "View ticket details",
               onClick: () => {
                 setSelectedTicketDetails(actionDropdown.ticket);
+                navigate({ to: "/app/tickets", search: { ticketId: actionDropdown.ticket.id }, replace: true });
                 setActionDropdown(null);
               },
             },
