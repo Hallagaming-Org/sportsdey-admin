@@ -6,9 +6,11 @@ export type TicketTab = "all" | "casino" | "sportsbook";
 export interface MatchSelection {
 	id?: string | number;
 	match: string;
-	pick: string;
+	pick?: string;
+	oddId?: string;
 	odds: number | string;
 	status?: "Won" | "Lost" | "Pending" | "Void";
+	oddStatus?: number;
 }
 
 export interface CasinoRoundSummary {
