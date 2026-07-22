@@ -459,11 +459,14 @@ function TicketsPage() {
 
   const activeTicketDetails = selectedTicketDetails || ticketDetailsData || (ticketIdFromUrl ? tickets.find(t => t.id === ticketIdFromUrl) : null);
 
-  if (activeTicketDetails) {
+  const shouldRenderTicketDetails = !!activeTicketDetails || !!ticketIdFromUrl;
+
+  if (shouldRenderTicketDetails) {
+    const ticketToPass = activeTicketDetails || ({ id: ticketIdFromUrl } as TicketRecord);
     return (
       <>
         <TicketDetailsView
-          ticket={activeTicketDetails}
+          ticket={ticketToPass}
           onBack={() => {
             setSelectedTicketDetails(null);
             navigate({ to: "/app/tickets", search: { ticketId: undefined }, replace: true });
