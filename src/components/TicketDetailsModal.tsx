@@ -330,7 +330,7 @@ export function TicketDetailsModal({
 
                   <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs">
                     <p className="text-xs text-gray-500 font-medium">Profit</p>
-                    <h4 style={cardStyle} className={`font-bold mt-1 ${String(details.profit).trim().startsWith("-") ? "text-[#EE201C]" : "text-[#10C300]"}`}>
+                    <h4 style={cardStyle} className={`font-bold mt-1 ${String(details.profit).includes("-") ? "text-[#EE201C]" : "text-[#10C300]"}`}>
                       {details.profit}
                     </h4>
                   </div>
@@ -365,7 +365,7 @@ export function TicketDetailsModal({
 
                   <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs">
                     <p className="text-xs text-gray-500 font-medium">Profit</p>
-                    <h4 style={cardStyle} className={`font-bold mt-1 ${String(details.profit).trim().startsWith("-") ? "text-[#EE201C]" : "text-[#10C300]"}`}>
+                    <h4 style={cardStyle} className={`font-bold mt-1 ${String(details.profit).includes("-") ? "text-[#EE201C]" : "text-[#10C300]"}`}>
                       {details.profit}
                     </h4>
                   </div>
