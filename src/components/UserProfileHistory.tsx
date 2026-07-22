@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MoreHorizontal, Copy, Eye } from "lucide-react";
+import { MoreHorizontal, Copy, Eye, Search } from "lucide-react";
 import { toast } from "sonner";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
 import { ticketService, type TicketRecord } from "../lib/tickets";
@@ -41,7 +41,16 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [selectedTicketDetails, setSelectedTicketDetails] = useState<TicketRecord | null>(null);
   const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const limit = 10;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     const handleClickOutside = () => setActionDropdown(null);
@@ -62,7 +71,7 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
   });
 
   const { data: ticketsData, isLoading: isTicketsLoading } = useQuery({
-    queryKey: ["user-history-tickets", userId, page, fromDate, toDate],
+    queryKey: ["user-history-tickets", userId, page, fromDate, toDate, debouncedSearch],
     queryFn: async () => {
       const res = await ticketService.getUserTickets(userId, {
         page,
@@ -70,6 +79,7 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
         type: "all",
         fromDate,
         toDate,
+        search: debouncedSearch || undefined,
       });
       if (!res.success) return null;
       return res.data;
@@ -186,9 +196,27 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
   const totalPages = ticketsData?.pagination?.totalPages || (hasLoadedTickets ? 1 : 10);
   const currentPage = ticketsData?.pagination?.page || page;
 
+  const filteredTickets = useMemo(() => {
+    if (!searchQuery.trim()) return ticketsToDisplay;
+    const q = searchQuery.toLowerCase().trim();
+    return ticketsToDisplay.filter((t) => {
+      return (
+        (t.id && t.id.toLowerCase().includes(q)) ||
+        (t.gameType && t.gameType.toLowerCase().includes(q)) ||
+        (t.gameName && t.gameName.toLowerCase().includes(q)) ||
+        (t.provider && t.provider.toLowerCase().includes(q)) ||
+        (t.roundId && t.roundId.toLowerCase().includes(q)) ||
+        (t.status && t.status.toLowerCase().includes(q)) ||
+        (t.amount && t.amount.toLowerCase().includes(q)) ||
+        (t.potentialWin && t.potentialWin.toLowerCase().includes(q)) ||
+        (t.payOut && t.payOut.toLowerCase().includes(q)) ||
+        (t.dateTime && t.dateTime.toLowerCase().includes(q))
+      );
+    });
+  }, [ticketsToDisplay, searchQuery]);
 
   const exportToExcel = () => {
-    const dataToExport = ticketsToDisplay.map((t) => ({
+    const dataToExport = filteredTickets.map((t) => ({
       "Bet ID": t.id,
       "Date & Time": t.dateTime.replace("\n", " "),
       "Amount": t.amount,
@@ -216,7 +244,7 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
   };
 
   const exportToPdf = () => {
-    if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
+    if (!filteredTickets || filteredTickets.length === 0) {
       toast.error("No ticket history to export");
       return;
     }
@@ -224,7 +252,7 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
     doc.text("Bet History Summary", 14, 15);
     autoTable(doc, {
       head: [["Bet ID", "Date & Time", "Amount", "Game Type", "Game Name", "Provider", "Round ID", "Potential Win", "Pay Out", "Status"]],
-      body: ticketsToDisplay.map((t) => [
+      body: filteredTickets.map((t) => [
         t.id,
         t.dateTime.replace("\n", " "),
         t.amount,
@@ -242,7 +270,7 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
   };
 
   const exportToDocx = async () => {
-    if (!ticketsToDisplay || ticketsToDisplay.length === 0) {
+    if (!filteredTickets || filteredTickets.length === 0) {
       toast.error("No ticket history to export");
       return;
     }
@@ -274,7 +302,7 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
                       })
                   ),
                 }),
-                ...ticketsToDisplay.map(
+                ...filteredTickets.map(
                   (t) =>
                     new TableRow({
                       children: [
@@ -438,68 +466,84 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
 
       {/* Tickets (bet) Summary */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <h4 className="font-bold text-xl text-gray-900">Tickets (bet) Summary</h4>
           
-          {ticketsToDisplay.length > 0 && (
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <button 
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (e.nativeEvent) {
-                    e.nativeEvent.stopImmediatePropagation();
-                  }
-                  setShowExportDropdown(!showExportDropdown);
+              <input
+                type="text"
+                placeholder="Search game type, ID, provider..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
                 }}
-                className="inline-flex items-center h-9 gap-1.5 rounded-full bg-[#1BAA04] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
-              >
-                Export File as
-                <FaFileExport className="h-3 w-3 text-white" />
-              </button>
-
-              {showExportDropdown && (
-                <div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowExportDropdown(false);
-                      exportToPdf();
-                    }}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    <FaFilePdf className="text-red-500 w-4 h-4" />
-                    PDF
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowExportDropdown(false);
-                      exportToDocx();
-                    }}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    <FaFileWord className="text-blue-600 w-4 h-4" />
-                    DOCX
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowExportDropdown(false);
-                      exportToExcel();
-                    }}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    <FaFileExcel className="text-green-600 w-4 h-4" />
-                    Excel
-                  </button>
-                </div>
-              )}
+                className="w-48 sm:w-64 rounded-full border border-gray-200 bg-gray-50 py-1.5 pr-4 pl-9 text-xs focus:border-[#1BAA04] focus:outline-none focus:ring-1 focus:ring-[#1BAA04]"
+              />
+              <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
             </div>
-          )}
+
+            {filteredTickets.length > 0 && (
+              <div className="relative">
+                <button 
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (e.nativeEvent) {
+                      e.nativeEvent.stopImmediatePropagation();
+                    }
+                    setShowExportDropdown(!showExportDropdown);
+                  }}
+                  className="inline-flex items-center h-9 gap-1.5 rounded-full bg-[#1BAA04] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
+                >
+                  Export File as
+                  <FaFileExport className="h-3 w-3 text-white" />
+                </button>
+
+                {showExportDropdown && (
+                  <div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowExportDropdown(false);
+                        exportToPdf();
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <FaFilePdf className="text-red-500 w-4 h-4" />
+                      PDF
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowExportDropdown(false);
+                        exportToDocx();
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <FaFileWord className="text-blue-600 w-4 h-4" />
+                      DOCX
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowExportDropdown(false);
+                        exportToExcel();
+                      }}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <FaFileExcel className="text-green-600 w-4 h-4" />
+                      Excel
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="overflow-x-auto overflow-y-auto max-h-[380px] custom-scrollbar">
@@ -545,14 +589,14 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
                     <td className="py-4 text-right"><Skeleton className="h-4 w-4 ml-auto" /></td>
                   </tr>
                 ))
-              ) : ticketsToDisplay.length === 0 ? (
+              ) : filteredTickets.length === 0 ? (
                 <tr>
                   <td colSpan={14} className="py-8 text-center text-gray-400 text-sm">
-                    No ticket history found for this user
+                    {searchQuery ? "No tickets match your search" : "No ticket history found for this user"}
                   </td>
                 </tr>
               ) : (
-                ticketsToDisplay.map((ticket, idx) => (
+                filteredTickets.map((ticket, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                     <td className="py-4 pr-4">
                       <div className="flex items-center gap-1.5 font-mono text-xs">
