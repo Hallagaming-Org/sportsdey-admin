@@ -423,7 +423,7 @@ function TicketsPage() {
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${OUTCOME_STYLES[outcomeKey] || "bg-gray-100 text-gray-700"}`}
           >
-            {t.outcome}
+            {t.outcome === "Active" ? "Pending" : t.outcome}
           </span>
         );
       },
