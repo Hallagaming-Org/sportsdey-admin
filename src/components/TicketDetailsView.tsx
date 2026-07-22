@@ -15,6 +15,7 @@ import { FaFileExport, FaFilePdf, FaFileWord, FaFileExcel } from "react-icons/fa
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { TableSkeleton } from "./TableSkeleton";
 
 import { ticketService, type TicketRecord, type DetailedTicket, type MatchSelection } from "#/lib/tickets";
 import type { User } from "#/lib/users";
@@ -90,7 +91,7 @@ export function TicketDetailsView({
     freeBet: fetchedDetails?.freeBet ?? "—",
     bonusUsed: fetchedDetails?.bonusUsed ?? "—",
     cashOut: (fetchedDetails as any)?.cashedOut ? "Yes" : (fetchedDetails?.cashOut || "—"),
-    ipAddress: fetchedDetails?.ipAddress || "—",
+    ipAddress: fetchedDetails?.ipAddress || "-",
     deviceInfo: fetchedDetails?.deviceInfo || "—",
     // Casino specific fields
     gameName: fetchedDetails?.gameName || ticket.gameName || "—",
@@ -172,11 +173,6 @@ export function TicketDetailsView({
 
   return (
     <div className="font-inter flex flex-col gap-6 px-8 py-2 overflow-y-auto max-h-[calc(100vh-100px)] print:max-h-none print:overflow-visible print:p-0 custom-scrollbar relative">
-      {isLoading && (
-        <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-gray-200 border-t-[#1BAA04] rounded-full animate-spin"></div>
-        </div>
-      )}
       {/* Header Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -501,7 +497,9 @@ export function TicketDetailsView({
               )}
             </thead>
             <tbody className="divide-y divide-gray-50 text-gray-800">
-              {isCasino ? (
+              {isLoading ? (
+                <TableSkeleton columnsCount={isCasino ? 9 : 10} rowCount={1} />
+              ) : isCasino ? (
                 <tr>
                   <td className="py-4 px-4 font-semibold text-gray-900">
                     {details.gameName}
@@ -599,7 +597,9 @@ export function TicketDetailsView({
               )}
             </thead>
             <tbody className="divide-y divide-gray-100 text-gray-800">
-              {isCasino ? (
+              {isLoading ? (
+                <TableSkeleton columnsCount={4} rowCount={3} />
+              ) : isCasino ? (
                 details.roundSummary?.map((round, idx: number) => (
                   <tr key={idx}>
                     <td className="py-3.5 px-4 font-medium text-gray-400">
