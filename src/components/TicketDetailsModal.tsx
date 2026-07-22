@@ -549,11 +549,13 @@ export function TicketDetailsModal({
                       <td className="py-3.5 px-4">{details.cashOut}</td>
                       <td className="py-3.5 px-4">
                         <div className="flex flex-col">
-                          <span className="text-[11px] text-gray-500 font-sans">
-                            {details.deviceInfo}
-                          </span>
+                          {details.deviceInfo && details.deviceInfo !== "—" && details.deviceInfo !== "-" && (
+                            <span className="text-[11px] text-gray-500 font-sans">
+                              {details.deviceInfo}
+                            </span>
+                          )}
                           <span className="font-mono text-[11px] text-gray-700">
-                            {details.ipAddress}
+                            {details.ipAddress && details.ipAddress !== "null" && details.ipAddress !== "undefined" && details.ipAddress !== "—" ? details.ipAddress : "-"}
                           </span>
                         </div>
                       </td>
