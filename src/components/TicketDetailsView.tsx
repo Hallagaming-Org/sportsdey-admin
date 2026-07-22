@@ -554,11 +554,13 @@ export function TicketDetailsView({
                   <td className="py-4 px-4">{details.cashOut}</td>
                   <td className="py-4 px-4">
                     <div className="flex flex-col space-y-1">
-                      <button className="w-max p-1 text-[11px] border border-[#757979] rounded-full bg-[#F0F0F0] text-gray-500">
-                        {details.deviceInfo}
-                      </button>
+                      {details.deviceInfo && details.deviceInfo !== "—" && details.deviceInfo !== "-" && (
+                        <button className="w-max p-1 text-[11px] border border-[#757979] rounded-full bg-[#F0F0F0] text-gray-500">
+                          {details.deviceInfo}
+                        </button>
+                      )}
                       <span className="font-mono text-[11px] text-gray-700">
-                        {details.ipAddress}
+                        {details.ipAddress && details.ipAddress !== "null" && details.ipAddress !== "undefined" && details.ipAddress !== "—" ? details.ipAddress : "-"}
                       </span>
                     </div>
                   </td>
