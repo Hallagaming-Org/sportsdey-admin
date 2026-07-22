@@ -134,6 +134,7 @@ class TicketService {
 			type?: string;
 			fromDate?: string;
 			toDate?: string;
+			search?: string;
 		},
 	): Promise<{ success: boolean; data?: TicketsResponse; error?: string }> {
 		const searchParams = new URLSearchParams();
@@ -142,6 +143,7 @@ class TicketService {
 		searchParams.set("type", params.type || "all");
 		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
 		if (params.toDate) searchParams.set("toDate", params.toDate);
+		if (params.search) searchParams.set("search", params.search);
 
 		return fetchApi<TicketsResponse>(
 			`/admin/tickets/user/${userId}?${searchParams.toString()}`,
