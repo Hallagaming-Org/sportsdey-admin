@@ -143,9 +143,9 @@ export function TicketDetailsModal({
         head: [["#", "Match", "Pick", "Odds"]],
         body: details.selections?.map((s: MatchSelection, idx: number) => [
           idx + 1,
-          s.match,
-          s.pick,
-          s.odds,
+          s.match ?? "N/A",
+          s.pick ?? "N/A",
+          s.odds ?? "N/A",
         ]) || [],
         startY: 38,
       });
