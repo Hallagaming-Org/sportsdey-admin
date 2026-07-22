@@ -10,6 +10,7 @@ import {
   Phone,
   Copy,
   XCircle,
+  Clock,
 } from "lucide-react";
 import { FaFileExport, FaFilePdf, FaFileWord, FaFileExcel } from "react-icons/fa6";
 import { toast } from "sonner";
@@ -108,7 +109,7 @@ export function TicketDetailsView({
         betAmount: (fetchedDetails as any)?.stake || ticket.betAmount || "—",
         cashedOutAt: (fetchedDetails as any)?.settledAt || fetchedDetails?.cashOutTime || ticket.createdAt || "—",
         winAmount: (fetchedDetails as any)?.actualPayout || ticket.payout || ticket.payOut || "—",
-        status: ticket.outcome === "Won" ? "Won" : "Lost",
+        status: ticket.outcome === "Won" ? "Won" : (ticket.outcome === "Active" || (ticket.outcome as any) === "Pending") ? "Pending" : "Lost",
       }
     ] : []),
     selections: fetchedDetails?.selections || [],
@@ -132,7 +133,7 @@ export function TicketDetailsView({
     const cleanCurr = (val?: string | number | null) => (val ? String(val).replace(/₦/g, "NGN ") : "N/A");
     doc.text(`Ticket Details - ${details.id}`, 14, 15);
     doc.setFontSize(10);
-    doc.text(`Player: ${details.playerName} | Status: ${details.outcome}`, 14, 23);
+    doc.text(`Player: ${details.playerName} | Status: ${details.outcome === "Active" ? "Pending" : details.outcome}`, 14, 23);
 
     if (isCasino) {
       doc.text(`Stake: ${cleanCurr(details.stakeAmount)} | Win Amount: ${cleanCurr(details.winAmount || details.actualPayout)} | Profit: ${cleanCurr(details.profit)}`, 14, 30);
@@ -211,7 +212,7 @@ export function TicketDetailsView({
                     : "bg-[#FEECEB] text-[#EE201C]"
                 }`}
               >
-                {details.outcome}
+                {details.outcome === "Active" ? "Pending" : details.outcome}
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -619,6 +620,8 @@ export function TicketDetailsView({
                     <td className="py-3.5 px-4 text-center">
                       {round.status === "Lost" ? (
                         <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
+                      ) : round.status === "Pending" ? (
+                        <Clock className="w-4 h-4 text-[#FFB000] inline-block" />
                       ) : (
                         <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
                       )}
@@ -642,6 +645,8 @@ export function TicketDetailsView({
                       <td className="py-3.5 px-4 text-center">
                         {sel.status === "Lost" ? (
                           <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
+                        ) : sel.status === "Pending" ? (
+                          <Clock className="w-4 h-4 text-[#FFB000] inline-block" />
                         ) : (
                           <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
                         )}
