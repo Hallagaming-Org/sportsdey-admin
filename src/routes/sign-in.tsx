@@ -30,9 +30,10 @@ function SignInPage() {
 		onSuccess: (result) => {
 
 			if (result.success && result.data) {
-				setCookie("admin_user_details", encodeURIComponent(JSON.stringify(result.data)), 7);
+				const cookieDays = 30 / 24 / 60;
+				setCookie("admin_user_details", encodeURIComponent(JSON.stringify(result.data)), cookieDays);
 				if (result.data.token) {
-					setCookie("admin_session", result.data.token, 7);
+					setCookie("admin_session", result.data.token, cookieDays);
 				}
 				navigate({
 					to: "/app",
