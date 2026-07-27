@@ -45,7 +45,7 @@ function UsersPage() {
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
-	const [sort] = useState<"asc" | "desc">("asc");
+	const [sort] = useState<"asc" | "desc">("desc");
 const [activeTab, setActiveTab] = useState<Tab>("all");
 	// const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
 	// 	"all",
