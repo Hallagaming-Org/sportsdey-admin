@@ -176,7 +176,7 @@ export function ActivityChart({
 									<div className="absolute top-full mt-2 hidden group-hover:flex flex-col bg-gray-900 text-white text-[10px] p-2 rounded shadow-lg z-20 whitespace-nowrap">
 										{BARS.map((bar) => (
 											<div key={bar.key}>
-												{bar.label}: {bar.key === "bet" ? "₦" : ""}
+												{bar.label}: {bar.key === "bet" ? "" : "₦"}
 												{day[bar.key].toLocaleString()}
 											</div>
 										))}
