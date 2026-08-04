@@ -1,33 +1,55 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useRouter, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import {
+	Document,
+	Packer,
+	Paragraph,
+	Table,
+	TableCell,
+	TableRow,
+	TextRun,
+	WidthType,
+} from "docx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { Eye, PauseCircle, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import {
+	FaFileExcel,
+	FaFileExport,
+	FaFilePdf,
+	FaFileWord,
+} from "react-icons/fa6";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { type Column, DataTable } from "#/components/DataTable";
 import { ActionDropdown } from "../../components/ActionDropdown";
 import { SendNoticeModal } from "../../components/SendNoticeModal";
-import { UserProfileModal } from "../../components/UserProfileModal";
 import {
-	TimePeriodFilter,
 	type TimePeriod,
+	TimePeriodFilter,
 } from "../../components/TimePeriodFilter";
-import { type NewUser, type User, type UserProfile, userService } from "../../lib/users";
+import { UserProfileModal } from "../../components/UserProfileModal";
+import { useHasPermission } from "../../hooks/useCurrentUser";
 import { notificationService } from "../../lib/notifications";
 import { getDateRangeForPeriod } from "../../lib/time-period";
+import {
+	type NewUser,
+	type User,
+	type UserProfile,
+	userService,
+} from "../../lib/users";
 import { capitalizeName } from "../../lib/utils";
-import * as XLSX from "xlsx";
-import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
-
-import { useHasPermission } from "../../hooks/useCurrentUser";
 
 export const Route = createFileRoute("/app/users")({
 	beforeLoad: ({ context }) => {
 		const admin = (context as any).admin;
-		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("user_management")) {
+		if (
+			admin &&
+			admin.role !== "super_admin" &&
+			!admin.permissions?.includes("user_management")
+		) {
 			throw redirect({ to: "/app", replace: true });
 		}
 	},
@@ -46,12 +68,15 @@ function UsersPage() {
 	const [page, setPage] = useState(1);
 	const [limit] = useState(10);
 	const [sort] = useState<"asc" | "desc">("desc");
-const [activeTab, setActiveTab] = useState<Tab>("all");
+	const [activeTab, setActiveTab] = useState<Tab>("all");
 	// const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">(
 	// 	"all",
 	// );
-	const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("All");
-	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
+	const [selectedTimePeriod, setSelectedTimePeriod] =
+		useState<TimePeriod>("All");
+	const [customRange, setCustomRange] = useState<
+		{ start: string; end: string } | undefined
+	>(undefined);
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [newUser, setNewUser] = useState<NewUser>({
 		name: "",
@@ -65,24 +90,32 @@ const [activeTab, setActiveTab] = useState<Tab>("all");
 		top: number;
 		right: number;
 	} | null>(null);
-const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
-	null,
-);
-	const [selectedProfileData, setSelectedProfileData] = useState<UserProfile | null>(null);
+	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
+		null,
+	);
+	const [selectedProfileData, setSelectedProfileData] =
+		useState<UserProfile | null>(null);
 	const [isProfileLoading, setIsProfileLoading] = useState(false);
 	const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 	const [showExportDropdown, setShowExportDropdown] = useState(false);
 
 	const exportToExcel = () => {
-		const dataToExport = usersData?.users.map(user => ({
+		const dataToExport = usersData?.users.map((user) => ({
 			"User Id": user.id,
 			"Player Name": user.name,
 			"Email Address": user.email,
-			"Registration Date": user.registeredDate ? new Date(user.registeredDate).toLocaleDateString() : "-",
+			"Registration Date": user.registeredDate
+				? new Date(user.registeredDate).toLocaleDateString()
+				: "-",
 			"Registration IP": user.registeredIpAddress || user.ipAddress || "-",
 			"Wallet Balance": user.wallet,
-			"Status": user.status === "verified" ? "Verified" : user.status === "pending_verification" ? "Pending" : "Not Verified",
+			Status:
+				user.status === "approved"
+					? "Verified"
+					: user.status === "pending_verification"
+						? "Pending"
+						: "Not Verified",
 		}));
 
 		if (!dataToExport || dataToExport.length === 0) {
@@ -93,7 +126,10 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
-		XLSX.writeFile(workbook, `Users_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+		XLSX.writeFile(
+			workbook,
+			`Users_Export_${new Date().toISOString().split("T")[0]}.xlsx`,
+		);
 	};
 
 	const exportToPdf = () => {
@@ -104,19 +140,35 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 		const doc = new jsPDF("landscape");
 		doc.text("Users", 14, 15);
 		autoTable(doc, {
-			head: [["User Id", "Player Name", "Email Address", "Registration Date", "Registration IP", "Wallet Balance", "Status"]],
-			body: usersData.users.map(u => [
+			head: [
+				[
+					"User Id",
+					"Player Name",
+					"Email Address",
+					"Registration Date",
+					"Registration IP",
+					"Wallet Balance",
+					"Status",
+				],
+			],
+			body: usersData.users.map((u) => [
 				u.id,
 				u.name,
 				u.email,
-				u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : "-",
+				u.registeredDate
+					? new Date(u.registeredDate).toLocaleDateString()
+					: "-",
 				u.registeredIpAddress || u.ipAddress || "-",
 				u.wallet?.toString() || "0",
-				u.status === "verified" ? "Verified" : u.status === "pending_verification" ? "Pending" : "Not Verified"
+				u.status === "approved"
+					? "Verified"
+					: u.status === "pending_verification"
+						? "Pending"
+						: "Not Verified",
 			]),
 			startY: 20,
 		});
-		doc.save(`Users_Export_${new Date().toISOString().split('T')[0]}.pdf`);
+		doc.save(`Users_Export_${new Date().toISOString().split("T")[0]}.pdf`);
 	};
 
 	const exportToDocx = () => {
@@ -144,28 +196,65 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 							width: { size: 100, type: WidthType.PERCENTAGE },
 							rows: [
 								new TableRow({
-									children: ["User Id", "Player Name", "Email Address", "Registration Date", "Registration IP", "Wallet Balance", "Status"].map(
-										header => new TableCell({
-											children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
-											shading: { fill: "f3f4f6" },
-											margins: { top: 100, bottom: 100, left: 100, right: 100 }
-										})
+									children: [
+										"User Id",
+										"Player Name",
+										"Email Address",
+										"Registration Date",
+										"Registration IP",
+										"Wallet Balance",
+										"Status",
+									].map(
+										(header) =>
+											new TableCell({
+												children: [
+													new Paragraph({
+														children: [
+															new TextRun({ text: header, bold: true }),
+														],
+													}),
+												],
+												shading: { fill: "f3f4f6" },
+												margins: {
+													top: 100,
+													bottom: 100,
+													left: 100,
+													right: 100,
+												},
+											}),
 									),
 								}),
-								...usersData.users.map(u => new TableRow({
-									children: [
-										u.id,
-										u.name,
-										u.email,
-										u.registeredDate ? new Date(u.registeredDate).toLocaleDateString() : "-",
-										u.registeredIpAddress || u.ipAddress || "-",
-										u.wallet?.toString() || "0",
-										u.status === "verified" ? "Verified" : u.status === "pending_verification" ? "Pending" : "Not Verified"
-									].map(cell => new TableCell({
-										children: [new Paragraph(String(cell))],
-										margins: { top: 100, bottom: 100, left: 100, right: 100 }
-									})),
-								}))
+								...usersData.users.map(
+									(u) =>
+										new TableRow({
+											children: [
+												u.id,
+												u.name,
+												u.email,
+												u.registeredDate
+													? new Date(u.registeredDate).toLocaleDateString()
+													: "-",
+												u.registeredIpAddress || u.ipAddress || "-",
+												u.wallet?.toString() || "0",
+												u.status === "verified"
+													? "Verified"
+													: u.status === "pending_verification"
+														? "Pending"
+														: "Not Verified",
+											].map(
+												(cell) =>
+													new TableCell({
+														children: [new Paragraph(String(cell))],
+														margins: {
+															top: 100,
+															bottom: 100,
+															left: 100,
+															right: 100,
+														},
+													}),
+											),
+										}),
+								),
 							],
 						}),
 					],
@@ -177,8 +266,11 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 			const link = document.createElement("a");
 			const url = URL.createObjectURL(blob);
 			link.setAttribute("href", url);
-			link.setAttribute("download", `Users_Export_${new Date().toISOString().split('T')[0]}.docx`);
-			link.style.visibility = 'hidden';
+			link.setAttribute(
+				"download",
+				`Users_Export_${new Date().toISOString().split("T")[0]}.docx`,
+			);
+			link.style.visibility = "hidden";
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
@@ -196,7 +288,8 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 	}, []);
 
 	const { fromDate, toDate } = useMemo(
-		() => getDateRangeForPeriod(selectedTimePeriod, customRange, { output: "iso" }),
+		() =>
+			getDateRangeForPeriod(selectedTimePeriod, customRange, { output: "iso" }),
 		[selectedTimePeriod, customRange],
 	);
 
@@ -228,7 +321,7 @@ const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 		},
 	});
 
-useEffect(() => {
+	useEffect(() => {
 		if (error) {
 			toast.error(error.message || "Failed to fetch users");
 		}
@@ -281,7 +374,9 @@ useEffect(() => {
 			const user = usersData?.users.find((u) => u.id === userId);
 			const isReactivate = user?.suspended;
 			toast.success(
-				isReactivate ? "User reactivated successfully" : "User suspended successfully",
+				isReactivate
+					? "User reactivated successfully"
+					: "User suspended successfully",
 			);
 			queryClient.invalidateQueries({ queryKey: ["users"] });
 			router.invalidate();
@@ -334,11 +429,13 @@ useEffect(() => {
 					day: "numeric",
 					year: "numeric",
 				});
-				const formattedTime = dateObj.toLocaleTimeString("en-US", {
-					hour: "numeric",
-					minute: "2-digit",
-					hour12: true,
-				}).toLowerCase();
+				const formattedTime = dateObj
+					.toLocaleTimeString("en-US", {
+						hour: "numeric",
+						minute: "2-digit",
+						hour12: true,
+					})
+					.toLowerCase();
 
 				return (
 					<div className="flex flex-col">
@@ -364,14 +461,14 @@ useEffect(() => {
 			accessor: (user) => (
 				<span
 					className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-						user.status === "verified"
+						user.status === "approved"
 							? "bg-[#E8F8E5] text-[#10C300]"
 							: user.status === "pending_verification"
 								? "bg-[#FFF8E5] text-[#FFB000]"
 								: "bg-[#FEECEB] text-[#EE201C]"
 					}`}
 				>
-					{user.status === "verified"
+					{user.status === "approved"
 						? "Verified"
 						: user.status === "pending_verification"
 							? "Pending"
@@ -395,13 +492,15 @@ useEffect(() => {
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
-					{hasSendNoticePerm && <button
-						onClick={() => setShowGlobalNoticeModal(true)}
-						className="cursor-pointer flex h-12 items-center justify-center gap-x-3 rounded-full bg-[#F5F6F7] px-6 text-[#1A1A1A]"
-					>
-						<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
-						<span className="text-base">Send a Notice</span>
-					</button>}
+					{hasSendNoticePerm && (
+						<button
+							onClick={() => setShowGlobalNoticeModal(true)}
+							className="cursor-pointer flex h-12 items-center justify-center gap-x-3 rounded-full bg-[#F5F6F7] px-6 text-[#1A1A1A]"
+						>
+							<NotificationIcon height={"15"} width={"15"} color={"#053209"} />
+							<span className="text-base">Send a Notice</span>
+						</button>
+					)}
 
 					<button
 						type="button"
@@ -426,7 +525,7 @@ useEffect(() => {
 
 					{users.length > 0 && (
 						<div className="relative">
-							<button 
+							<button
 								type="button"
 								onClick={(e) => {
 									e.stopPropagation();
@@ -440,7 +539,7 @@ useEffect(() => {
 								Export File as
 								<FaFileExport className="h-3.5 w-3.5 text-white" />
 							</button>
-							
+
 							{showExportDropdown && (
 								<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
 									<button
@@ -513,7 +612,10 @@ useEffect(() => {
 					</div>
 				</div>
 
-				<form onSubmit={(e) => e.preventDefault()} className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap">
+				<form
+					onSubmit={(e) => e.preventDefault()}
+					className="relative flex items-center gap-3 flex-wrap lg:flex-nowrap"
+				>
 					<div className="relative">
 						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
 						<input
@@ -553,14 +655,14 @@ useEffect(() => {
 								: "Pending"}
 						<ChevronDown className="h-3.5 w-3.5" />
 					</button> */}
-						<TimePeriodFilter
-							onFilterChange={(period, range) => {
-								setSelectedTimePeriod(period);
-								setCustomRange(range);
-								setPage(1);
-							}}
-							buttonClassName="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
-						/>
+					<TimePeriodFilter
+						onFilterChange={(period, range) => {
+							setSelectedTimePeriod(period);
+							setCustomRange(range);
+							setPage(1);
+						}}
+						buttonClassName="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-white px-4 font-medium text-sm text-[#2B2F38] shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:bg-gray-50"
+					/>
 				</form>
 			</div>
 
@@ -708,25 +810,39 @@ useEffect(() => {
 					right={actionDropdown.right}
 					onClose={() => setActionDropdown(null)}
 					items={[
-						...(hasViewPlayerPerm ? [{
-							icon: <Eye className="w-4 h-4" />,
-							label: "View profile",
-							onClick: () => setSelectedProfileUser(actionDropdown.user),
-						}] : []),
-						...(hasSendNoticePerm ? [{
-							icon: <NotificationIcon height={"14"} width={"14"} />,
-							label: "Send a notification",
-							onClick: () => setNoticeModalUser(actionDropdown.user),
-						}] : []),
-						...(hasDeactivatePerm ? [{
-							icon: <PauseCircle className="w-4 h-4" />,
-							label: actionDropdown.user.suspended ? "Reactivate" : "Suspend",
-							onClick: () => {
-								// console.log("Current user status:", actionDropdown.user.status);
-								toggleSuspendMutation.mutate(actionDropdown.user.id);
-								setActionDropdown(null);
-							},
-						}] : []),
+						...(hasViewPlayerPerm
+							? [
+									{
+										icon: <Eye className="w-4 h-4" />,
+										label: "View profile",
+										onClick: () => setSelectedProfileUser(actionDropdown.user),
+									},
+								]
+							: []),
+						...(hasSendNoticePerm
+							? [
+									{
+										icon: <NotificationIcon height={"14"} width={"14"} />,
+										label: "Send a notification",
+										onClick: () => setNoticeModalUser(actionDropdown.user),
+									},
+								]
+							: []),
+						...(hasDeactivatePerm
+							? [
+									{
+										icon: <PauseCircle className="w-4 h-4" />,
+										label: actionDropdown.user.suspended
+											? "Reactivate"
+											: "Suspend",
+										onClick: () => {
+											// console.log("Current user status:", actionDropdown.user.status);
+											toggleSuspendMutation.mutate(actionDropdown.user.id);
+											setActionDropdown(null);
+										},
+									},
+								]
+							: []),
 					]}
 				/>
 			)}
@@ -774,11 +890,12 @@ useEffect(() => {
 							}
 						} else if (showGlobalNoticeModal && usersData?.users) {
 							const userIds = usersData.users.map((u) => u.id);
-							const result = await notificationService.sendNotificationToMultiple(
-								data.title,
-								data.message,
-								userIds
-							);
+							const result =
+								await notificationService.sendNotificationToMultiple(
+									data.title,
+									data.message,
+									userIds,
+								);
 							if (result.success) {
 								toast.success("Notice sent to all users");
 							} else {
