@@ -11,7 +11,9 @@ export interface DayActivity {
 	date: string;
 	revenue: number;
 	bets: number;
-	users: number;
+	winnings: number;
+	totalDeposits: number;
+	totalWithdrawals: number;
 }
 
 export interface ActivityResponse {
@@ -56,23 +58,42 @@ export function periodToDateRange(
 			const y = new Date(now);
 			y.setDate(y.getDate() - 1);
 			fromDate = new Date(y.getFullYear(), y.getMonth(), y.getDate());
-			const end = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59);
+			const end = new Date(
+				y.getFullYear(),
+				y.getMonth(),
+				y.getDate(),
+				23,
+				59,
+				59,
+			);
 			return { fromDate: toDateInput(fromDate), toDate: toDateInput(end) };
 		}
 		case "3 days ago":
 			fromDate = new Date(now);
 			fromDate.setDate(fromDate.getDate() - 3);
-			fromDate = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+			fromDate = new Date(
+				fromDate.getFullYear(),
+				fromDate.getMonth(),
+				fromDate.getDate(),
+			);
 			return { fromDate: toDateInput(fromDate), toDate: toDateInput(now) };
 		case "A week ago":
 			fromDate = new Date(now);
 			fromDate.setDate(fromDate.getDate() - 7);
-			fromDate = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+			fromDate = new Date(
+				fromDate.getFullYear(),
+				fromDate.getMonth(),
+				fromDate.getDate(),
+			);
 			return { fromDate: toDateInput(fromDate), toDate: toDateInput(now) };
 		case "A month ago":
 			fromDate = new Date(now);
 			fromDate.setMonth(fromDate.getMonth() - 1);
-			fromDate = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+			fromDate = new Date(
+				fromDate.getFullYear(),
+				fromDate.getMonth(),
+				fromDate.getDate(),
+			);
 			return { fromDate: toDateInput(fromDate), toDate: toDateInput(now) };
 		default:
 			return {};
@@ -80,10 +101,7 @@ export function periodToDateRange(
 }
 
 class OverviewService {
-	async getStats(params?: {
-		fromDate?: string;
-		toDate?: string;
-	}): Promise<{
+	async getStats(params?: { fromDate?: string; toDate?: string }): Promise<{
 		success: boolean;
 		data?: OverviewStats;
 		error?: string;
@@ -97,10 +115,7 @@ class OverviewService {
 		);
 	}
 
-	async getActivity(params?: {
-		fromDate?: string;
-		toDate?: string;
-	}): Promise<{
+	async getActivity(params?: { fromDate?: string; toDate?: string }): Promise<{
 		success: boolean;
 		data?: ActivityResponse;
 		error?: string;
