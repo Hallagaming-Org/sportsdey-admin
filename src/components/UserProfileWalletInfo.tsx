@@ -20,6 +20,14 @@ interface UserProfileWalletInfoProps {
   balance: number;
 }
 
+function getUniformCardFontSize(values: Array<string | number | null | undefined>, maxPx = 22, minPx = 10, baseChars = 9) {
+  const maxLen = Math.max(0, ...values.map(val => String(val ?? "").length));
+  if (!maxLen || maxLen <= baseChars) return { fontSize: `${maxPx}px`, lineHeight: "1.2" };
+  const scale = baseChars / maxLen;
+  const fontPx = Math.max(minPx, Math.min(maxPx, Math.round(scale * maxPx * 10) / 10));
+  return { fontSize: `${fontPx}px`, lineHeight: "1.2", wordBreak: "break-all" as const };
+}
+
 function Skeleton({ className }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
 }
@@ -292,48 +300,58 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
             buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div>
-            <p className="text-gray-500 text-sm mb-1">Current Balance</p>
-            {isOverviewLoading ? (
-              <Skeleton className="h-7 w-28 mt-1" />
-            ) : (
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(overview?.currentBalance) ?? `₦${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm mb-1">Total Deposits</p>
-            {isOverviewLoading ? (
-              <Skeleton className="h-7 w-28 mt-1" />
-            ) : (
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(overview?.totalDeposits) ?? "₦0.00"}
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm mb-1">Total Withdrawals</p>
-            {isOverviewLoading ? (
-              <Skeleton className="h-7 w-28 mt-1" />
-            ) : (
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(overview?.totalWithdrawals) ?? "₦0.00"}
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm mb-1">Net Position (GGR)</p>
-            {isOverviewLoading ? (
-              <Skeleton className="h-7 w-28 mt-1" />
-            ) : (
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(overview?.netPosition) ?? "₦0.00"}
-              </p>
-            )}
-          </div>
-        </div>
+        {(() => {
+          const val1 = formatCurrency(overview?.currentBalance) ?? `₦${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+          const val2 = formatCurrency(overview?.totalDeposits) ?? "₦0.00";
+          const val3 = formatCurrency(overview?.totalWithdrawals) ?? "₦0.00";
+          const val4 = formatCurrency(overview?.netPosition) ?? "₦0.00";
+          const cardStyle = getUniformCardFontSize([val1, val2, val3, val4]);
+
+          return (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Current Balance</p>
+                {isOverviewLoading ? (
+                  <Skeleton className="h-7 w-28 mt-1" />
+                ) : (
+                  <p style={cardStyle} className="font-bold text-gray-900 tracking-tight">
+                    {val1}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Total Deposits</p>
+                {isOverviewLoading ? (
+                  <Skeleton className="h-7 w-28 mt-1" />
+                ) : (
+                  <p style={cardStyle} className="font-bold text-gray-900 tracking-tight">
+                    {val2}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Total Withdrawals</p>
+                {isOverviewLoading ? (
+                  <Skeleton className="h-7 w-28 mt-1" />
+                ) : (
+                  <p style={cardStyle} className="font-bold text-gray-900 tracking-tight">
+                    {val3}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Profit and Loss (P&L) </p>
+                {isOverviewLoading ? (
+                  <Skeleton className="h-7 w-28 mt-1" />
+                ) : (
+                  <p style={cardStyle} className="font-bold text-gray-900 tracking-tight">
+                    {val4}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Transaction Summary */}

@@ -84,7 +84,7 @@ export default function Sidebar({
 			initial={false}
 			animate={{ width: collapsed ? 80 : 280 }}
 			transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
-			className="relative z-20 flex h-screen shrink-0 flex-col bg-black text-white"
+			className="relative z-20 flex h-screen shrink-0 flex-col bg-black text-white print:hidden"
 		>
 			<div
 				className={`flex items-center py-5 ${collapsed ? "justify-center px-0" : "justify-between px-6"}`}

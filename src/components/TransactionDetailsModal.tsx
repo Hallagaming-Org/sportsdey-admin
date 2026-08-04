@@ -3,6 +3,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2, X, Copy, Wallet, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { transactionService } from "#/lib/transactions";
 import type { DepositSummary, WithdrawalSummary } from "#/lib/transactions";
 import type { User } from "#/lib/users";
@@ -180,6 +182,9 @@ function Content({
   userId?: string;
 }) {
   const isDeposit = summary.type === "deposit";
+  const rawMethod = String(summary.paymentMethod || (summary as any).payment_method || "").toLowerCase().trim();
+  const isWalletTransfer = rawMethod === "wallet_transfer" || rawMethod === "transfer" || rawMethod === "wallet transfer";
+  const showApprovalButtons = !isDeposit && !isWalletTransfer;
 
   const actualUserId =
     userId ||
@@ -250,6 +255,44 @@ function Content({
   const provider = isDeposit
     ? (summary as DepositSummary).provider ?? (summary as any).providerName ?? "N/A"
     : null;
+
+  const handleDownloadReceipt = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("TRANSACTION RECEIPT", 14, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Reference ID: ${summary.referenceId || summary.transactionId}`, 14, 28);
+    doc.text(`Date & Time: ${formattedDate || "N/A"}`, 14, 34);
+
+    const formatCurr = (str: string) => (str ? String(str).replace(/₦/g, "NGN ") : "N/A");
+
+    const rows = [
+      ["Transaction ID", summary.transactionId],
+      ["Type", summary.type.toUpperCase()],
+      ["Status", (summary.status || "Completed").toUpperCase()],
+      ["Amount", formatCurr(amount)],
+      ["Fees", formatCurr(fees)],
+      ["Payment Method", summary.paymentMethod || "N/A"],
+      ["User ID", actualUserId || "N/A"],
+      ["User Email", (summary as any).userEmail || (summary as any).user_email || (summary as any).user?.email || "N/A"],
+      ["IP Address", summary.ipAddress || "N/A"],
+      ["Device", summary.device || "N/A"],
+      ["Location", summary.location || "N/A"],
+      ["Channel", summary.transactionChannel || "N/A"],
+    ];
+
+    autoTable(doc, {
+      head: [["Field", "Details"]],
+      body: rows,
+      startY: 40,
+      theme: "striped",
+      headStyles: { fillColor: [3, 2, 41] },
+    });
+
+    doc.save(`Receipt_${summary.transactionId}.pdf`);
+    toast.success("Receipt downloaded successfully");
+  };
 
   const rawDesc =
     (summary as any).description ||
@@ -624,28 +667,13 @@ function Content({
       {/* Buttons */}
       <div className="space-y-3 pt-2">
         <button 
-          onClick={() => toast.success("Receipt download started")}
+          onClick={handleDownloadReceipt}
           className="w-full py-3.5 bg-[#EEF0F3] hover:bg-[#E5E7EB] text-[#030229] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
         >
           Download Receipt
         </button>
         <div className="flex gap-4">
-          {isDeposit ? (
-            <>
-              <button 
-                onClick={() => toast.success("Transaction flagged successfully")}
-                className="flex-1 py-3.5 bg-[#FFEBEB] hover:bg-[#FDD8D8] text-[#E11D48] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
-              >
-                Flag/Mark as Fraud
-              </button>
-              <button 
-                onClick={handleViewProfile}
-                className="flex-1 py-3.5 bg-[#EEF0F3] hover:bg-[#E5E7EB] text-[#030229] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
-              >
-                View Player profile
-              </button>
-            </>
-          ) : (
+          {showApprovalButtons ? (
             <>
               <button
                 onClick={() => setShowRejectInput(true)}
@@ -668,6 +696,21 @@ function Content({
                 ) : (
                   "Approve Withdrawal"
                 )}
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => toast.success("Transaction flagged successfully")}
+                className="flex-1 py-3.5 bg-[#FFEBEB] hover:bg-[#FDD8D8] text-[#E11D48] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
+              >
+                Flag/Mark as Fraud
+              </button>
+              <button 
+                onClick={handleViewProfile}
+                className="flex-1 py-3.5 bg-[#EEF0F3] hover:bg-[#E5E7EB] text-[#030229] font-bold rounded-full transition-colors text-sm text-center cursor-pointer"
+              >
+                View Player profile
               </button>
             </>
           )}

@@ -257,6 +257,34 @@ class AdminAuth {
 		}
 	}
 
+	async resetAdminPassword(
+		data: { email: string; name: string; role: string; password?: string }
+	): Promise<{ success: boolean; error?: string; message?: string }> {
+		try {
+			const token = getCookie("admin_session");
+			const response = await fetch(
+				`${this.baseUrl}/admin/admins/reset-password`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						...(token ? { Authorization: `Bearer ${token}` } : {}),
+					},
+					body: JSON.stringify(data),
+					credentials: "include",
+				},
+			);
+
+			const resData = await response.json();
+			return resData;
+		} catch {
+			return {
+				success: false,
+				error: "Unable to connect. Please check your connection.",
+			};
+		}
+	}
+
 	async listDevices(): Promise<Device[]> {
 		const token = getCookie("admin_session");
 		const response = await fetch(`${this.baseUrl}/admin/auth/devices`, {

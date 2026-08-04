@@ -157,3 +157,40 @@ body {
 .ProseMirror li {
   margin-bottom: 0.25rem;
 }
+
+@media print {
+  aside,
+  header,
+  nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  body,
+  main,
+  #app,
+  #root {
+    background: white !important;
+    color: black !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .print\:max-h-none {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .shadow-xs,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl {
+    box-shadow: none !important;
+  }
+}

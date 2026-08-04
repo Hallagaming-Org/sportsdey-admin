@@ -3,10 +3,58 @@ import { fetchApi } from "./api";
 export type TicketOutcome = "Won" | "Active" | "Lost" | "Declined";
 export type TicketTab = "all" | "casino" | "sportsbook";
 
+export interface MatchSelection {
+	id?: string | number;
+	match: string;
+	pick?: string;
+	oddId?: string;
+	odds: number | string;
+	status?: "Won" | "Lost" | "Pending" | "Void";
+	oddStatus?: number;
+}
+
+export interface CasinoRoundSummary {
+	id?: string | number;
+	betAmount: string | number;
+	cashedOutAt: string | number;
+	winAmount: string | number;
+	status?: "Won" | "Lost" | "Pending" | "Void";
+}
+
+export interface DetailedTicket extends TicketRecord {
+	placedAt?: string;
+	settledAt?: string;
+	stakeAmount?: string | number;
+	potentialWin?: string | null;
+	actualPayout?: string | null;
+	profit?: string | number;
+	playerEmail?: string;
+	playerPhone?: string;
+	playerVerified?: boolean;
+	betType?: string;
+	selectionCount?: number;
+	totalOdds?: number | string;
+	freeBet?: boolean | string;
+	bonusUsed?: boolean | string;
+	cashOut?: string;
+	ipAddress?: string;
+	deviceInfo?: string;
+	selections?: MatchSelection[];
+	// Casino specific fields
+	sessionId?: string | null;
+	betTime?: string;
+	cashOutTime?: string;
+	multiplier?: string | number;
+	winAmount?: string | number;
+	cashedOutAt?: string | number;
+	roundSummary?: CasinoRoundSummary[];
+}
+
 export interface TicketRecord {
 	id: string;
 	userId?: string;
 	playerName: string;
+	image?: string;
 	betAmount: string;
 	potentialWin?: string | null;
 	payout?: string | null;
@@ -15,6 +63,10 @@ export interface TicketRecord {
 	gameName?: string | null;
 	provider?: string | null;
 	roundId?: string | null;
+	odds?: number | string | null;
+	sessionId?: string | null;
+	multiplier?: string | number;
+	winAmount?: string | number;
 	outcome: TicketOutcome;
 	createdAt: string;
 	balanceBefore: string | null;
@@ -82,6 +134,7 @@ class TicketService {
 			type?: string;
 			fromDate?: string;
 			toDate?: string;
+			search?: string;
 		},
 	): Promise<{ success: boolean; data?: TicketsResponse; error?: string }> {
 		const searchParams = new URLSearchParams();
@@ -90,6 +143,7 @@ class TicketService {
 		searchParams.set("type", params.type || "all");
 		if (params.fromDate) searchParams.set("fromDate", params.fromDate);
 		if (params.toDate) searchParams.set("toDate", params.toDate);
+		if (params.search) searchParams.set("search", params.search);
 
 		return fetchApi<TicketsResponse>(
 			`/admin/tickets/user/${userId}?${searchParams.toString()}`,
@@ -111,6 +165,12 @@ class TicketService {
 		return fetchApi<UserTicketOverview>(
 			`/admin/ticket-overview/user/${userId}${qs ? `?${qs}` : ""}`,
 		);
+	}
+
+	async getTicketDetails(
+		ticketId: string,
+	): Promise<{ success: boolean; data?: DetailedTicket; error?: string }> {
+		return fetchApi<DetailedTicket>(`/admin/tickets/${ticketId}`);
 	}
 }
 

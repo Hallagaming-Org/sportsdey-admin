@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 export interface ActionDropdownItem {
 	icon: ReactNode;
@@ -15,10 +15,27 @@ interface ActionDropdownProps {
 }
 
 export function ActionDropdown({ top, right, items, onClose }: ActionDropdownProps) {
+	const dropdownRef = useRef<HTMLDivElement>(null);
+	const [computedTop, setComputedTop] = useState(top + 4);
+
+	useEffect(() => {
+		if (dropdownRef.current) {
+			const rect = dropdownRef.current.getBoundingClientRect();
+			const windowHeight = window.innerHeight;
+			if (rect.bottom > windowHeight - 16) {
+				const dropdownHeight = rect.height;
+				setComputedTop(Math.max(10, top - dropdownHeight - 8));
+			} else {
+				setComputedTop(top + 4);
+			}
+		}
+	}, [top]);
+
 	return (
 		<div
+			ref={dropdownRef}
 			className="fixed z-100 w-52 rounded-lg bg-white shadow-lg border border-gray-100 py-1"
-			style={{ top: top + 4, right: right }}
+			style={{ top: computedTop, right: right }}
 			onClick={(e) => {
 				e.stopPropagation();
 				e.nativeEvent.stopImmediatePropagation();

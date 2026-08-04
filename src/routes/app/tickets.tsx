@@ -11,6 +11,7 @@ import SortIcon from "@/logo/sort.svg?react";
 import FilterIcon from "@/logo/filter.svg?react";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import { UserProfileModal } from "#/components/UserProfileModal";
+import { TicketDetailsView } from "#/components/TicketDetailsView";
 import { SendNoticeModal } from "#/components/SendNoticeModal";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { userService, type User } from "#/lib/users";
@@ -26,7 +27,38 @@ import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, Width
 
 
 
+const copyToClipboard = (text: string, label = "Ticket ID") => {
+  if (navigator?.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => toast.success(`${label} copied to clipboard`),
+      () => fallbackCopy(text, label)
+    );
+  } else {
+    fallbackCopy(text, label);
+  }
+};
+
+const fallbackCopy = (text: string, label: string) => {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.left = "-9999px";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand("copy");
+    toast.success(`${label} copied to clipboard`);
+  } catch {
+    toast.error(`Failed to copy ${label}`);
+  }
+  document.body.removeChild(textArea);
+};
+
 export const Route = createFileRoute("/app/tickets")({
+  validateSearch: (search: Record<string, unknown>): { ticketId?: string } => ({
+    ticketId: (search.ticketId as string) || undefined,
+  }),
   beforeLoad: ({ context }) => {
     const admin = (context as any).admin;
     if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("view_ticket_history")) {
@@ -53,6 +85,8 @@ const ITEMS_PER_PAGE = 10;
 
 function TicketsPage() {
   const navigate = useNavigate();
+  const searchParams = Route.useSearch();
+  const ticketIdFromUrl = searchParams?.ticketId;
   const [activeTab, setActiveTab] = useState<TicketTab>("all");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -62,6 +96,7 @@ function TicketsPage() {
   const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
 
   const [actionDropdown, setActionDropdown] = useState<{ ticket: TicketRecord; top: number; right: number } | null>(null);
+  const [selectedTicketDetails, setSelectedTicketDetails] = useState<TicketRecord | null>(null);
   const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
   const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
@@ -78,6 +113,7 @@ function TicketsPage() {
       "Game Name": t.gameName || "-",
       "Provider": t.provider || "-",
       "Round ID": t.roundId || "-",
+      "Odds": t.odds ?? (t as any).odd ?? (t as any).totalOdds ?? (t as any).multiplier ?? "-",
       "Date": t.createdAt,
       "Balance Before": t.balanceBefore || "-",
       "Balance After": t.balanceAfter || "-",
@@ -103,7 +139,7 @@ function TicketsPage() {
     const doc = new jsPDF("landscape");
     doc.text("Ticket History", 14, 15);
     autoTable(doc, {
-      head: [["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Date", "Status"]],
+      head: [["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Odds", "Date", "Status"]],
       body: tickets.map((t) => [
         t.id,
         t.playerName,
@@ -114,6 +150,7 @@ function TicketsPage() {
         t.gameName || "-",
         t.provider || "-",
         t.roundId || "-",
+        t.odds ?? (t as any).odd ?? (t as any).totalOdds ?? (t as any).multiplier ?? "-",
         t.createdAt,
         t.outcome,
       ]),
@@ -147,7 +184,7 @@ function TicketsPage() {
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: [
                 new TableRow({
-                  children: ["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Date", "Status"].map(
+                  children: ["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Odds", "Date", "Status"].map(
                     (header) =>
                       new TableCell({
                         children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
@@ -168,6 +205,7 @@ function TicketsPage() {
                         t.gameName || "-",
                         t.provider || "-",
                         t.roundId || "-",
+                        t.odds ?? (t as any).odd ?? (t as any).totalOdds ?? (t as any).multiplier ?? "-",
                         t.createdAt,
                         t.outcome,
                       ].map(
@@ -200,7 +238,7 @@ function TicketsPage() {
       if (!result.success) throw new Error(result.error || "Failed to toggle suspend status");
       return result;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       toast.success(variables.isReactivate ? "User reactivated successfully" : "User suspended successfully");
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
     },
@@ -346,6 +384,14 @@ function TicketsPage() {
       ),
     },
     {
+      header: "Odds",
+      accessor: (t) => (
+        <span className="text-gray-500 text-xs leading-relaxed font-mono">
+          {t.odds ?? (t as any).odd ?? (t as any).totalOdds ?? (t as any).multiplier ?? "—"}
+        </span>
+      ),
+    },
+    {
       header: "Date",
       accessor: (t) => (
         <span className="text-gray-500 text-xs leading-relaxed">
@@ -377,7 +423,7 @@ function TicketsPage() {
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${OUTCOME_STYLES[outcomeKey] || "bg-gray-100 text-gray-700"}`}
           >
-            {t.outcome}
+            {t.outcome === "Active" ? "Pending" : t.outcome}
           </span>
         );
       },
@@ -399,6 +445,79 @@ function TicketsPage() {
   const tickets = data?.tickets ?? [];
   const totalPages = data?.pagination.totalPages ?? 1;
   const totalItems = data?.pagination.total ?? 0;
+
+  const { data: ticketDetailsData } = useQuery({
+    queryKey: ["url-ticket-details", ticketIdFromUrl],
+    queryFn: async () => {
+      if (!ticketIdFromUrl) return null;
+      const res = await ticketService.getTicketDetails(ticketIdFromUrl);
+      if (res.success && res.data) return res.data;
+      return null;
+    },
+    enabled: !!ticketIdFromUrl,
+  });
+
+  const activeTicketDetails = selectedTicketDetails || ticketDetailsData || (ticketIdFromUrl ? tickets.find(t => t.id === ticketIdFromUrl) : null);
+
+  const shouldRenderTicketDetails = !!activeTicketDetails || !!ticketIdFromUrl;
+
+  if (shouldRenderTicketDetails) {
+    const ticketToPass = activeTicketDetails || ({ id: ticketIdFromUrl } as TicketRecord);
+    return (
+      <>
+        <TicketDetailsView
+          ticket={ticketToPass}
+          onBack={() => {
+            setSelectedTicketDetails(null);
+            navigate({ to: "/app/tickets", search: { ticketId: undefined }, replace: true });
+          }}
+          onViewPlayerProfile={(user) => {
+            setSelectedProfileUser(user);
+          }}
+          onSuspendPlayer={(userId, isReactivate) => {
+            toggleSuspendMutation.mutate({ userId, isReactivate });
+            setSelectedTicketDetails((prev) =>
+              prev ? { ...prev, userSuspended: !isReactivate } : null
+            );
+          }}
+        />
+
+        {selectedProfileUser && (
+          <UserProfileModal
+            user={selectedProfileUser}
+            onClose={() => setSelectedProfileUser(null)}
+            onSendNotice={(user) => {
+              setNoticeModalUser(user);
+              setSelectedProfileUser(null);
+            }}
+            onSuspend={(user) => {
+              toggleSuspendMutation.mutate({ userId: user.id, isReactivate: user.suspended });
+            }}
+          />
+        )}
+
+        {noticeModalUser && (
+          <SendNoticeModal
+            user={noticeModalUser}
+            availableUsers={[noticeModalUser]}
+            onClose={() => setNoticeModalUser(null)}
+            onSubmit={async (data) => {
+              const result = await notificationService.sendNotification({
+                title: data.title,
+                message: data.message,
+                userId: noticeModalUser.id,
+              });
+              if (result.success) {
+                toast.success(`Notice sent to ${noticeModalUser.name}`);
+              } else {
+                toast.error(result.error || "Failed to send notice");
+              }
+            }}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-8">
@@ -556,8 +675,25 @@ function TicketsPage() {
           onClose={() => setActionDropdown(null)}
           items={[
             {
+              icon: <Copy className="w-4 h-4" />,
+              label: "Copy ticket ID",
+              onClick: () => {
+                copyToClipboard(actionDropdown.ticket.id, "Ticket ID");
+                setActionDropdown(null);
+              },
+            },
+            {
               icon: <Eye className="w-4 h-4" />,
-              label: "View ticket",
+              label: "View ticket details",
+              onClick: () => {
+                setSelectedTicketDetails(actionDropdown.ticket);
+                navigate({ to: "/app/tickets", search: { ticketId: actionDropdown.ticket.id }, replace: true });
+                setActionDropdown(null);
+              },
+            },
+            {
+              icon: <Eye className="w-4 h-4" />,
+              label: "View player profile",
               onClick: () => {
                 setSelectedProfileUser(getMockUserFromTicket(actionDropdown.ticket));
                 setActionDropdown(null);
@@ -585,6 +721,8 @@ function TicketsPage() {
           ]}
         />
       )}
+
+
 
       {selectedProfileUser && (
         <UserProfileModal
