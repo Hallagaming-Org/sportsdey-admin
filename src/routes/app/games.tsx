@@ -46,6 +46,7 @@ const GAME_METADATA: Record<string, { tagline: string, type: string, color: stri
   twentyone: { tagline: "Reach 21", type: "Card game", color: "from-red-500 to-red-700", accentColor: "#DC2626", image: Img21 },
   XCAPEHB: { tagline: "Crash game", type: "Crash game", color: "from-purple-500 to-violet-700", accentColor: "#8B5CF6", image: ImgXcape },
   "sportsdey-crash": { tagline: "Sportsdey original", type: "Crash game", color: "from-orange-500 to-red-600", accentColor: "#F97316", image: ImgLagosRush },
+  "spin_and_win": { tagline: "Sportsdey original", type: "Spin game", color: "from-pink-500 to-purple-600", accentColor: "#E91E63", image: ImgLagosRush },
 };
 
 function GamesPage() {
@@ -98,6 +99,7 @@ function GamesPage() {
     "LUCKYRISEHB",
     "LAGOSRUSH",
     "sportsdey-crash",
+    "spin_and_win",
   ];
 
   const sortedGames = [...games].sort((a, b) => {
