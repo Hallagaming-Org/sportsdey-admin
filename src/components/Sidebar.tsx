@@ -40,13 +40,14 @@ type NavItem = {
 const menuItems: NavItem[] = [
 	{ icon: Home, label: "Dashboard", to: "/app", permission: "general" },
 	{ icon: Users, label: "User management", to: "/app/users", permission: "user_management" },
-	{ icon: NotificationIcon as LucideIcon, label: "Notifications", to: "/app/notifications", permission: "send_notifications" },
 	{ icon: Wallet, label: "Transactions", to: "/app/transactions", permission: "transaction_read" },
+	{ icon: NotificationIcon as LucideIcon, label: "Notifications", to: "/app/notifications", permission: "send_notifications" },
 	{ icon: Gamepad2, label: "Game management", to: "/app/games", permission: "general" },
 	{ icon: Ticket, label: "Ticket history", to: "/app/tickets", permission: "view_ticket_history" },
 	{ icon: Settings, label: "CMS Controls", to: "/app/cms", permission: "post_upload_content" },
 	{ icon: Activity, label: "Activity log", to: "/app/activity", permission: "reports_issues" },
 	{ icon: AdminPanelIcon as LucideIcon, label: "Admin management", to: "/app/admins", permission: "view_other_admins" },
+	{ icon: Ticket, label: "Sportsbook Promotions", to: "/app/promotions", permission: "general" },
 ];
 
 const otherItems: NavItem[] = [
