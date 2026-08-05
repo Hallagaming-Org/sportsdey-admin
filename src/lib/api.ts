@@ -39,6 +39,27 @@ export function setCookie(name: string, value: string, days: number = 7): void {
 	document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
 
+let isRedirectingToSignIn = false;
+
+export function clearSession(): void {
+	setCookie("admin_session", "", -1);
+	setCookie("admin_user_details", "", -1);
+}
+
+export function redirectToSignIn(): void {
+	if (isRedirectingToSignIn) return;
+	isRedirectingToSignIn = true;
+	clearSession();
+	if (
+		typeof window !== "undefined" &&
+		window.location.pathname !== "/sign-in"
+	) {
+		window.location.replace("/sign-in");
+	} else {
+		isRedirectingToSignIn = false;
+	}
+}
+
 async function fetchApi<T>(
 	endpoint: string,
 	options: FetchOptions = {},
@@ -96,6 +117,9 @@ async function fetchApi<T>(
 	}
 
 	if (!response.ok || result.success === false) {
+		if (response.status === 401) {
+			redirectToSignIn();
+		}
 		const errorMessage =
 			response.status === 400
 				? result.error || "Invalid request."

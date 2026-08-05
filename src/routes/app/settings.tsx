@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AccountDetails } from "@/components/settings/AccountDetails";
 import { ChangePassword } from "@/components/settings/ChangePassword";
@@ -17,17 +17,24 @@ type Tabs = "my_account" | "change_password" | "sessions";
 
 function SettingsPage() {
 	const search = Route.useSearch();
+	const navigate = useNavigate();
 	const [admin, setAdmin] = useState<Admin | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [activeTab, setActiveTab] = useState<Tabs>(() => {
-		if (search?.tab === "change_password" || search?.tab === "Change password") {
+		if (
+			search?.tab === "change_password" ||
+			search?.tab === "Change password"
+		) {
 			return "change_password";
 		}
 		return "my_account";
 	});
 
 	useEffect(() => {
-		if (search?.tab === "change_password" || search?.tab === "Change password") {
+		if (
+			search?.tab === "change_password" ||
+			search?.tab === "Change password"
+		) {
 			setActiveTab("change_password");
 		}
 	}, [search?.tab]);
@@ -35,13 +42,15 @@ function SettingsPage() {
 	useEffect(() => {
 		const fetchAdminData = async () => {
 			const adminData = await adminAuth.getSession();
-			if (adminData) {
-				setAdmin(adminData);
+			if (!adminData) {
+				navigate({ to: "/sign-in", replace: true });
+				return;
 			}
+			setAdmin(adminData);
 			setIsLoading(false);
 		};
 		fetchAdminData();
-	}, []);
+	}, [navigate]);
 
 	if (isLoading) {
 		return (

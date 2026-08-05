@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowUpFromLine } from "lucide-react";
 import { toast } from "sonner";
+import { redirectToSignIn } from "@/lib/api";
 import { type Admin } from "@/lib/auth";
 
 interface AccountDetailsProps {
@@ -73,6 +74,10 @@ export function AccountDetails({ admin }: AccountDetailsProps) {
 			const data = await response.json();
 
 			if (!response.ok) {
+				if (response.status === 401) {
+					redirectToSignIn();
+					return;
+				}
 				if (response.status === 400) {
 					setErrors({ general: data.error || "Invalid request" });
 				} else {
@@ -142,6 +147,9 @@ export function AccountDetails({ admin }: AccountDetailsProps) {
 			if (xhr.status >= 200 && xhr.status < 300) {
 				toast.success("Upload complete", { id: toastId });
 				navigate({ to: "/app", replace: true });
+			} else if (xhr.status === 401) {
+				toast.dismiss(toastId);
+				redirectToSignIn();
 			} else {
 				toast.error("An error occurred. Please try again later.", {
 					id: toastId,
@@ -247,9 +255,7 @@ export function AccountDetails({ admin }: AccountDetailsProps) {
 						<label
 							htmlFor="profile-upload"
 							className={`flex min-h-32 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#d0d5dd] bg-white px-4 py-6 text-center transition-colors ${
-								isDragging
-									? "border-accent bg-green-50"
-									: "hover:border-accent"
+								isDragging ? "border-accent bg-green-50" : "hover:border-accent"
 							} ${isUploading ? "pointer-events-none opacity-50" : ""}`}
 							onDragOver={handleDragOver}
 							onDragLeave={handleDragLeave}
@@ -279,7 +285,9 @@ export function AccountDetails({ admin }: AccountDetailsProps) {
 									<span className="font-semibold text-[#1baa04] text-sm">
 										Click to upload
 									</span>
-									<span className="text-[#667085] text-sm">or drag and drop</span>
+									<span className="text-[#667085] text-sm">
+										or drag and drop
+									</span>
 									<span className="mt-1 text-[#98a2b3] text-xs">
 										SVG, PNG, JPG, GIF or WebP (max. 5MB)
 									</span>

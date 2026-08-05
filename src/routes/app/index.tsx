@@ -1,7 +1,6 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Gamepad2, Plus, CircleDotDashed } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
-import { getCookie } from "@/lib/api";
 import { overviewService, periodToDateRange, type OverviewStats, type DayActivity, type TopBet } from "@/lib/overview";
 import { StatCard } from "@/components/StatCard";
 import { ActivityChart } from "@/components/ActivityChart";
@@ -48,10 +47,6 @@ function DashboardPage() {
 		if (range) setCustomRange(range);
 		fetchData(period, range);
 	};
-
-	if (!getCookie("admin_session")) {
-		return <Navigate to="/sign-in" replace />;
-	}
 
 	const formatNumber = (n: number) => n.toLocaleString("en-NG");
 	const formatNaira = (n: number) => `₦${n.toLocaleString("en-NG")}`;

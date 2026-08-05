@@ -17,6 +17,7 @@ import { Route as AppUsersRouteImport } from './routes/app/users'
 import { Route as AppTransactionsRouteImport } from './routes/app/transactions'
 import { Route as AppTicketsRouteImport } from './routes/app/tickets'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
+import { Route as AppPromotionsRouteImport } from './routes/app/promotions'
 import { Route as AppNotificationsRouteImport } from './routes/app/notifications'
 import { Route as AppKycRouteImport } from './routes/app/kyc'
 import { Route as AppGamesRouteImport } from './routes/app/games'
@@ -64,6 +65,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPromotionsRoute = AppPromotionsRouteImport.update({
+  id: '/promotions',
+  path: '/promotions',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/app/games': typeof AppGamesRoute
   '/app/kyc': typeof AppKycRoute
   '/app/notifications': typeof AppNotificationsRoute
+  '/app/promotions': typeof AppPromotionsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tickets': typeof AppTicketsRoute
   '/app/transactions': typeof AppTransactionsRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/app/games': typeof AppGamesRoute
   '/app/kyc': typeof AppKycRoute
   '/app/notifications': typeof AppNotificationsRoute
+  '/app/promotions': typeof AppPromotionsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tickets': typeof AppTicketsRoute
   '/app/transactions': typeof AppTransactionsRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/app/games': typeof AppGamesRoute
   '/app/kyc': typeof AppKycRoute
   '/app/notifications': typeof AppNotificationsRoute
+  '/app/promotions': typeof AppPromotionsRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/tickets': typeof AppTicketsRoute
   '/app/transactions': typeof AppTransactionsRoute
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/app/games'
     | '/app/kyc'
     | '/app/notifications'
+    | '/app/promotions'
     | '/app/settings'
     | '/app/tickets'
     | '/app/transactions'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/app/games'
     | '/app/kyc'
     | '/app/notifications'
+    | '/app/promotions'
     | '/app/settings'
     | '/app/tickets'
     | '/app/transactions'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/app/games'
     | '/app/kyc'
     | '/app/notifications'
+    | '/app/promotions'
     | '/app/settings'
     | '/app/tickets'
     | '/app/transactions'
@@ -257,6 +269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/promotions': {
+      id: '/app/promotions'
+      path: '/promotions'
+      fullPath: '/app/promotions'
+      preLoaderRoute: typeof AppPromotionsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/notifications': {
       id: '/app/notifications'
       path: '/notifications'
@@ -309,6 +328,7 @@ interface AppRouteChildren {
   AppGamesRoute: typeof AppGamesRoute
   AppKycRoute: typeof AppKycRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
+  AppPromotionsRoute: typeof AppPromotionsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTicketsRoute: typeof AppTicketsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
@@ -323,6 +343,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGamesRoute: AppGamesRoute,
   AppKycRoute: AppKycRoute,
   AppNotificationsRoute: AppNotificationsRoute,
+  AppPromotionsRoute: AppPromotionsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTicketsRoute: AppTicketsRoute,
   AppTransactionsRoute: AppTransactionsRoute,

@@ -1,8 +1,7 @@
 // const API_BASE =
 // 	import.meta.env.VITE_API_BASE ||"http://localhost:3000"
 
-import { API_BASE, getCookie } from "./api";
-
+import { API_BASE, clearSession, getCookie, redirectToSignIn } from "./api";
 
 export interface Admin {
 	id: string;
@@ -53,6 +52,14 @@ class AdminAuth {
 		this.baseUrl = baseUrl;
 	}
 
+	private handleUnauthorized(response: Response): boolean {
+		if (response.status === 401) {
+			redirectToSignIn();
+			return true;
+		}
+		return false;
+	}
+
 	async signIn(email: string, password: string): Promise<SignInResponse> {
 		try {
 			const response = await fetch(`${this.baseUrl}/admin/auth/sign-in`, {
@@ -91,13 +98,13 @@ class AdminAuth {
 	}
 
 	async signOut(): Promise<void> {
-		localStorage.removeItem("admin_session");
+		clearSession();
 		try {
 			await fetch(`${this.baseUrl}/admin/auth/sign-out`, {
 				method: "POST",
 				credentials: "include",
 			});
-		} catch (e) {
+		} catch {
 			// Ignore errors if backend is unreachable
 		}
 	}
@@ -137,6 +144,9 @@ class AdminAuth {
 		});
 
 		const data = await response.json();
+		if (this.handleUnauthorized(response)) {
+			throw new Error("Session expired. Please sign in again.");
+		}
 		if (data.success) {
 			return data.data;
 		}
@@ -161,6 +171,9 @@ class AdminAuth {
 		});
 
 		const result = await response.json();
+		if (this.handleUnauthorized(response)) {
+			throw new Error("Session expired. Please sign in again.");
+		}
 		if (result.success) {
 			return result.data;
 		}
@@ -178,6 +191,9 @@ class AdminAuth {
 		});
 
 		const result = await response.json();
+		if (this.handleUnauthorized(response)) {
+			throw new Error("Session expired. Please sign in again.");
+		}
 		if (result.success) {
 			return result.data;
 		}
@@ -195,24 +211,36 @@ class AdminAuth {
 		});
 
 		const data = await response.json();
+		if (this.handleUnauthorized(response)) {
+			throw new Error("Session expired. Please sign in again.");
+		}
 		if (!data.success) {
 			throw new Error(data.error || "Failed to delete admin");
 		}
 	}
 
-	async updateAdminPermissions(id: string, permissions: string[]): Promise<void> {
+	async updateAdminPermissions(
+		id: string,
+		permissions: string[],
+	): Promise<void> {
 		const token = getCookie("admin_session");
-		const response = await fetch(`${this.baseUrl}/admin/admins/${id}/permissions`, {
-			method: "PATCH",
-			headers: {
-				"Content-Type": "application/json",
-				...(token ? { Authorization: `Bearer ${token}` } : {}),
+		const response = await fetch(
+			`${this.baseUrl}/admin/admins/${id}/permissions`,
+			{
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+					...(token ? { Authorization: `Bearer ${token}` } : {}),
+				},
+				body: JSON.stringify({ permissions }),
+				credentials: "include",
 			},
-			body: JSON.stringify({ permissions }),
-			credentials: "include",
-		});
+		);
 
 		const data = await response.json();
+		if (this.handleUnauthorized(response)) {
+			throw new Error("Session expired. Please sign in again.");
+		}
 		if (!data.success) {
 			throw new Error(data.error || "Failed to update admin permissions");
 		}
@@ -220,34 +248,52 @@ class AdminAuth {
 
 	async forceLogoutAdmin(adminId: string): Promise<void> {
 		const token = getCookie("admin_session");
-		const response = await fetch(`${this.baseUrl}/admin/admins/${adminId}/sessions`, {
-			method: "DELETE",
-			headers: {
-				...(token ? { Authorization: `Bearer ${token}` } : {}),
+		const response = await fetch(
+			`${this.baseUrl}/admin/admins/${adminId}/sessions`,
+			{
+				method: "DELETE",
+				headers: {
+					...(token ? { Authorization: `Bearer ${token}` } : {}),
+				},
+				credentials: "include",
 			},
-			credentials: "include",
-		});
+		);
 
 		const data = await response.json();
+		if (this.handleUnauthorized(response)) {
+			throw new Error("Session expired. Please sign in again.");
+		}
 		if (!data.success) {
 			throw new Error(data.error || "Failed to force logout admin");
 		}
 	}
 
-	async changePassword(newPassword: string, confirmPassword: string): Promise<{ success: boolean; error?: string }> {
+	async changePassword(
+		newPassword: string,
+		confirmPassword: string,
+	): Promise<{ success: boolean; error?: string }> {
 		try {
 			const token = getCookie("admin_session");
-			const response = await fetch(`${this.baseUrl}/admin/auth/change-password`, {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-					...(token ? { Authorization: `Bearer ${token}` } : {}),
+			const response = await fetch(
+				`${this.baseUrl}/admin/auth/change-password`,
+				{
+					method: "PATCH",
+					headers: {
+						"Content-Type": "application/json",
+						...(token ? { Authorization: `Bearer ${token}` } : {}),
+					},
+					body: JSON.stringify({ newPassword, confirmPassword }),
+					credentials: "include",
 				},
-				body: JSON.stringify({ newPassword, confirmPassword }),
-				credentials: "include",
-			});
+			);
 
 			const data = await response.json();
+			if (this.handleUnauthorized(response)) {
+				return {
+					success: false,
+					error: "Session expired. Please sign in again.",
+				};
+			}
 			return data;
 		} catch {
 			return {
@@ -257,9 +303,12 @@ class AdminAuth {
 		}
 	}
 
-	async resetAdminPassword(
-		data: { email: string; name: string; role: string; password?: string }
-	): Promise<{ success: boolean; error?: string; message?: string }> {
+	async resetAdminPassword(data: {
+		email: string;
+		name: string;
+		role: string;
+		password?: string;
+	}): Promise<{ success: boolean; error?: string; message?: string }> {
 		try {
 			const token = getCookie("admin_session");
 			const response = await fetch(
@@ -276,6 +325,12 @@ class AdminAuth {
 			);
 
 			const resData = await response.json();
+			if (this.handleUnauthorized(response)) {
+				return {
+					success: false,
+					error: "Session expired. Please sign in again.",
+				};
+			}
 			return resData;
 		} catch {
 			return {
@@ -295,6 +350,9 @@ class AdminAuth {
 		});
 
 		const data = await response.json();
+		if (this.handleUnauthorized(response)) {
+			throw new Error("Session expired. Please sign in again.");
+		}
 		if (data.success && data.data) {
 			return data.data.devices;
 		}
@@ -315,6 +373,9 @@ class AdminAuth {
 		);
 
 		const data = await response.json();
+		if (this.handleUnauthorized(response)) {
+			throw new Error("Session expired. Please sign in again.");
+		}
 		if (!data.success) {
 			throw new Error(data.error || "Failed to log out device");
 		}
