@@ -103,11 +103,11 @@ export function ActivityChart({
 }: ActivityChartProps) {
 	const displayData = propData
 		? propData.map((d) => ({
-				rev: d.revenue,
-				bet: d.bets,
-				winnings: d.winnings,
-				deposits: d.totalDeposits,
-				withdrawals: d.totalWithdrawals,
+				rev: d.revenue ?? 0,
+				bet: d.bets ?? 0,
+				winnings: d.winnings ?? 0,
+				deposits: d.totalDeposits ?? 0,
+				withdrawals: d.totalWithdrawals ?? 0,
 			}))
 		: FALLBACK_DATA;
 
@@ -169,7 +169,7 @@ export function ActivityChart({
 										<div
 											key={bar.key}
 											className={`w-2.5 ${bar.className} transition-all duration-300 ${idx < 6 ? "opacity-40" : "opacity-100"}`}
-											style={{ height: `${(day[bar.key] / cap) * 100}%` }}
+											style={{ height: `${((day[bar.key] ?? 0) / cap) * 100}%` }}
 										></div>
 									))}
 
@@ -177,7 +177,7 @@ export function ActivityChart({
 										{BARS.map((bar) => (
 											<div key={bar.key}>
 												{bar.label}: {bar.key === "bet" ? "" : "₦"}
-												{day[bar.key].toLocaleString()}
+												{(day[bar.key] ?? 0).toLocaleString()}
 											</div>
 										))}
 									</div>
