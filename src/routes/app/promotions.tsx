@@ -56,6 +56,7 @@ const SPORT_ID_MAP: Record<string, string> = {
 };
 
 const TOURNAMENT_PAGE_LIMIT = 50;
+const EVENT_PAGE_LIMIT = 100;
 
 function dedupeOptions(options: SportsbookOption[]): SportsbookOption[] {
 	const seen = new Set<string>();
@@ -155,13 +156,17 @@ function SportsbookPromotionsPage() {
 	const [tournamentOffset, setTournamentOffset] = useState(0);
 	const [tournamentHasMore, setTournamentHasMore] = useState(false);
 	const [events, setEvents] = useState<SportsbookOption[]>([]);
+	const [eventOffset, setEventOffset] = useState(0);
+	const [eventHasMore, setEventHasMore] = useState(false);
 	const [loadingTournaments, setLoadingTournaments] = useState(false);
 	const [loadingMoreTournaments, setLoadingMoreTournaments] = useState(false);
 	const [loadingEvents, setLoadingEvents] = useState(false);
+	const [loadingMoreEvents, setLoadingMoreEvents] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 
 	const activeSportId = SPORT_ID_MAP[accaForm.eligibleSports] ?? "football";
 	const tournamentRequestId = useRef(0);
+	const eventRequestId = useRef(0);
 
 	const loadTournamentPage = useCallback(
 		async (offset: number, append: boolean) => {
@@ -210,6 +215,53 @@ function SportsbookPromotionsPage() {
 		tournamentHasMore,
 		tournamentOffset,
 		loadTournamentPage,
+	]);
+
+	const loadEventPage = useCallback(
+		async (offset: number, append: boolean) => {
+			const requestId = ++eventRequestId.current;
+			const sportId = activeSportId;
+			if (append) setLoadingMoreEvents(true);
+			else setLoadingEvents(true);
+			try {
+				const res = await sportsbookService.getEvents(sportId, {
+					offset,
+					limit: EVENT_PAGE_LIMIT,
+				});
+				if (requestId !== eventRequestId.current) return;
+				const page = res.success && res.data ? res.data : null;
+				const pageEvents = page?.events ?? [];
+				setEvents((prev) =>
+					append ? dedupeOptions([...prev, ...pageEvents]) : pageEvents,
+				);
+				setEventOffset(
+					page?.pagination.hasMore ? offset + EVENT_PAGE_LIMIT : offset,
+				);
+				setEventHasMore(page?.pagination.hasMore ?? false);
+			} catch {
+				if (requestId !== eventRequestId.current) return;
+				if (!append) setEvents([]);
+				setEventHasMore(false);
+			}
+			if (requestId === eventRequestId.current) {
+				setLoadingEvents(false);
+				setLoadingMoreEvents(false);
+			}
+		},
+		[activeSportId],
+	);
+
+	const loadMoreEvents = useCallback(() => {
+		if (loadingMoreEvents || loadingEvents || !eventHasMore) {
+			return;
+		}
+		loadEventPage(eventOffset, true);
+	}, [
+		loadingMoreEvents,
+		loadingEvents,
+		eventHasMore,
+		eventOffset,
+		loadEventPage,
 	]);
 
 	const typeValue =
@@ -389,17 +441,18 @@ function SportsbookPromotionsPage() {
 			competitionIds: [],
 			eligibleEventIds: [],
 		}));
+		setEventOffset(0);
+		setEventHasMore(false);
 		setTournamentOffset(0);
 		setTournamentHasMore(false);
 		loadTournamentPage(0, false);
-		sportsbookService
-			.getEvents(activeSportId)
-			.then((res) => {
-				setEvents(res.success && res.data ? res.data : []);
-			})
-			.catch(() => setEvents([]))
-			.finally(() => setLoadingEvents(false));
-	}, [isAccumulatorModalOpen, activeSportId, loadTournamentPage]);
+		loadEventPage(0, false);
+	}, [
+		isAccumulatorModalOpen,
+		activeSportId,
+		loadTournamentPage,
+		loadEventPage,
+	]);
 
 	const stepSelection = (
 		key: "minSelectionsLeft" | "minSelectionsRight",
@@ -1243,6 +1296,9 @@ function SportsbookPromotionsPage() {
 												}
 												placeholder="Select events"
 												loading={loadingEvents}
+												onLoadMore={loadMoreEvents}
+												hasMore={eventHasMore}
+												loadingMore={loadingMoreEvents}
 											/>
 										</div>
 									</div>

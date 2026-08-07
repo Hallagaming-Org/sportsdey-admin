@@ -135,6 +135,23 @@ export interface GetTournamentsParams {
 	limit?: number;
 }
 
+export interface EventPagination {
+	offset: number;
+	limit: number;
+	total: number;
+	hasMore: boolean;
+}
+
+export interface EventPage {
+	events: SportsbookOption[];
+	pagination: EventPagination;
+}
+
+export interface GetEventsParams {
+	offset?: number;
+	limit?: number;
+}
+
 export interface BetBoostCreatePayload {
 	boostName: string;
 	description: string;
@@ -175,17 +192,21 @@ class SportsbookService {
 		);
 	}
 
-	async getEvents(sportId: string): Promise<{
+	async getEvents(
+		sportId: string,
+		params?: GetEventsParams,
+	): Promise<{
 		success: boolean;
-		data?: SportsbookOption[];
+		data?: EventPage;
 		error?: string;
 	}> {
 		const searchParams = new URLSearchParams();
 		searchParams.set("sportId", sportId);
 		searchParams.set("status", "pre-game");
-		return fetchApi<SportsbookOption[]>(
-			`/sportsbook/events?${searchParams.toString()}`,
-		);
+		if (params?.offset != null)
+			searchParams.set("offset", String(params.offset));
+		if (params?.limit != null) searchParams.set("limit", String(params.limit));
+		return fetchApi<EventPage>(`/sportsbook/events?${searchParams.toString()}`);
 	}
 
 	async createBetBoost(payload: BetBoostCreatePayload): Promise<{
