@@ -15,6 +15,18 @@ import {
 	TimePeriodDropdown,
 	type TimePeriodOption,
 } from "#/components/TimePeriodDropdown";
+import {
+	Command,
+	CommandEmpty,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import { periodToDateRange } from "@/lib/overview";
 import {
 	type BetBoostCreatePayload,
@@ -1269,7 +1281,8 @@ function SportsbookPromotionsPage() {
 									<div className="grid grid-cols-2 gap-4">
 										<div>
 											<label className="block text-xs font-bold text-gray-900 mb-1.5">
-												Competition <span className="text-red-500">*</span>
+												Competition / League{" "}
+												<span className="text-red-500">*</span>
 											</label>
 											<FormMultiSelect
 												options={tournaments}
@@ -1277,7 +1290,7 @@ function SportsbookPromotionsPage() {
 												onChange={(ids) =>
 													setAccaForm({ ...accaForm, competitionIds: ids })
 												}
-												placeholder="Select competitions"
+												placeholder="Select competition or league"
 												loading={loadingTournaments}
 												onLoadMore={loadMoreTournaments}
 												hasMore={tournamentHasMore}
@@ -1429,18 +1442,6 @@ function FormMultiSelect({
 	loadingMore?: boolean;
 }) {
 	const [open, setOpen] = useState(false);
-	const ref = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (ref.current && !ref.current.contains(event.target as Node)) {
-				setOpen(false);
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
-
 	const selectedTitles = options
 		.filter((option) => selected.includes(option.id))
 		.map((option) => option.title);
@@ -1454,72 +1455,80 @@ function FormMultiSelect({
 	};
 
 	return (
-		<div className="relative" ref={ref}>
-			<button
-				type="button"
-				onClick={() => setOpen((prev) => !prev)}
-				className="flex w-full items-center justify-between rounded-2xl bg-[#F8F9FA] border border-gray-100/80 px-3.5 py-3.5 shadow-2xs cursor-pointer"
-			>
-				<span className="text-xs font-medium text-gray-700 truncate">
-					{loading
-						? "Loading..."
-						: selectedTitles.length > 0
-							? selectedTitles.join(", ")
-							: placeholder}
-				</span>
-				<ChevronDown
-					className={`w-4 h-4 text-gray-500 shrink-0 transition-transform ${
-						open ? "rotate-180" : ""
-					}`}
-				/>
-			</button>
-			{open && (
-				<div
-					className="absolute left-0 z-30 mt-1 w-full max-h-52 overflow-y-auto rounded-2xl border border-gray-200 bg-white py-1 shadow-xl"
-					onScroll={(e) => {
-						const el = e.currentTarget;
-						if (
-							onLoadMore &&
-							hasMore &&
-							!loadingMore &&
-							!loading &&
-							el.scrollHeight - el.scrollTop - el.clientHeight < 40
-						) {
-							onLoadMore();
-						}
-					}}
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger asChild>
+				<button
+					type="button"
+					role="combobox"
+					aria-expanded={open}
+					className="flex w-full items-center justify-between rounded-2xl bg-[#F8F9FA] border border-gray-100/80 px-3.5 py-3.5 shadow-2xs cursor-pointer"
 				>
-					{options.length === 0 ? (
-						<div className="px-3.5 py-2 text-xs font-medium text-gray-400">
-							{loading ? "Loading..." : "No options available"}
-						</div>
-					) : (
-						options.map((option) => {
+					<span className="text-xs font-medium text-gray-700 truncate">
+						{loading
+							? "Loading..."
+							: selectedTitles.length > 0
+								? selectedTitles.join(", ")
+								: placeholder}
+					</span>
+					<ChevronDown
+						className={`w-4 h-4 text-gray-500 shrink-0 transition-transform ${
+							open ? "rotate-180" : ""
+						}`}
+					/>
+				</button>
+			</PopoverTrigger>
+			<PopoverContent
+				align="start"
+				className="z-[70] w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-2xl p-0 shadow-xl"
+			>
+				<Command>
+					<CommandInput
+						placeholder={`Search ${placeholder.toLocaleLowerCase()}...`}
+					/>
+					<CommandList
+						className="max-h-52 overflow-y-auto py-1"
+						onScroll={(e) => {
+							const el = e.currentTarget;
+							if (
+								onLoadMore &&
+								hasMore &&
+								!loadingMore &&
+								!loading &&
+								el.scrollHeight - el.scrollTop - el.clientHeight < 40
+							) {
+								onLoadMore();
+							}
+						}}
+					>
+						<CommandEmpty>
+							{loading ? "Loading..." : "No matching options"}
+						</CommandEmpty>
+						{options.map((option) => {
 							const isSelected = selected.includes(option.id);
 							return (
-								<button
+								<CommandItem
 									key={option.id}
-									type="button"
-									onClick={() => toggle(option.id)}
-									className={`w-full cursor-pointer px-3.5 py-2 text-left text-xs ${
+									value={option.title}
+									onSelect={() => toggle(option.id)}
+									className={`w-full ${
 										isSelected
 											? "bg-emerald-50 font-bold text-gray-900"
 											: "font-medium text-gray-700 hover:bg-gray-50"
 									}`}
 								>
 									{option.title}
-								</button>
+								</CommandItem>
 							);
-						})
-					)}
-					{loadingMore && (
-						<div className="px-3.5 py-2 text-xs font-medium text-gray-400">
-							Loading more...
-						</div>
-					)}
-				</div>
-			)}
-		</div>
+						})}
+						{loadingMore && (
+							<div className="px-3.5 py-2 text-xs font-medium text-gray-400">
+								Loading more...
+							</div>
+						)}
+					</CommandList>
+				</Command>
+			</PopoverContent>
+		</Popover>
 	);
 }
 

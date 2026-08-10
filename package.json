@@ -15,6 +15,7 @@
 		"cf-typegen": "wrangler types --env-interface Env"
 	},
 	"dependencies": {
+		"@radix-ui/react-popover": "^1.1.23",
 		"@radix-ui/react-slot": "^1.2.4",
 		"@tailwindcss/vite": "^4.1.8",
 		"@tanstack/react-query": "^5.85.5",
@@ -34,6 +35,7 @@
 		"@tiptap/starter-kit": "^3.22.4",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
+		"cmdk": "^1.1.1",
 		"docx": "^9.7.1",
 		"framer-motion": "^12.38.0",
 		"jspdf": "^4.2.1",
