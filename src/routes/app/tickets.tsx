@@ -57,7 +57,7 @@ const fallbackCopy = (text: string, label: string) => {
 
 export const Route = createFileRoute("/app/tickets")({
   validateSearch: (search: Record<string, unknown>): { ticketId?: string } => ({
-    ticketId: (search.ticketId as string) || undefined,
+    ticketId: search.ticketId ? decodeURIComponent(search.ticketId as string) : undefined,
   }),
   beforeLoad: ({ context }) => {
     const admin = (context as any).admin;
@@ -687,7 +687,8 @@ function TicketsPage() {
               label: "View ticket details",
               onClick: () => {
                 setSelectedTicketDetails(actionDropdown.ticket);
-                navigate({ to: "/app/tickets", search: { ticketId: actionDropdown.ticket.id }, replace: true });
+                const encodedId = encodeURIComponent(actionDropdown.ticket.id);
+                navigate({ to: "/app/tickets", search: { ticketId: encodedId }, replace: true });
                 setActionDropdown(null);
               },
             },

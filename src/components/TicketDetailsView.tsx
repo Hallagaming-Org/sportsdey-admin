@@ -28,6 +28,7 @@ interface TicketDetailsViewProps {
   onSuspendPlayer?: (userId: string, isReactivate?: boolean) => void;
 }
 
+
 function getUniformCardFontSize(values: Array<string | number | null | undefined>, maxPx = 22, minPx = 10, baseChars = 9) {
   const maxLen = Math.max(0, ...values.map(val => String(val ?? "").length));
   if (!maxLen || maxLen <= baseChars) return { fontSize: `${maxPx}px`, lineHeight: "1.2" };
@@ -616,14 +617,19 @@ export function TicketDetailsView({
               <td className="py-3.5 px-4 font-semibold text-[#10C300]">
                 {round.winAmount}
               </td>
-              <td className="py-3.5 px-4 text-center">
-                {round.status === "Lost" ? (
-                  <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
-                ) : round.status === "Pending" ? (
-                  <Clock className="w-4 h-4 text-[#FFB000] inline-block" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
-                )}
+               <td className="py-3.5 px-4 text-center">
+                {(() => {
+                  const status = (round.status || '').toLowerCase();
+                  if (status === 'lost' || status === 'lose' || status === 'loss') {
+                    return <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />;
+                  } else if (status === 'pending' || status === 'active' || status === '') {
+                    return <Clock className="w-4 h-4 text-[#FFB000] inline-block" />;
+                  } else if (status === 'won' || status === 'win') {
+                    return <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />;
+                  } else {
+                    return <Clock className="w-4 h-4 text-gray-400 inline-block" />;
+                  }
+                })()}
               </td>
             </tr>
           ))
@@ -652,15 +658,17 @@ export function TicketDetailsView({
                       <td className="py-3.5 px-4 font-semibold text-gray-900">
                         {sel.odds || "—"}
                       </td>
-                      <td className="py-3.5 px-4 text-center">
-                        {status === "Lost" ? (
-                          <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
-                        ) : status === "Pending" ? (
-                          <Clock className="w-4 h-4 text-[#FFB000] inline-block" />
-                        ) : (
-                          <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
-                        )}
-                      </td>
+                    <td className="py-3.5 px-4 text-center">
+                      {sel.oddStatus === 3 ? (
+                        <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
+                      ) : sel.oddStatus === 1 || sel.oddStatus === 0 ? (
+                        <Clock className="w-4 h-4 text-[#FFB000] inline-block" />
+                      ) : sel.oddStatus === 2 ? (
+                        <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
+                      ) : (
+                        <Clock className="w-4 h-4 text-gray-400 inline-block" />
+                      )}
+                    </td>
                     </tr>
                   );
                 })}

@@ -173,7 +173,7 @@ class TicketService {
 	async getTicketDetails(
 		ticketId: string,
 	): Promise<{ success: boolean; data?: DetailedTicket; error?: string }> {
-		return fetchApi<DetailedTicket>(`/admin/tickets/${ticketId}`);
+		return fetchApi<DetailedTicket>(`/admin/tickets/${encodeURIComponent(ticketId)}`);
 	}
 }
 
