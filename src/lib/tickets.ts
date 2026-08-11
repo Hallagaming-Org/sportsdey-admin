@@ -3,10 +3,13 @@ import { fetchApi } from "./api";
 export type TicketOutcome = "Won" | "Active" | "Lost" | "Declined";
 export type TicketTab = "all" | "casino" | "sportsbook";
 
+
 export interface MatchSelection {
 	id?: string | number;
+	matchId?: string;           
 	match: string;
 	pick?: string;
+	marketId?: string;         
 	oddId?: string;
 	odds: number | string;
 	status?: "Won" | "Lost" | "Pending" | "Void";
