@@ -697,7 +697,6 @@ export function TicketDetailsView({
   </div>
 </div>
 
-
     </div>
   );
 }
