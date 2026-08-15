@@ -16,7 +16,7 @@ import { useMemo, useState } from "react";
 import { CgProfile } from "react-icons/cg";
 import { LuMessageSquareDot } from "react-icons/lu";
 import { toast } from "sonner";
-import { capitalizeName, formatDeviceInfo } from "#/lib/utils";
+import { capitalizeName, formatDeviceInfo, sanitizeMobileNumber } from "#/lib/utils";
 import { type User, type UserProfile, userService } from "../lib/users";
 import { UserProfileHistory } from "./UserProfileHistory";
 import { UserProfileLogNotes } from "./UserProfileLogNotes";
@@ -456,7 +456,7 @@ export function UserProfileModal({
 												type="tel" 
 												value={editData.mobileNumber} 
 												onChange={(e) => {
-													const val = e.target.value.replace(/[^0-9+]/g, '');
+													const val = sanitizeMobileNumber(e.target.value);
 													setEditData(prev => ({ ...prev, mobileNumber: val }));
 												}}
 												className="border border-gray-200 rounded px-2 py-1 text-sm w-32 focus:outline-none focus:border-[#10C300]"
