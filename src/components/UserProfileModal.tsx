@@ -8,9 +8,9 @@ import {
 	PauseCircle,
 	Wallet,
 	X,
-	Edit2,
 	Check,
 	Loader2,
+	SquarePen,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CgProfile } from "react-icons/cg";
@@ -385,7 +385,7 @@ export function UserProfileModal({
 											}}
 											className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
 										>
-											<Edit2 className="w-4 h-4" />
+											<SquarePen className="w-4 h-4" />
 										</button>
 									)}
 								</div>
