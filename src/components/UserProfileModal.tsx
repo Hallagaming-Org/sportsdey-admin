@@ -453,9 +453,12 @@ export function UserProfileModal({
 											<Skeleton className="h-4 w-20" />
 										) : isEditing ? (
 											<input 
-												type="text" 
+												type="tel" 
 												value={editData.mobileNumber} 
-												onChange={(e) => setEditData(prev => ({ ...prev, mobileNumber: e.target.value }))}
+												onChange={(e) => {
+													const val = e.target.value.replace(/[^0-9+]/g, '');
+													setEditData(prev => ({ ...prev, mobileNumber: val }));
+												}}
 												className="border border-gray-200 rounded px-2 py-1 text-sm w-32 focus:outline-none focus:border-[#10C300]"
 											/>
 										) : (
