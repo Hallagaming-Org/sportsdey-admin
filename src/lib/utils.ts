@@ -19,6 +19,10 @@ export function capitalizeName(name: string) {
 		.join(" ");
 }
 
+export function sanitizeMobileNumber(value: string): string {
+	return value.replace(/[^0-9+]/g, '');
+}
+
 export function formatDeviceInfo(uaOrDevice?: string | null): string {
 	if (!uaOrDevice || uaOrDevice === "N/A" || uaOrDevice === "-") return "N/A";
 

@@ -79,6 +79,7 @@ const TABS: { key: TicketTab; label: string }[] = [
   { key: "all", label: "All Tickets" },
   { key: "casino", label: "Casino" },
   { key: "sportsbook", label: "Sportsbook" },
+  { key: "prediction_market", label: "Prediction Market" },
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -567,7 +568,7 @@ function TicketsPage() {
               placeholder="Search"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-[352px] rounded-full border border-gray-200 bg-gray-50 py-2 pr-4 pl-9 text-sm focus:border-[#1BAA04] focus:outline-none focus:ring-1 focus:ring-[#1BAA04]"
+              className="w-[240px] rounded-full border border-gray-200 bg-gray-50 py-2 pr-4 pl-9 text-sm focus:border-[#1BAA04] focus:outline-none focus:ring-1 focus:ring-[#1BAA04]"
             />
             <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
           </div>

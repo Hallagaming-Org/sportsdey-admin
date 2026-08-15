@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	AlertTriangle,
 	ChevronDown,
@@ -8,12 +8,15 @@ import {
 	PauseCircle,
 	Wallet,
 	X,
+	Check,
+	Loader2,
+	SquarePen,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CgProfile } from "react-icons/cg";
 import { LuMessageSquareDot } from "react-icons/lu";
 import { toast } from "sonner";
-import { capitalizeName, formatDeviceInfo } from "#/lib/utils";
+import { capitalizeName, formatDeviceInfo, sanitizeMobileNumber } from "#/lib/utils";
 import { type User, type UserProfile, userService } from "../lib/users";
 import { UserProfileHistory } from "./UserProfileHistory";
 import { UserProfileLogNotes } from "./UserProfileLogNotes";
@@ -73,6 +76,11 @@ export function UserProfileModal({
 	>("personal");
 	const [showDevices, setShowDevices] = useState(false);
 	const [showLoginIps, setShowLoginIps] = useState(false);
+
+	const queryClient = useQueryClient();
+	const [isEditing, setIsEditing] = useState(false);
+	const [editData, setEditData] = useState({ dob: "", mobileNumber: "", status: "" });
+	const [isUpdating, setIsUpdating] = useState(false);
 
 	const { data: fetchedProfile, isLoading: isProfileQueryLoading } = useQuery({
 		queryKey: ["user-profile-auto", user.id],
@@ -162,6 +170,25 @@ export function UserProfileModal({
 		}
 		return list;
 	}, [profile]);
+
+	const handleUpdate = async () => {
+		setIsUpdating(true);
+		try {
+			const res = await userService.updateUser(user.id, editData);
+			if (res.success) {
+				toast.success("User details updated successfully");
+				setIsEditing(false);
+				queryClient.invalidateQueries({ queryKey: ["user-profile-auto", user.id] });
+				queryClient.invalidateQueries({ queryKey: ["users"] });
+			} else {
+				toast.error(res.error || "Failed to update user details");
+			}
+		} catch (e) {
+			toast.error("An error occurred while updating");
+		} finally {
+			setIsUpdating(false);
+		}
+	};
 
 	const buttonItems = [
 		{
@@ -322,9 +349,46 @@ export function UserProfileModal({
 					{activeView === "personal" ? (
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
 							<div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
-								<h4 className="font-bold text-xl text-gray-900 mb-6">
-									Personal Details
-								</h4>
+								<div className="flex items-center justify-between mb-6">
+									<h4 className="font-bold text-xl text-gray-900">
+										Personal Details
+									</h4>
+									{isEditing ? (
+										<div className="flex items-center gap-2">
+											<button
+												type="button"
+												onClick={() => setIsEditing(false)}
+												disabled={isUpdating}
+												className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+											>
+												<X className="w-4 h-4" />
+											</button>
+											<button
+												type="button"
+												onClick={handleUpdate}
+												disabled={isUpdating}
+												className="p-1.5 text-white bg-[#10C300] hover:bg-[#0eac00] rounded-full transition-colors flex items-center justify-center cursor-pointer"
+											>
+												{isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+											</button>
+										</div>
+									) : (
+										<button
+											type="button"
+											onClick={() => {
+												setEditData({
+													dob: profile?.dob || "",
+													mobileNumber: mobileNumber || "",
+													status: status || "approved",
+												});
+												setIsEditing(true);
+											}}
+											className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+										>
+											<SquarePen className="w-4 h-4" />
+										</button>
+									)}
+								</div>
 								<div className="space-y-5 text-sm flex-1">
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Full Name:</span>
@@ -381,22 +445,42 @@ export function UserProfileModal({
 											</div>
 										)}
 									</div>
-									<div className="flex justify-between items-start">
+									<div className="flex justify-between items-center">
 										<span className="text-gray-500 text-xs">
 											Mobile number:
 										</span>
 										{loading ? (
 											<Skeleton className="h-4 w-20" />
+										) : isEditing ? (
+											<input 
+												type="tel" 
+												value={editData.mobileNumber} 
+												onChange={(e) => {
+													const val = sanitizeMobileNumber(e.target.value);
+													setEditData(prev => ({ ...prev, mobileNumber: val }));
+												}}
+												className="border border-gray-200 rounded px-2 py-1 text-sm w-32 focus:outline-none focus:border-[#10C300]"
+											/>
 										) : (
 											<span className="font-medium text-gray-900 text-sm text-left">
 												{mobileNumber || "N/A"}
 											</span>
 										)}
 									</div>
-									<div className="flex justify-between items-start">
+									<div className="flex justify-between items-center">
 										<span className="text-gray-500 text-xs">Status:</span>
 										{loading ? (
 											<Skeleton className="h-8 w-16" />
+										) : isEditing ? (
+											<select
+												value={editData.status}
+												onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value }))}
+												className="border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:border-[#10C300]"
+											>
+												<option value="approved">Verified</option>
+												<option value="pending_verification">Pending</option>
+												<option value="unverified">Not Verified</option>
+											</select>
 										) : (
 											<div className="flex flex-col items-end gap-1">
 												<span
@@ -417,12 +501,19 @@ export function UserProfileModal({
 											</div>
 										)}
 									</div>
-									<div className="flex justify-between items-start">
+									<div className="flex justify-between items-center">
 										<span className="text-gray-500 text-xs">
 											Date of Birth:
 										</span>
 										{loading ? (
 											<Skeleton className="h-4 w-24" />
+										) : isEditing ? (
+											<input 
+												type="date" 
+												value={editData.dob} 
+												onChange={(e) => setEditData(prev => ({ ...prev, dob: e.target.value }))}
+												className="border border-gray-200 rounded px-2 py-1 text-sm w-36 focus:outline-none focus:border-[#10C300]"
+											/>
 										) : (
 											<span className="font-medium text-gray-900 text-sm text-left">
 												{profile?.dob || "N/A"}
