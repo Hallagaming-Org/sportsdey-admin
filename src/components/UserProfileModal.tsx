@@ -345,11 +345,11 @@ export function UserProfileModal({
 					</div>
 				</div>
 
-				<div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8">
+				<div className={`flex-1 px-8 pb-8 flex flex-col ${activeView === "personal" ? "overflow-hidden" : "overflow-y-auto custom-scrollbar"}`}>
 					{activeView === "personal" ? (
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-							<div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full">
-								<div className="flex items-center justify-between mb-6">
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch flex-1 min-h-0">
+							<div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col h-full min-h-0">
+								<div className="flex items-center justify-between mb-6 shrink-0">
 									<h4 className="font-bold text-xl text-gray-900">
 										Personal Details
 									</h4>
@@ -389,7 +389,7 @@ export function UserProfileModal({
 										</button>
 									)}
 								</div>
-								<div className="space-y-5 text-sm flex-1">
+								<div className="space-y-5 text-sm flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0">
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">Full Name:</span>
 										{loading ? (
