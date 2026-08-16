@@ -82,7 +82,7 @@ export function UserProfileModal({
 	const [editData, setEditData] = useState({ dob: "", mobileNumber: "", status: "" });
 	const [isUpdating, setIsUpdating] = useState(false);
 
-	const { data: fetchedProfile, isLoading: isProfileQueryLoading } = useQuery({
+	const { data: fetchedProfile, isLoading: isProfileQueryLoading, isFetching: isProfileFetching } = useQuery({
 		queryKey: ["user-profile-auto", user.id],
 		queryFn: async () => {
 			if (!user.id) return null;
@@ -94,7 +94,7 @@ export function UserProfileModal({
 	});
 
 	const profile = externalProfile || fetchedProfile;
-	const isLoading = externalLoading || isProfileQueryLoading;
+	const isLoading = externalLoading || isProfileQueryLoading || isProfileFetching;
 	const displayData = profile || user;
 	const status = profile?.verificationStatus || user.status;
 	const registeredDate = profile?.createdAt
@@ -247,7 +247,7 @@ export function UserProfileModal({
 			className: "bg-[#EDF1F9] text-gray-500",
 		},
 	];
-	const loading = isLoading && !profile;
+	const loading = isLoading;
 
 	return (
 		<div
