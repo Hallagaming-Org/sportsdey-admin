@@ -127,6 +127,22 @@ function TicketsPage() {
     }
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    worksheet["!cols"] = [
+      { wch: 15 }, // Bet ID
+      { wch: 25 }, // Player Name
+      { wch: 15 }, // Bet Amount
+      { wch: 15 }, // Potential Win
+      { wch: 15 }, // Payout
+      { wch: 15 }, // Game Type
+      { wch: 20 }, // Game Name
+      { wch: 20 }, // Provider
+      { wch: 20 }, // Round ID
+      { wch: 10 }, // Odds
+      { wch: 20 }, // Date
+      { wch: 15 }, // Balance Before
+      { wch: 15 }, // Balance After
+      { wch: 15 }, // Status
+    ];
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Tickets");
     XLSX.writeFile(workbook, `Tickets_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
@@ -137,7 +153,7 @@ function TicketsPage() {
       toast.error("No tickets to export");
       return;
     }
-    const doc = new jsPDF("landscape");
+    const doc = new jsPDF({ orientation: "landscape", format: [800, 300] });
     doc.text("Ticket History", 14, 15);
     autoTable(doc, {
       head: [["Bet ID", "Player Name", "Amount", "Potential Win", "Payout", "Game Type", "Game Name", "Provider", "Round ID", "Odds", "Date", "Status"]],
@@ -156,6 +172,7 @@ function TicketsPage() {
         t.outcome,
       ]),
       startY: 20,
+      styles: { overflow: 'visible', minCellWidth: 30 },
     });
     doc.save(`Tickets_Export_${new Date().toISOString().split("T")[0]}.pdf`);
   };
@@ -169,7 +186,14 @@ function TicketsPage() {
     const doc = new Document({
       sections: [
         {
-          properties: {},
+          properties: {
+            page: {
+              size: {
+                width: 30000,
+                height: 12000,
+              },
+            },
+          },
           children: [
             new Paragraph({
               children: [
