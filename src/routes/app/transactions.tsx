@@ -274,7 +274,7 @@ function WalletPage() {
 												setShowExportMenu(false);
 												if (transactions.length === 0) return;
 												
-												const doc = new jsPDF("landscape");
+												const doc = new jsPDF({ orientation: "landscape", format: [700, 300] });
 												doc.text("Transactions", 14, 15);
 												autoTable(doc, {
 													head: [["ID", "User ID", "User Email", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"]],
@@ -290,6 +290,7 @@ function WalletPage() {
 														t.status
 													]),
 													startY: 20,
+													styles: { overflow: 'visible', minCellWidth: 30 },
 												});
 												doc.save(`transactions_export_${new Date().toISOString().split('T')[0]}.pdf`);
 											}}
@@ -306,7 +307,11 @@ function WalletPage() {
 												const docx = new Document({
 													sections: [
 														{
-															properties: {},
+															properties: {
+																page: {
+																	size: { width: 30000, height: 12000 },
+																},
+															},
 															children: [
 																new Paragraph({
 																	children: [
@@ -387,6 +392,17 @@ function WalletPage() {
 												}));
 
 												const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+												worksheet["!cols"] = [
+													{ wch: 15 }, // ID
+													{ wch: 20 }, // User ID
+													{ wch: 30 }, // User Email
+													{ wch: 20 }, // Date & Time
+													{ wch: 15 }, // Type
+													{ wch: 20 }, // Payment Method
+													{ wch: 15 }, // Amount
+													{ wch: 15 }, // Balance After
+													{ wch: 15 }, // Status
+												];
 												const workbook = XLSX.utils.book_new();
 												XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
 												XLSX.writeFile(workbook, `transactions_export_${new Date().toISOString().split('T')[0]}.xlsx`);
