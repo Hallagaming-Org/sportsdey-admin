@@ -126,6 +126,10 @@ class TicketService {
 		);
 	}
 
+	async listAllTickets(): Promise<{ success: boolean; data?: TicketsResponse; error?: string }> {
+		return fetchApi<TicketsResponse>("/admin/tickets/all");
+	}
+
 	async getUserTickets(
 		userId: string,
 		params: {
