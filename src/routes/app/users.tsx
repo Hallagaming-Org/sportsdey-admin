@@ -93,9 +93,6 @@ function UsersPage() {
 	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 		null,
 	);
-	const [selectedProfileData, setSelectedProfileData] =
-		useState<UserProfile | null>(null);
-	const [isProfileLoading, setIsProfileLoading] = useState(false);
 	const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 	const [showExportDropdown, setShowExportDropdown] = useState(false);
@@ -374,21 +371,6 @@ function UsersPage() {
 			toast.error(error.message || "Failed to fetch users");
 		}
 	}, [error]);
-
-	useEffect(() => {
-		if (selectedProfileUser) {
-			setIsProfileLoading(true);
-			userService.getUserProfile(selectedProfileUser.id).then((result) => {
-				setIsProfileLoading(false);
-				if (result.success && result.data) {
-					setSelectedProfileData(result.data);
-				}
-			});
-		} else {
-			setSelectedProfileData(null);
-			setIsProfileLoading(false);
-		}
-	}, [selectedProfileUser]);
 
 	const createUserMutation = useMutation({
 		mutationFn: async (data: NewUser) => {
@@ -899,8 +881,6 @@ function UsersPage() {
 			{selectedProfileUser && (
 				<UserProfileModal
 					user={selectedProfileUser}
-					profile={selectedProfileData || undefined}
-					isLoading={isProfileLoading}
 					onClose={() => setSelectedProfileUser(null)}
 					onSendNotice={(user) => {
 						setNoticeModalUser(user);
