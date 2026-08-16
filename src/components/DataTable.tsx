@@ -67,7 +67,7 @@ export function DataTable<T>({
         className={`overflow-x-auto overflow-y-auto custom-scrollbar ${isFullHeight ? "flex-1 min-h-0" : ""}`}
         style={!isFullHeight && maxHeight ? { maxHeight } : {}}
       >
-        <table className="relative w-full min-w-[980px] border-collapse text-left text-sm">
+        <table className="relative w-full min-w-max border-collapse text-left text-sm">
           <thead className="sticky top-0 z-10 shadow-[0_1px_0_#f3f4f6]">
             <tr className="border-gray-100 border-b bg-[#FAFAFA] text-[#667085]">
               {columns.map((col, idx) => (
