@@ -194,6 +194,13 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
     }
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    worksheet["!cols"] = [
+      { wch: 15 }, // Type
+      { wch: 15 }, // Amount
+      { wch: 20 }, // Reference ID
+      { wch: 20 }, // Date & Time
+      { wch: 15 }, // Status
+    ];
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
     XLSX.writeFile(workbook, `Transactions_${userId}_${new Date().toISOString().split("T")[0]}.xlsx`);
@@ -204,7 +211,7 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
       toast.error("No transactions to export");
       return;
     }
-    const doc = new jsPDF("landscape");
+    const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
     doc.text("Transaction Summary", 14, 15);
     autoTable(doc, {
       head: [["Type", "Amount", "Reference ID", "Date & Time", "Status"]],
@@ -216,6 +223,7 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
         t.status || "Completed",
       ]),
       startY: 20,
+      styles: { overflow: 'visible', minCellWidth: 30 },
     });
     doc.save(`Transactions_${userId}_${new Date().toISOString().split("T")[0]}.pdf`);
   };
@@ -229,7 +237,11 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
     const doc = new Document({
       sections: [
         {
-          properties: {},
+          properties: {
+            page: {
+              size: { width: 25000, height: 12000 },
+            },
+          },
           children: [
             new Paragraph({
               children: [
