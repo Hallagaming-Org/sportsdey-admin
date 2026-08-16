@@ -130,6 +130,15 @@ function UsersPage() {
 			}));
 
 			const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+			worksheet["!cols"] = [
+				{ wch: 15 }, // User ID
+				{ wch: 25 }, // Player Name
+				{ wch: 30 }, // Email Address
+				{ wch: 20 }, // Registration Date
+				{ wch: 18 }, // Registration IP
+				{ wch: 15 }, // Wallet Balance
+				{ wch: 15 }, // Status
+			];
 			const workbook = XLSX.utils.book_new();
 			XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
 			XLSX.writeFile(
@@ -154,7 +163,7 @@ function UsersPage() {
 				return;
 			}
 
-			const doc = new jsPDF("landscape");
+			const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
 			doc.text("Users", 14, 15);
 			autoTable(doc, {
 				head: [
@@ -184,6 +193,7 @@ function UsersPage() {
 							: "Not Verified",
 				]),
 				startY: 20,
+				styles: { overflow: 'visible', minCellWidth: 30 },
 			});
 			doc.save(`Users_Export_${new Date().toISOString().split("T")[0]}.pdf`);
 			toast.success("Export successful", { id: toastId });
@@ -207,7 +217,14 @@ function UsersPage() {
 			const docx = new Document({
 				sections: [
 					{
-						properties: {},
+						properties: {
+							page: {
+								size: {
+									width: 25000,
+									height: 12000,
+								},
+							},
+						},
 						children: [
 							new Paragraph({
 								children: [
