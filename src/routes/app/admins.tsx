@@ -84,6 +84,12 @@ function AdminsPage() {
 		}
 
 		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+		worksheet["!cols"] = [
+			{ wch: 15 }, // Admin ID
+			{ wch: 25 }, // Name
+			{ wch: 30 }, // Email Address
+			{ wch: 20 }, // Role
+		];
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "Admins");
 		XLSX.writeFile(workbook, `Admins_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
@@ -94,7 +100,7 @@ function AdminsPage() {
 			toast.error("No admins to export");
 			return;
 		}
-		const doc = new jsPDF("landscape");
+		const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
 		doc.text("Other Admins List", 14, 15);
 		autoTable(doc, {
 			head: [["Admin ID", "Name", "Email Address", "Role"]],
@@ -105,6 +111,7 @@ function AdminsPage() {
 				a.role === "super_admin" ? "Super Admin" : a.role === "csr-admin" ? "CSR Admin" : a.role,
 			]),
 			startY: 20,
+			styles: { overflow: 'visible', minCellWidth: 30 },
 		});
 		doc.save(`Admins_Export_${new Date().toISOString().split("T")[0]}.pdf`);
 	};
@@ -118,7 +125,11 @@ function AdminsPage() {
 		const doc = new Document({
 			sections: [
 				{
-					properties: {},
+					properties: {
+						page: {
+							size: { width: 20000, height: 12000 },
+						},
+					},
 					children: [
 						new Paragraph({
 							children: [
