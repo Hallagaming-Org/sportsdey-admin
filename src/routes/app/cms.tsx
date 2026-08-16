@@ -55,60 +55,87 @@ function CmsPage() {
 	const [actionDropdown, setActionDropdown] = useState<{ item: any; top: number; right: number } | null>(null);
 	const [showExportDropdown, setShowExportDropdown] = useState(false);
 
-	const exportToExcel = () => {
-		const dataToExport = contents.map((c: any) => ({
-			"Title": c.title || "-",
-			"Author": c.authorName || c.author || "-",
-			"Type": c.type || "-",
-			"Published Date": c.publishedAt ? new Date(c.publishedAt).toLocaleDateString() : "-",
-			"Status": c.status || "Published",
-		}));
+	const exportToExcel = async () => {
+		const toastId = toast.loading("Fetching all CMS content for export...");
+		try {
+			const res = await cmsService.listAllCmsContent({});
+			if (!res.success) throw new Error(res.error || "Failed to fetch CMS content");
 
-		if (!dataToExport || dataToExport.length === 0) {
-			toast.error("No CMS content to export");
-			return;
+			const exportData = res.data?.content || [];
+			if (!exportData || exportData.length === 0) {
+				toast.error("No CMS content to export", { id: toastId });
+				return;
+			}
+
+			const dataToExport = exportData.map((c: any) => ({
+				"Title": c.title || "-",
+				"Author": c.authorName || c.author || "-",
+				"Type": c.type || "-",
+				"Published Date": c.publishedAt ? new Date(c.publishedAt).toLocaleDateString() : "-",
+				"Status": c.status || "Published",
+			}));
+
+			const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+			worksheet["!cols"] = [
+				{ wch: 30 }, // Title
+				{ wch: 25 }, // Author
+				{ wch: 15 }, // Type
+				{ wch: 20 }, // Published Date
+				{ wch: 15 }, // Status
+			];
+			const workbook = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(workbook, worksheet, "CMS Contents");
+			XLSX.writeFile(workbook, `CMS_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
+			toast.success("Export successful", { id: toastId });
+		} catch (err: any) {
+			toast.error(err.message || "Failed to export CMS content", { id: toastId });
 		}
-
-		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-		worksheet["!cols"] = [
-			{ wch: 30 }, // Title
-			{ wch: 25 }, // Author
-			{ wch: 15 }, // Type
-			{ wch: 20 }, // Published Date
-			{ wch: 15 }, // Status
-		];
-		const workbook = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(workbook, worksheet, "CMS Contents");
-		XLSX.writeFile(workbook, `CMS_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
 	};
 
-	const exportToPdf = () => {
-		if (!contents || contents.length === 0) {
-			toast.error("No CMS content to export");
-			return;
+	const exportToPdf = async () => {
+		const toastId = toast.loading("Fetching all CMS content for export...");
+		try {
+			const res = await cmsService.listAllCmsContent({});
+			if (!res.success) throw new Error(res.error || "Failed to fetch CMS content");
+
+			const exportData = res.data?.content || [];
+			if (!exportData || exportData.length === 0) {
+				toast.error("No CMS content to export", { id: toastId });
+				return;
+			}
+
+			const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
+			doc.text("CMS Content List", 14, 15);
+			autoTable(doc, {
+				head: [["Title", "Author", "Type", "Published Date", "Status"]],
+				body: exportData.map((c: any) => [
+					c.title || "-",
+					c.authorName || c.author || "-",
+					c.type || "-",
+					c.publishedAt ? new Date(c.publishedAt).toLocaleDateString() : "-",
+					c.status || "Published",
+				]),
+				startY: 20,
+				styles: { overflow: 'visible', minCellWidth: 30 },
+			});
+			doc.save(`CMS_Export_${new Date().toISOString().split("T")[0]}.pdf`);
+			toast.success("Export successful", { id: toastId });
+		} catch (err: any) {
+			toast.error(err.message || "Failed to export CMS content", { id: toastId });
 		}
-		const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
-		doc.text("CMS Content List", 14, 15);
-		autoTable(doc, {
-			head: [["Title", "Author", "Type", "Published Date", "Status"]],
-			body: contents.map((c: any) => [
-				c.title || "-",
-				c.authorName || c.author || "-",
-				c.type || "-",
-				c.publishedAt ? new Date(c.publishedAt).toLocaleDateString() : "-",
-				c.status || "Published",
-			]),
-			startY: 20,
-			styles: { overflow: 'visible', minCellWidth: 30 },
-		});
-		doc.save(`CMS_Export_${new Date().toISOString().split("T")[0]}.pdf`);
 	};
 
 	const exportToDocx = async () => {
-		if (!contents || contents.length === 0) {
-			toast.error("No CMS content to export");
-			return;
-		}
+		const toastId = toast.loading("Fetching all CMS content for export...");
+		try {
+			const res = await cmsService.listAllCmsContent({});
+			if (!res.success) throw new Error(res.error || "Failed to fetch CMS content");
+
+			const exportData = res.data?.content || [];
+			if (!exportData || exportData.length === 0) {
+				toast.error("No CMS content to export", { id: toastId });
+				return;
+			}
 
 		const doc = new Document({
 			sections: [
@@ -141,7 +168,7 @@ function CmsPage() {
 											}),
 									),
 								}),
-								...contents.map(
+								...exportData.map(
 									(c: any) =>
 										new TableRow({
 											children: [
@@ -167,11 +194,17 @@ function CmsPage() {
 
 		const blob = await Packer.toBlob(doc);
 		const url = URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = `CMS_Export_${new Date().toISOString().split("T")[0]}.docx`;
-		a.click();
-		URL.revokeObjectURL(url);
+		const link = document.createElement("a");
+		link.setAttribute("href", url);
+		link.setAttribute("download", `CMS_Export_${new Date().toISOString().split("T")[0]}.docx`);
+		link.style.visibility = "hidden";
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		toast.success("Export successful", { id: toastId });
+		} catch (err: any) {
+			toast.error(err.message || "Failed to export CMS content", { id: toastId });
+		}
 	};
 
 	useEffect(() => {
