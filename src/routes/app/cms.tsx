@@ -70,6 +70,13 @@ function CmsPage() {
 		}
 
 		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+		worksheet["!cols"] = [
+			{ wch: 30 }, // Title
+			{ wch: 25 }, // Author
+			{ wch: 15 }, // Type
+			{ wch: 20 }, // Published Date
+			{ wch: 15 }, // Status
+		];
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "CMS Contents");
 		XLSX.writeFile(workbook, `CMS_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
@@ -80,7 +87,7 @@ function CmsPage() {
 			toast.error("No CMS content to export");
 			return;
 		}
-		const doc = new jsPDF("landscape");
+		const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
 		doc.text("CMS Content List", 14, 15);
 		autoTable(doc, {
 			head: [["Title", "Author", "Type", "Published Date", "Status"]],
@@ -92,6 +99,7 @@ function CmsPage() {
 				c.status || "Published",
 			]),
 			startY: 20,
+			styles: { overflow: 'visible', minCellWidth: 30 },
 		});
 		doc.save(`CMS_Export_${new Date().toISOString().split("T")[0]}.pdf`);
 	};
@@ -105,7 +113,11 @@ function CmsPage() {
 		const doc = new Document({
 			sections: [
 				{
-					properties: {},
+					properties: {
+						page: {
+							size: { width: 25000, height: 12000 },
+						},
+					},
 					children: [
 						new Paragraph({
 							children: [
