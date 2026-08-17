@@ -238,6 +238,21 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
     }
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    worksheet["!cols"] = [
+      { wch: 15 }, // Bet ID
+      { wch: 25 }, // Date & Time
+      { wch: 15 }, // Amount
+      { wch: 15 }, // Game Type
+      { wch: 20 }, // Game Name
+      { wch: 20 }, // Provider
+      { wch: 20 }, // Round ID
+      { wch: 10 }, // Odds
+      { wch: 15 }, // Potential Win
+      { wch: 15 }, // Pay Out
+      { wch: 15 }, // Balance Before
+      { wch: 15 }, // Balance After
+      { wch: 15 }, // Status
+    ];
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Bet History");
     XLSX.writeFile(workbook, `Bet_History_${userId}_${new Date().toISOString().split("T")[0]}.xlsx`);
@@ -248,7 +263,7 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
       toast.error("No ticket history to export");
       return;
     }
-    const doc = new jsPDF("landscape");
+    const doc = new jsPDF({ orientation: "landscape", format: [800, 300] });
     doc.text("Bet History Summary", 14, 15);
     autoTable(doc, {
       head: [["Bet ID", "Date & Time", "Amount", "Game Type", "Game Name", "Provider", "Round ID", "Potential Win", "Pay Out", "Status"]],
@@ -265,6 +280,7 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
         t.status,
       ]),
       startY: 20,
+      styles: { overflow: 'visible', minCellWidth: 30 },
     });
     doc.save(`Bet_History_${userId}_${new Date().toISOString().split("T")[0]}.pdf`);
   };
@@ -278,7 +294,14 @@ export function UserProfileHistory({ userId, onCloseModal }: UserProfileHistoryP
     const doc = new Document({
       sections: [
         {
-          properties: {},
+          properties: {
+            page: {
+              size: {
+                width: 30000,
+                height: 12000,
+              },
+            },
+          },
           children: [
             new Paragraph({
               children: [

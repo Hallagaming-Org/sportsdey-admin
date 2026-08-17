@@ -94,188 +94,233 @@ function UsersPage() {
 	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
 		null,
 	);
-	const [selectedProfileData, setSelectedProfileData] =
-		useState<UserProfile | null>(null);
-	const [isProfileLoading, setIsProfileLoading] = useState(false);
 	const [noticeModalUser, setNoticeModalUser] = useState<User | null>(null);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 	const [showExportDropdown, setShowExportDropdown] = useState(false);
 
-	const exportToExcel = () => {
-		const dataToExport = usersData?.users.map((user) => ({
-			"User Id": user.id,
-			"Player Name": user.name,
-			"Email Address": user.email,
-			"Registration Date": user.registeredDate
-				? new Date(user.registeredDate).toLocaleDateString()
-				: "-",
-			"Registration IP": user.registeredIpAddress || user.ipAddress || "-",
-			"Wallet Balance": user.wallet,
-			Status:
-				user.status === "approved"
-					? "Verified"
-					: user.status === "pending_verification"
-						? "Pending"
-						: "Not Verified",
-		}));
+	const exportToExcel = async () => {
+		const toastId = toast.loading("Fetching all users for export...");
+		try {
+			const res = await userService.listAllUsers();
+			if (!res.success) throw new Error(res.error || "Failed to fetch users");
 
-		if (!dataToExport || dataToExport.length === 0) {
-			toast.error("No users to export");
-			return;
-		}
+			const usersList = res.data?.users || res.data || [];
+			if (!usersList || usersList.length === 0) {
+				toast.error("No users to export", { id: toastId });
+				return;
+			}
 
-		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-		const workbook = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
-		XLSX.writeFile(
-			workbook,
-			`Users_Export_${new Date().toISOString().split("T")[0]}.xlsx`,
-		);
-	};
-
-	const exportToPdf = () => {
-		if (!usersData?.users || usersData.users.length === 0) {
-			toast.error("No users to export");
-			return;
-		}
-		const doc = new jsPDF("landscape");
-		doc.text("Users", 14, 15);
-		autoTable(doc, {
-			head: [
-				[
-					"User Id",
-					"Player Name",
-					"Email Address",
-					"Registration Date",
-					"Registration IP",
-					"Wallet Balance",
-					"Status",
-				],
-			],
-			body: usersData.users.map((u) => [
-				u.id,
-				u.name,
-				u.email,
-				u.registeredDate
-					? new Date(u.registeredDate).toLocaleDateString()
+			const dataToExport = usersList.map((user: User) => ({
+				"User Id": user.id,
+				"Player Name": user.name,
+				"Email Address": user.email,
+				"Registration Date": user.registeredDate
+					? new Date(user.registeredDate).toLocaleDateString()
 					: "-",
-				u.registeredIpAddress || u.ipAddress || "-",
-				u.wallet?.toString() || "0",
-				u.status === "approved"
-					? "Verified"
-					: u.status === "pending_verification"
-						? "Pending"
-						: "Not Verified",
-			]),
-			startY: 20,
-		});
-		doc.save(`Users_Export_${new Date().toISOString().split("T")[0]}.pdf`);
+				"Registration IP": user.registeredIpAddress || user.ipAddress || "-",
+				"Wallet Balance": user.wallet,
+				Status:
+					user.status === "approved" || user.status === "verified"
+						? "Verified"
+						: user.status === "pending_verification"
+							? "Pending"
+							: "Not Verified",
+			}));
+
+			const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+			worksheet["!cols"] = [
+				{ wch: 15 }, // User ID
+				{ wch: 25 }, // Player Name
+				{ wch: 30 }, // Email Address
+				{ wch: 20 }, // Registration Date
+				{ wch: 18 }, // Registration IP
+				{ wch: 15 }, // Wallet Balance
+				{ wch: 15 }, // Status
+			];
+			const workbook = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+			XLSX.writeFile(
+				workbook,
+				`Users_Export_${new Date().toISOString().split("T")[0]}.xlsx`,
+			);
+			toast.success("Export successful", { id: toastId });
+		} catch (err: any) {
+			toast.error(err.message || "Failed to export users", { id: toastId });
+		}
 	};
 
-	const exportToDocx = () => {
-		if (!usersData?.users || usersData.users.length === 0) {
-			toast.error("No users to export");
-			return;
-		}
+	const exportToPdf = async () => {
+		const toastId = toast.loading("Fetching all users for export...");
+		try {
+			const res = await userService.listAllUsers();
+			if (!res.success) throw new Error(res.error || "Failed to fetch users");
 
-		const docx = new Document({
-			sections: [
-				{
-					properties: {},
-					children: [
-						new Paragraph({
-							children: [
-								new TextRun({
-									text: "Users",
-									bold: true,
-									size: 32,
-								}),
-							],
-							spacing: { after: 400 },
-						}),
-						new Table({
-							width: { size: 100, type: WidthType.PERCENTAGE },
-							rows: [
-								new TableRow({
-									children: [
-										"User Id",
-										"Player Name",
-										"Email Address",
-										"Registration Date",
-										"Registration IP",
-										"Wallet Balance",
-										"Status",
-									].map(
-										(header) =>
-											new TableCell({
+			const usersList = res.data?.users || res.data || [];
+			if (!usersList || usersList.length === 0) {
+				toast.error("No users to export", { id: toastId });
+				return;
+			}
+
+			const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
+			doc.text("Users", 14, 15);
+			autoTable(doc, {
+				head: [
+					[
+						"User Id",
+						"Player Name",
+						"Email Address",
+						"Registration Date",
+						"Registration IP",
+						"Wallet Balance",
+						"Status",
+					],
+				],
+				body: usersList.map((u: User) => [
+					u.id,
+					u.name,
+					u.email,
+					u.registeredDate
+						? new Date(u.registeredDate).toLocaleDateString()
+						: "-",
+					u.registeredIpAddress || u.ipAddress || "-",
+					u.wallet?.toString() || "0",
+					u.status === "approved" || u.status === "verified"
+						? "Verified"
+						: u.status === "pending_verification"
+							? "Pending"
+							: "Not Verified",
+				]),
+				startY: 20,
+				styles: { overflow: 'visible', minCellWidth: 30 },
+			});
+			doc.save(`Users_Export_${new Date().toISOString().split("T")[0]}.pdf`);
+			toast.success("Export successful", { id: toastId });
+		} catch (err: any) {
+			toast.error(err.message || "Failed to export users", { id: toastId });
+		}
+	};
+
+	const exportToDocx = async () => {
+		const toastId = toast.loading("Fetching all users for export...");
+		try {
+			const res = await userService.listAllUsers();
+			if (!res.success) throw new Error(res.error || "Failed to fetch users");
+
+			const usersList = res.data?.users || res.data || [];
+			if (!usersList || usersList.length === 0) {
+				toast.error("No users to export", { id: toastId });
+				return;
+			}
+
+			const docx = new Document({
+				sections: [
+					{
+						properties: {
+							page: {
+								size: {
+									width: 25000,
+									height: 12000,
+								},
+							},
+						},
+						children: [
+							new Paragraph({
+								children: [
+									new TextRun({
+										text: "Users",
+										bold: true,
+										size: 32,
+									}),
+								],
+								spacing: { after: 400 },
+							}),
+							new Table({
+								width: { size: 100, type: WidthType.PERCENTAGE },
+								rows: [
+									new TableRow({
+										children: [
+											"User Id",
+											"Player Name",
+											"Email Address",
+											"Registration Date",
+											"Registration IP",
+											"Wallet Balance",
+											"Status",
+										].map(
+											(header) =>
+												new TableCell({
+													children: [
+														new Paragraph({
+															children: [
+																new TextRun({ text: header, bold: true }),
+															],
+														}),
+													],
+													shading: { fill: "f3f4f6" },
+													margins: {
+														top: 100,
+														bottom: 100,
+														left: 100,
+														right: 100,
+													},
+												}),
+										),
+									}),
+									...usersList.map(
+										(u: User) =>
+											new TableRow({
 												children: [
-													new Paragraph({
-														children: [
-															new TextRun({ text: header, bold: true }),
-														],
-													}),
-												],
-												shading: { fill: "f3f4f6" },
-												margins: {
-													top: 100,
-													bottom: 100,
-													left: 100,
-													right: 100,
-												},
+													u.id,
+													u.name,
+													u.email,
+													u.registeredDate
+														? new Date(u.registeredDate).toLocaleDateString()
+														: "-",
+													u.registeredIpAddress || u.ipAddress || "-",
+													u.wallet?.toString() || "0",
+													u.status === "verified" || u.status === "approved"
+														? "Verified"
+														: u.status === "pending_verification"
+															? "Pending"
+															: "Not Verified",
+												].map(
+													(cell) =>
+														new TableCell({
+															children: [new Paragraph(String(cell))],
+															margins: {
+																top: 100,
+																bottom: 100,
+																left: 100,
+																right: 100,
+															},
+														}),
+												),
 											}),
 									),
-								}),
-								...usersData.users.map(
-									(u) =>
-										new TableRow({
-											children: [
-												u.id,
-												u.name,
-												u.email,
-												u.registeredDate
-													? new Date(u.registeredDate).toLocaleDateString()
-													: "-",
-												u.registeredIpAddress || u.ipAddress || "-",
-												u.wallet?.toString() || "0",
-												u.status === "verified"
-													? "Verified"
-													: u.status === "pending_verification"
-														? "Pending"
-														: "Not Verified",
-											].map(
-												(cell) =>
-													new TableCell({
-														children: [new Paragraph(String(cell))],
-														margins: {
-															top: 100,
-															bottom: 100,
-															left: 100,
-															right: 100,
-														},
-													}),
-											),
-										}),
-								),
-							],
-						}),
-					],
-				},
-			],
-		});
+								],
+							}),
+						],
+					},
+				],
+			});
 
-		Packer.toBlob(docx).then((blob) => {
-			const link = document.createElement("a");
-			const url = URL.createObjectURL(blob);
-			link.setAttribute("href", url);
-			link.setAttribute(
-				"download",
-				`Users_Export_${new Date().toISOString().split("T")[0]}.docx`,
-			);
-			link.style.visibility = "hidden";
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-		});
+			Packer.toBlob(docx).then((blob) => {
+				const link = document.createElement("a");
+				const url = URL.createObjectURL(blob);
+				link.setAttribute("href", url);
+				link.setAttribute(
+					"download",
+					`Users_Export_${new Date().toISOString().split("T")[0]}.docx`,
+				);
+				link.style.visibility = "hidden";
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+				toast.success("Export successful", { id: toastId });
+			});
+		} catch (err: any) {
+			toast.error(err.message || "Failed to export users", { id: toastId });
+		}
 	};
 
 	// Close dropdown when clicking outside
@@ -339,21 +384,6 @@ function UsersPage() {
 			toast.error(error.message || "Failed to fetch users");
 		}
 	}, [error]);
-
-	useEffect(() => {
-		if (selectedProfileUser) {
-			setIsProfileLoading(true);
-			userService.getUserProfile(selectedProfileUser.id).then((result) => {
-				setIsProfileLoading(false);
-				if (result.success && result.data) {
-					setSelectedProfileData(result.data);
-				}
-			});
-		} else {
-			setSelectedProfileData(null);
-			setIsProfileLoading(false);
-		}
-	}, [selectedProfileUser]);
 
 	const createUserMutation = useMutation({
 		mutationFn: async (data: NewUser) => {
@@ -864,8 +894,6 @@ function UsersPage() {
 			{selectedProfileUser && (
 				<UserProfileModal
 					user={selectedProfileUser}
-					profile={selectedProfileData || undefined}
-					isLoading={isProfileLoading}
 					onClose={() => setSelectedProfileUser(null)}
 					onSendNotice={(user) => {
 						setNoticeModalUser(user);

@@ -282,7 +282,7 @@ function KycPage() {
 
 	const exportToPdf = () => {
 		if (sorted.length === 0) return;
-		const doc = new jsPDF("landscape");
+		const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
 		doc.text("KYC Documents Report", 14, 15);
 		autoTable(doc, {
 			head: [["S/N", "Player Name", "Document Name", "Size", "Date Uploaded", "Document Type", "Status"]],
@@ -296,6 +296,7 @@ function KycPage() {
 				STATUS_LABELS[r.status] || r.status,
 			]),
 			startY: 20,
+			styles: { overflow: 'visible', minCellWidth: 30 },
 		});
 		doc.save(`kyc_documents_${new Date().toISOString().split("T")[0]}.pdf`);
 	};
@@ -305,7 +306,14 @@ function KycPage() {
 		const docx = new Document({
 			sections: [
 				{
-					properties: {},
+					properties: {
+						page: {
+							size: {
+								width: 25000,
+								height: 12000,
+							},
+						},
+					},
 					children: [
 						new Paragraph({
 							children: [
@@ -394,6 +402,15 @@ function KycPage() {
 		}));
 
 		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+		worksheet["!cols"] = [
+			{ wch: 10 }, // S/N
+			{ wch: 25 }, // Player Name
+			{ wch: 25 }, // Document Name
+			{ wch: 15 }, // Size
+			{ wch: 20 }, // Date Uploaded
+			{ wch: 15 }, // Document Type
+			{ wch: 15 }, // Status
+		];
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, "KYC Documents");
 		XLSX.writeFile(workbook, `kyc_documents_${new Date().toISOString().split("T")[0]}.xlsx`);

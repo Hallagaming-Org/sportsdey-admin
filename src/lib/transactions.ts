@@ -222,6 +222,31 @@ class TransactionService {
 		};
 	}
 
+	async listAllTransactions(): Promise<{
+		success: boolean;
+		data?: TransactionsResponse;
+		error?: string;
+	}> {
+		const response = await fetchApi<ServerTransactionsResponse>(
+			"/admin/wallet-transactions/all",
+		);
+
+		if (response.success && response.data) {
+			return {
+				success: true,
+				data: {
+					transactions: response.data.transactions.map(mapTransaction),
+					pagination: response.data.pagination,
+				},
+			};
+		}
+
+		return {
+			success: false,
+			error: response.error,
+		};
+	}
+
 	async getTransactionSummary(id: string): Promise<{
 		success: boolean;
 		data?: TransactionSummary;

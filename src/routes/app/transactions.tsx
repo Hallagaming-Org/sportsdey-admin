@@ -1,31 +1,55 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useRouter, useRouterState, redirect } from "@tanstack/react-router";
-import { ChevronDown, Search } from "lucide-react";
-import { useMemo, useState } from "react";
-import { FaFileExport, FaFilePdf, FaFileWord, FaFileExcel } from "react-icons/fa6";
+import {
+	createFileRoute,
+	redirect,
+	useRouter,
+	useRouterState,
+} from "@tanstack/react-router";
+import {
+	Document,
+	Packer,
+	Paragraph,
+	Table,
+	TableCell,
+	TableRow,
+	TextRun,
+	WidthType,
+} from "docx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
+import { ChevronDown, Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+	FaFileExcel,
+	FaFileExport,
+	FaFilePdf,
+	FaFileWord,
+} from "react-icons/fa6";
+import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { type Column, DataTable } from "#/components/DataTable";
 import {
-	TimePeriodFilter,
 	type TimePeriod,
+	TimePeriodFilter,
 } from "#/components/TimePeriodFilter";
+import { TransactionDetailsModal } from "#/components/TransactionDetailsModal";
+import { UserProfileModal } from "#/components/UserProfileModal";
+import { startAdminExport } from "#/lib/admin-exports";
 import { getDateRangeForPeriod } from "#/lib/time-period";
 import {
 	type Transaction,
 	type TransactionStatus,
- 	transactionService,
+	transactionService,
 } from "#/lib/transactions";
-import { TransactionDetailsModal } from "#/components/TransactionDetailsModal";
-import { UserProfileModal } from "#/components/UserProfileModal";
 import type { User } from "#/lib/users";
-import { startAdminExport } from "#/lib/admin-exports";
 export const Route = createFileRoute("/app/transactions")({
 	beforeLoad: ({ context }) => {
 		const admin = (context as any).admin;
-		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("transaction_read")) {
+		if (
+			admin &&
+			admin.role !== "super_admin" &&
+			!admin.permissions?.includes("transaction_read")
+		) {
 			throw redirect({ to: "/app", replace: true });
 		}
 	},
@@ -70,7 +94,9 @@ function WalletPage() {
 	const [page, setPage] = useState(1);
 	const [selectedTimePeriod, setSelectedTimePeriod] =
 		useState<TimePeriod>("All");
-	const [customRange, setCustomRange] = useState<{ start: string; end: string } | undefined>(undefined);
+	const [customRange, setCustomRange] = useState<
+		{ start: string; end: string } | undefined
+	>(undefined);
 
 	const typeParam = activeTab === "all" ? undefined : activeTab;
 	const statusParam = selectedStatus === "all" ? undefined : selectedStatus;
@@ -136,8 +162,7 @@ function WalletPage() {
 		},
 		{
 			header: "User ID",
-			accessor: (t) => t.user_id
- || "-",
+			accessor: (t) => t.user_id || "-",
 			cellClassName: "font-mono text-[11px] text-gray-700",
 		},
 		{
@@ -187,12 +212,18 @@ function WalletPage() {
 	];
 
 	const { location } = useRouterState();
-	const initialViewTxn = (location.state as unknown as Record<string, unknown>)?.viewTransaction as string | undefined;
+	const initialViewTxn = (location.state as unknown as Record<string, unknown>)
+		?.viewTransaction as string | undefined;
 
-	const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(initialViewTxn ?? null);
-	const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+	const [selectedTransactionId, setSelectedTransactionId] = useState<
+		string | null
+	>(initialViewTxn ?? null);
+	const [selectedTransaction, setSelectedTransaction] =
+		useState<Transaction | null>(null);
 	const [isDetailsOpen, setIsDetailsOpen] = useState(!!initialViewTxn);
-	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(null);
+	const [selectedProfileUser, setSelectedProfileUser] = useState<User | null>(
+		null,
+	);
 
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-col gap-6 overflow-hidden px-6">
@@ -273,40 +304,46 @@ function WalletPage() {
 						</div>
 						{transactions.length > 0 && (
 							<div className="relative">
-								<button 
+								<button
 									onClick={() => setShowExportMenu(!showExportMenu)}
 									className="inline-flex items-center h-11 gap-1.5 rounded-full bg-[#1BAA04] px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-[#158903] transition-colors"
 								>
 									Export File as
 									<FaFileExport className="h-3.5 w-3.5 text-white" />
 								</button>
-								{showExportMenu && (
-									<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+								{showExportMenu &&
+									(
+										<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
 										<button
-											onClick={() => {
+											onClick={async () => {
 												setShowExportMenu(false);
 												exportTransactions("pdf");
 												return;
 												if (transactions.length === 0) return;
-												
-												const doc = new jsPDF("landscape");
-												doc.text("Transactions", 14, 15);
-												autoTable(doc, {
-													head: [["ID", "User ID", "User Email", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"]],
-													body: transactions.map(t => [
-														t.id,
-														t.user_id || "-",
-														t.user_email || "-",
-														t.dateTime.replace(/\n/g, ' '),
-														t.type,
-														t.paymentMethod || "N/A",
-														t.amount?.replace(/₦/g, 'NGN '),
-														t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
-														t.status
-													]),
-													startY: 20,
-												});
-												doc.save(`transactions_export_${new Date().toISOString().split('T')[0]}.pdf`);
+
+													const doc = new jsPDF({ orientation: "landscape", format: [700, 300] });
+													doc.text("Transactions", 14, 15);
+													autoTable(doc, {
+														head: [["ID", "User ID", "User Email", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"]],
+														body: exportData.map((t: any) => [
+															t.id,
+															t.user_id || "-",
+															t.user_email || "-",
+															t.dateTime.replace(/\n/g, ' '),
+															t.type,
+															t.paymentMethod || "N/A",
+															t.amount?.replace(/₦/g, 'NGN '),
+															t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
+															t.status
+														]),
+														startY: 20,
+														styles: { overflow: 'visible', minCellWidth: 30 },
+													});
+													doc.save(`transactions_export_${new Date().toISOString().split('T')[0]}.pdf`);
+													toast.success("Export successful", { id: toastId });
+												} catch (err: any) {
+													toast.error(err.message || "Failed to export transactions", { id: toastId });
+												}
 											}}
 											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
 										>
@@ -314,72 +351,79 @@ function WalletPage() {
 											PDF
 										</button>
 										<button
-											onClick={() => {
+											onClick={async () => {
 												setShowExportMenu(false);
 												exportTransactions("docx");
 												return;
 												if (transactions.length === 0) return;
-												
-												const docx = new Document({
-													sections: [
-														{
-															properties: {},
-															children: [
-																new Paragraph({
-																	children: [
-																		new TextRun({
-																			text: "Transactions",
-																			bold: true,
-																			size: 32,
-																		}),
-																	],
-																	spacing: { after: 400 },
-																}),
-																new Table({
-																	width: { size: 100, type: WidthType.PERCENTAGE },
-																	rows: [
-																		new TableRow({
-																			children: ["ID", "User ID", "User Email", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"].map(
-																				header => new TableCell({
-																					children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
-																					shading: { fill: "f3f4f6" },
-																					margins: { top: 100, bottom: 100, left: 100, right: 100 }
-																				})
-																			),
-																		}),
-																		...transactions.map(t => new TableRow({
-																			children: [
-																				t.id,
-																				t.user_id || "-",
-																				t.user_email || "-",
-																				t.dateTime.replace(/\n/g, ' '),
-																				t.type,
-																				t.paymentMethod || "N/A",
-																				t.amount?.replace(/₦/g, 'NGN '),
-																				t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
-																				t.status
-																			].map(cell => new TableCell({
-																				children: [new Paragraph(String(cell))],
-																				margins: { top: 100, bottom: 100, left: 100, right: 100 }
-																			})),
-																		}))
-																	],
-																}),
-															],
-														},
-													],
-												});
 
-												Packer.toBlob(docx).then((blob) => {
-													const link = document.createElement("a");
+													const docx = new Document({
+														sections: [
+															{
+																properties: {
+																	page: {
+																		size: { width: 30000, height: 12000 },
+																	},
+																},
+																children: [
+																	new Paragraph({
+																		children: [
+																			new TextRun({
+																				text: "Transactions",
+																				bold: true,
+																				size: 32,
+																			}),
+																		],
+																		spacing: { after: 400 },
+																	}),
+																	new Table({
+																		width: { size: 100, type: WidthType.PERCENTAGE },
+																		rows: [
+																			new TableRow({
+																				children: ["ID", "User ID", "User Email", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"].map(
+																					header => new TableCell({
+																						children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
+																						shading: { fill: "f3f4f6" },
+																						margins: { top: 100, bottom: 100, left: 100, right: 100 }
+																					})
+																				),
+																			}),
+																			...exportData.map((t: any) => new TableRow({
+																				children: [
+																					t.id,
+																					t.user_id || "-",
+																					t.user_email || "-",
+																					t.dateTime.replace(/\n/g, ' '),
+																					t.type,
+																					t.paymentMethod || "N/A",
+																					t.amount?.replace(/₦/g, 'NGN '),
+																					t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
+																					t.status
+																				].map(cell => new TableCell({
+																					children: [new Paragraph(String(cell))],
+																					margins: { top: 100, bottom: 100, left: 100, right: 100 }
+																				})),
+																			}))
+																		],
+																	}),
+																],
+															},
+														],
+													});
+
+													const blob = await Packer.toBlob(docx);
 													const url = URL.createObjectURL(blob);
+													const link = document.createElement("a");
 													link.setAttribute("href", url);
 													link.setAttribute("download", `transactions_export_${new Date().toISOString().split('T')[0]}.docx`);
 													link.style.visibility = 'hidden';
 													document.body.appendChild(link);
 													link.click();
 													document.body.removeChild(link);
-												});
+													toast.success("Export successful", { id: toastId });
+												} catch (err: any) {
+													toast.error(err.message || "Failed to export transactions", { id: toastId });
+												}
 											}}
 											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
 										>
@@ -387,28 +431,43 @@ function WalletPage() {
 											DOCX
 										</button>
 										<button
-											onClick={() => {
+											onClick={async () => {
 												setShowExportMenu(false);
 												exportTransactions("xlsx");
 												return;
 												if (transactions.length === 0) return;
 
-												const dataToExport = transactions.map(t => ({
-													"ID": t.id,
-													"User ID": t.user_id || "-",
-													"User Email": t.user_email || "-",
-													"Date & Time": t.dateTime.replace(/\n/g, ' '),
-													"Type": t.type,
-													"Payment Method": t.paymentMethod || "N/A",
-													"Amount": t.amount?.replace(/₦/g, 'NGN '),
-													"Balance After": t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
-													"Status": t.status
-												}));
+													const dataToExport = exportData.map((t: any) => ({
+														"ID": t.id,
+														"User ID": t.user_id || "-",
+														"User Email": t.user_email || "-",
+														"Date & Time": t.dateTime.replace(/\n/g, ' '),
+														"Type": t.type,
+														"Payment Method": t.paymentMethod || "N/A",
+														"Amount": t.amount?.replace(/₦/g, 'NGN '),
+														"Balance After": t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
+														"Status": t.status
+													}));
 
-												const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-												const workbook = XLSX.utils.book_new();
-												XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-												XLSX.writeFile(workbook, `transactions_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+													const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+													worksheet["!cols"] = [
+														{ wch: 15 }, // ID
+														{ wch: 20 }, // User ID
+														{ wch: 30 }, // User Email
+														{ wch: 20 }, // Date & Time
+														{ wch: 15 }, // Type
+														{ wch: 20 }, // Payment Method
+														{ wch: 15 }, // Amount
+														{ wch: 15 }, // Balance After
+														{ wch: 15 }, // Status
+													];
+													const workbook = XLSX.utils.book_new();
+													XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+													XLSX.writeFile(workbook, `transactions_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+													toast.success("Export successful", { id: toastId });
+												} catch (err: any) {
+													toast.error(err.message || "Failed to export transactions", { id: toastId });
+												}
 											}}
 											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
 										>
@@ -416,7 +475,7 @@ function WalletPage() {
 											Excel
 										</button>
 									</div>
-								)}
+									)}
 							</div>
 						)}
 					</div>
@@ -457,14 +516,14 @@ function WalletPage() {
 							/>
 							<Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
 						</div>
-							<TimePeriodFilter
-								onFilterChange={(period, range) => {
-									setSelectedTimePeriod(period);
-									setCustomRange(range);
-									setPage(1);
-								}}
-								buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
-							/>
+						<TimePeriodFilter
+							onFilterChange={(period, range) => {
+								setSelectedTimePeriod(period);
+								setCustomRange(range);
+								setPage(1);
+							}}
+							buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
+						/>
 					</div>
 				</div>
 

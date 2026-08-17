@@ -1,7 +1,7 @@
 import { fetchApi } from "./api";
 
 export type TicketOutcome = "Won" | "Active" | "Lost" | "Declined";
-export type TicketTab = "all" | "casino" | "sportsbook";
+export type TicketTab = "all" | "casino" | "sportsbook" | "prediction_market";
 
 
 export interface MatchSelection {
@@ -127,6 +127,10 @@ class TicketService {
 		return fetchApi<TicketsResponse>(
 			`/admin/tickets?${searchParams.toString()}`,
 		);
+	}
+
+	async listAllTickets(): Promise<{ success: boolean; data?: TicketsResponse; error?: string }> {
+		return fetchApi<TicketsResponse>("/admin/tickets/all");
 	}
 
 	async getUserTickets(

@@ -143,6 +143,21 @@ class UserService {
 		};
 	}
 
+	async listAllUsers(): Promise<{ success: boolean; data?: any; error?: string }> {
+		return fetchApi<any>("/user/list-all");
+	}
+
+	async updateUser(userId: string, data: { dob?: string; mobileNumber?: string; status?: string }): Promise<{ success: boolean; error?: string }> {
+		const response = await fetchApi<{ status: string }>(`/user/${userId}`, {
+			method: "PATCH",
+			body: data,
+		});
+		return {
+			success: response.success,
+			error: response.error,
+		};
+	}
+
 	async toggleUserSuspend(userId: string): Promise<{ success: boolean; error?: string }> {
 		const response = await fetchApi<{ status: string }>(`/user/${userId}/suspended`, {
 			method: "PATCH",
