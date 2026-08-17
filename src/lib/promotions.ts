@@ -133,6 +133,7 @@ export interface TournamentPage {
 export interface GetTournamentsParams {
 	offset?: number;
 	limit?: number;
+	name?: string;
 }
 
 export interface EventPagination {
@@ -187,6 +188,7 @@ class SportsbookService {
 		if (params?.offset != null)
 			searchParams.set("offset", String(params.offset));
 		if (params?.limit != null) searchParams.set("limit", String(params.limit));
+		if (params?.name) searchParams.set("name", params.name);
 		return fetchApi<TournamentPage>(
 			`/sportsbook/tournaments?${searchParams.toString()}`,
 		);

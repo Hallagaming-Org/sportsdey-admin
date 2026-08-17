@@ -167,6 +167,9 @@ function SportsbookPromotionsPage() {
 	const [tournaments, setTournaments] = useState<SportsbookOption[]>([]);
 	const [tournamentOffset, setTournamentOffset] = useState(0);
 	const [tournamentHasMore, setTournamentHasMore] = useState(false);
+	const [tournamentSearch, setTournamentSearch] = useState("");
+	const [debouncedTournamentSearch, setDebouncedTournamentSearch] =
+		useState("");
 	const [events, setEvents] = useState<SportsbookOption[]>([]);
 	const [eventOffset, setEventOffset] = useState(0);
 	const [eventHasMore, setEventHasMore] = useState(false);
@@ -181,7 +184,7 @@ function SportsbookPromotionsPage() {
 	const eventRequestId = useRef(0);
 
 	const loadTournamentPage = useCallback(
-		async (offset: number, append: boolean) => {
+		async (offset: number, append: boolean, name?: string) => {
 			const requestId = ++tournamentRequestId.current;
 			const sportId = activeSportId;
 			if (append) setLoadingMoreTournaments(true);
@@ -190,6 +193,7 @@ function SportsbookPromotionsPage() {
 				const res = await sportsbookService.getTournaments([sportId], {
 					offset,
 					limit: TOURNAMENT_PAGE_LIMIT,
+					name: name || undefined,
 				});
 				if (requestId !== tournamentRequestId.current) return;
 				const page = res.success && res.data ? res.data : null;
@@ -220,12 +224,13 @@ function SportsbookPromotionsPage() {
 		if (loadingMoreTournaments || loadingTournaments || !tournamentHasMore) {
 			return;
 		}
-		loadTournamentPage(tournamentOffset, true);
+		loadTournamentPage(tournamentOffset, true, debouncedTournamentSearch);
 	}, [
 		loadingMoreTournaments,
 		loadingTournaments,
 		tournamentHasMore,
 		tournamentOffset,
+		debouncedTournamentSearch,
 		loadTournamentPage,
 	]);
 
@@ -448,6 +453,8 @@ function SportsbookPromotionsPage() {
 	useEffect(() => {
 		if (!isAccumulatorModalOpen) return;
 		setLoadingEvents(true);
+		setTournamentSearch("");
+		setDebouncedTournamentSearch("");
 		setAccaForm((prev) => ({
 			...prev,
 			competitionIds: [],
@@ -457,13 +464,25 @@ function SportsbookPromotionsPage() {
 		setEventHasMore(false);
 		setTournamentOffset(0);
 		setTournamentHasMore(false);
-		loadTournamentPage(0, false);
 		loadEventPage(0, false);
+	}, [isAccumulatorModalOpen, loadEventPage]);
+
+	useEffect(() => {
+		const timeout = window.setTimeout(() => {
+			setDebouncedTournamentSearch(tournamentSearch.trim());
+		}, 300);
+		return () => window.clearTimeout(timeout);
+	}, [tournamentSearch]);
+
+	useEffect(() => {
+		if (!isAccumulatorModalOpen) return;
+		setTournamentOffset(0);
+		setTournamentHasMore(false);
+		loadTournamentPage(0, false, debouncedTournamentSearch);
 	}, [
 		isAccumulatorModalOpen,
-		activeSportId,
+		debouncedTournamentSearch,
 		loadTournamentPage,
-		loadEventPage,
 	]);
 
 	const stepSelection = (
@@ -1292,6 +1311,8 @@ function SportsbookPromotionsPage() {
 												}
 												placeholder="Select competition or league"
 												loading={loadingTournaments}
+												searchValue={tournamentSearch}
+												onSearchChange={setTournamentSearch}
 												onLoadMore={loadMoreTournaments}
 												hasMore={tournamentHasMore}
 												loadingMore={loadingMoreTournaments}
@@ -1428,6 +1449,8 @@ function FormMultiSelect({
 	onChange,
 	placeholder,
 	loading,
+	searchValue,
+	onSearchChange,
 	onLoadMore,
 	hasMore,
 	loadingMore,
@@ -1437,14 +1460,21 @@ function FormMultiSelect({
 	onChange: (ids: string[]) => void;
 	placeholder: string;
 	loading?: boolean;
+	searchValue?: string;
+	onSearchChange?: (value: string) => void;
 	onLoadMore?: () => void;
 	hasMore?: boolean;
 	loadingMore?: boolean;
 }) {
 	const [open, setOpen] = useState(false);
-	const selectedTitles = options
-		.filter((option) => selected.includes(option.id))
-		.map((option) => option.title);
+	const optionTitles = useRef(new Map<string, string>());
+	for (const option of options) {
+		optionTitles.current.set(option.id, option.title);
+	}
+	const selectedTitles = selected.flatMap((id) => {
+		const title = optionTitles.current.get(id);
+		return title ? [title] : [];
+	});
 
 	const toggle = (id: string) => {
 		onChange(
@@ -1481,9 +1511,12 @@ function FormMultiSelect({
 				align="start"
 				className="z-[70] w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-2xl p-0 shadow-xl"
 			>
-				<Command>
+				<Command shouldFilter={!onSearchChange}>
 					<CommandInput
 						placeholder={`Search ${placeholder.toLocaleLowerCase()}...`}
+						value={searchValue}
+						onValueChange={onSearchChange}
+						maxLength={onSearchChange ? 100 : undefined}
 					/>
 					<CommandList
 						className="max-h-52 overflow-y-auto py-1"
