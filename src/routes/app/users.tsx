@@ -41,6 +41,7 @@ import {
 	userService,
 } from "../../lib/users";
 import { capitalizeName } from "../../lib/utils";
+import { startAdminExport } from "../../lib/admin-exports";
 
 export const Route = createFileRoute("/app/users")({
 	beforeLoad: ({ context }) => {
@@ -292,6 +293,18 @@ function UsersPage() {
 			getDateRangeForPeriod(selectedTimePeriod, customRange, { output: "iso" }),
 		[selectedTimePeriod, customRange],
 	);
+	const exportUsers = (format: "xlsx" | "docx" | "pdf") => {
+		void startAdminExport({
+			source: "users",
+			format,
+			filters: {
+				tab: activeTab,
+				search: search || undefined,
+				fromDate,
+				toDate,
+			},
+		});
+	};
 
 	useEffect(() => {
 		// console.log("UsersPage: computed date range", { selectedTimePeriod, customRange, fromDate, toDate });
@@ -547,7 +560,7 @@ function UsersPage() {
 										onClick={(e) => {
 											e.stopPropagation();
 											setShowExportDropdown(false);
-											exportToPdf();
+											exportUsers("pdf");
 										}}
 										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 									>
@@ -559,7 +572,7 @@ function UsersPage() {
 										onClick={(e) => {
 											e.stopPropagation();
 											setShowExportDropdown(false);
-											exportToDocx();
+											exportUsers("docx");
 										}}
 										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 									>
@@ -571,7 +584,7 @@ function UsersPage() {
 										onClick={(e) => {
 											e.stopPropagation();
 											setShowExportDropdown(false);
-											exportToExcel();
+											exportUsers("xlsx");
 										}}
 										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 									>

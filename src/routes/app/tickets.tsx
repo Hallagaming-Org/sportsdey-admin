@@ -24,6 +24,7 @@ import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
+import { startAdminExport } from "#/lib/admin-exports";
 
 
 
@@ -102,7 +103,21 @@ function TicketsPage() {
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const queryClient = useQueryClient();
 
+  const exportTickets = (format: "xlsx" | "docx" | "pdf") =>
+    void startAdminExport({
+      source: "ticket-history",
+      format,
+      filters: {
+        type: activeTab,
+        search: debouncedSearch || undefined,
+        fromDate: dateRange.fromDate,
+        toDate: dateRange.toDate,
+      },
+    });
+
   const exportToExcel = () => {
+    exportTickets("xlsx");
+    return;
     const dataToExport = tickets.map((t) => ({
       "Bet ID": t.id,
       "Player Name": t.playerName,
@@ -132,6 +147,8 @@ function TicketsPage() {
   };
 
   const exportToPdf = () => {
+    exportTickets("pdf");
+    return;
     if (!tickets || tickets.length === 0) {
       toast.error("No tickets to export");
       return;
@@ -160,6 +177,8 @@ function TicketsPage() {
   };
 
   const exportToDocx = async () => {
+    exportTickets("docx");
+    return;
     if (!tickets || tickets.length === 0) {
       toast.error("No tickets to export");
       return;

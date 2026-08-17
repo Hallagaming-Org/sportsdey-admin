@@ -21,6 +21,7 @@ import {
 import { TransactionDetailsModal } from "#/components/TransactionDetailsModal";
 import { UserProfileModal } from "#/components/UserProfileModal";
 import type { User } from "#/lib/users";
+import { startAdminExport } from "#/lib/admin-exports";
 export const Route = createFileRoute("/app/transactions")({
 	beforeLoad: ({ context }) => {
 		const admin = (context as any).admin;
@@ -78,6 +79,18 @@ function WalletPage() {
 		() => getDateRangeForPeriod(selectedTimePeriod, customRange),
 		[selectedTimePeriod, customRange],
 	);
+	const exportTransactions = (format: "xlsx" | "docx" | "pdf") =>
+		void startAdminExport({
+			source: "transactions",
+			format,
+			filters: {
+				type: typeParam,
+				status: statusParam,
+				search: search || undefined,
+				fromDate,
+				toDate,
+			},
+		});
 
 	const {
 		data: response,
@@ -272,6 +285,8 @@ function WalletPage() {
 										<button
 											onClick={() => {
 												setShowExportMenu(false);
+												exportTransactions("pdf");
+												return;
 												if (transactions.length === 0) return;
 												
 												const doc = new jsPDF("landscape");
@@ -301,6 +316,8 @@ function WalletPage() {
 										<button
 											onClick={() => {
 												setShowExportMenu(false);
+												exportTransactions("docx");
+												return;
 												if (transactions.length === 0) return;
 												
 												const docx = new Document({
@@ -372,6 +389,8 @@ function WalletPage() {
 										<button
 											onClick={() => {
 												setShowExportMenu(false);
+												exportTransactions("xlsx");
+												return;
 												if (transactions.length === 0) return;
 
 												const dataToExport = transactions.map(t => ({
