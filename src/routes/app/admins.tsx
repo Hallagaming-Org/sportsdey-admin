@@ -1,30 +1,39 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Eye, EyeOff, LogOut, Trash2, Wand2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Eye, EyeOff, LogOut, Search, Trash2, Wand2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+	FaFileExcel,
+	FaFileExport,
+	FaFilePdf,
+	FaFileWord,
+} from "react-icons/fa6";
 import { toast } from "sonner";
-import { generateRandomPassword } from "#/lib/utils";
-import { DataTable, type Column } from "#/components/DataTable";
-import { ActionDropdown } from "#/components/ActionDropdown";
 import NotificationIcon from "#/assets/NotificationIcon";
 import SuccessIndicator from "#/assets/SuccessIndicator.png";
+import { ActionDropdown } from "#/components/ActionDropdown";
 import { AdminProfileModal } from "#/components/AdminProfileModal";
-import { SendNoticeModal } from "#/components/SendNoticeModal";
+import { type Column, DataTable } from "#/components/DataTable";
 import { Input } from "#/components/Input";
-import type { User } from "#/lib/users";
-import { notificationService } from "#/lib/notifications";
-import { adminAuth } from "#/lib/auth";
-import { TimePeriodFilter, type TimePeriod } from "#/components/TimePeriodFilter";
+import { SendNoticeModal } from "#/components/SendNoticeModal";
+import {
+	type TimePeriod,
+	TimePeriodFilter,
+} from "#/components/TimePeriodFilter";
 import { useCurrentUser } from "#/hooks/useCurrentUser";
-import * as XLSX from "xlsx";
-import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
+import { startAdminExport } from "#/lib/admin-exports";
+import { adminAuth } from "#/lib/auth";
+import { notificationService } from "#/lib/notifications";
+import type { User } from "#/lib/users";
+import { generateRandomPassword } from "#/lib/utils";
 export const Route = createFileRoute("/app/admins")({
 	beforeLoad: ({ context }) => {
 		const admin = (context as any).admin;
-		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("view_other_admins")) {
+		if (
+			admin &&
+			admin.role !== "super_admin" &&
+			!admin.permissions?.includes("view_other_admins")
+		) {
 			throw redirect({ to: "/app", replace: true });
 		}
 	},
@@ -53,7 +62,10 @@ function AdminsPage() {
 	const [activeTab, setActiveTab] = useState<Tab>("all");
 	const [selectedTimePeriod, setSelectedTimePeriod] =
 		useState<TimePeriod>("All");
-	const [customRange, setCustomRange] = useState<any>();
+	const [customRange, setCustomRange] = useState<{
+		start: string;
+		end: string;
+	}>();
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [showSuccessModal, setShowSuccessModal] = useState(false);
 	const [newAdmin, setNewAdmin] = useState({
@@ -64,114 +76,74 @@ function AdminsPage() {
 	});
 	const [showPassword, setShowPassword] = useState(false);
 
-	const [actionDropdown, setActionDropdown] = useState<{ user: AdminUser; top: number; right: number } | null>(null);
-	const [selectedProfileAdmin, setSelectedProfileAdmin] = useState<AdminUser | null>(null);
-	const [noticeModalAdmin, setNoticeModalAdmin] = useState<AdminUser | null>(null);
+	const [actionDropdown, setActionDropdown] = useState<{
+		user: AdminUser;
+		top: number;
+		right: number;
+	} | null>(null);
+	const [selectedProfileAdmin, setSelectedProfileAdmin] =
+		useState<AdminUser | null>(null);
+	const [noticeModalAdmin, setNoticeModalAdmin] = useState<AdminUser | null>(
+		null,
+	);
 	const [showGlobalNoticeModal, setShowGlobalNoticeModal] = useState(false);
 	const [showExportDropdown, setShowExportDropdown] = useState(false);
 
-	const exportToExcel = () => {
-		const dataToExport = admins.map((a) => ({
-			"Admin ID": a.id,
-			"Name": a.name,
-			"Email Address": a.email,
-			"Role": a.role === "super_admin" ? "Super Admin" : a.role === "csr-admin" ? "CSR Admin" : a.role,
-		}));
+	const { fromDate, toDate } = useMemo(() => {
+		if (selectedTimePeriod === "All") return {};
 
-		if (!dataToExport || dataToExport.length === 0) {
-			toast.error("No admins to export");
-			return;
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		if (selectedTimePeriod === "Today") {
+			return { fromDate: today.toISOString() };
+		}
+		if (selectedTimePeriod === "Yesterday") {
+			const yesterday = new Date(today);
+			yesterday.setDate(yesterday.getDate() - 1);
+			return {
+				fromDate: yesterday.toISOString(),
+				toDate: new Date(today.getTime() - 1).toISOString(),
+			};
+		}
+		if (selectedTimePeriod === "Last week") {
+			const lastWeek = new Date(today);
+			lastWeek.setDate(lastWeek.getDate() - 7);
+			return { fromDate: lastWeek.toISOString() };
+		}
+		if (selectedTimePeriod === "Last month") {
+			const lastMonth = new Date(today);
+			lastMonth.setMonth(lastMonth.getMonth() - 1);
+			return { fromDate: lastMonth.toISOString() };
+		}
+		if (customRange?.start && customRange.end) {
+			const start = new Date(customRange.start);
+			start.setHours(0, 0, 0, 0);
+			const end = new Date(customRange.end);
+			end.setHours(23, 59, 59, 999);
+			return {
+				fromDate: start.toISOString(),
+				toDate: end.toISOString(),
+			};
 		}
 
-		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-		const workbook = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(workbook, worksheet, "Admins");
-		XLSX.writeFile(workbook, `Admins_Export_${new Date().toISOString().split("T")[0]}.xlsx`);
-	};
-
-	const exportToPdf = () => {
-		if (!admins || admins.length === 0) {
-			toast.error("No admins to export");
-			return;
-		}
-		const doc = new jsPDF("landscape");
-		doc.text("Other Admins List", 14, 15);
-		autoTable(doc, {
-			head: [["Admin ID", "Name", "Email Address", "Role"]],
-			body: admins.map((a) => [
-				a.id,
-				a.name,
-				a.email,
-				a.role === "super_admin" ? "Super Admin" : a.role === "csr-admin" ? "CSR Admin" : a.role,
-			]),
-			startY: 20,
+		return {};
+	}, [selectedTimePeriod, customRange]);
+	const exportAdmins = (format: "xlsx" | "docx" | "pdf") => {
+		void startAdminExport({
+			source: "admins",
+			format,
+			filters: {
+				search: search || undefined,
+				role:
+					activeTab === "support"
+						? "admin"
+						: activeTab === "csr"
+							? "csr-admin"
+							: "all",
+				fromDate,
+				toDate,
+			},
 		});
-		doc.save(`Admins_Export_${new Date().toISOString().split("T")[0]}.pdf`);
-	};
-
-	const exportToDocx = async () => {
-		if (!admins || admins.length === 0) {
-			toast.error("No admins to export");
-			return;
-		}
-
-		const doc = new Document({
-			sections: [
-				{
-					properties: {},
-					children: [
-						new Paragraph({
-							children: [
-								new TextRun({
-									text: "Other Admins List",
-									bold: true,
-									size: 32,
-								}),
-							],
-							spacing: { after: 400 },
-						}),
-						new Table({
-							width: { size: 100, type: WidthType.PERCENTAGE },
-							rows: [
-								new TableRow({
-									children: ["Admin ID", "Name", "Email Address", "Role"].map(
-										(header) =>
-											new TableCell({
-												children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
-												shading: { fill: "f3f4f6" },
-											}),
-									),
-								}),
-								...admins.map(
-									(a) =>
-										new TableRow({
-											children: [
-												a.id,
-												a.name,
-												a.email,
-												a.role === "super_admin" ? "Super Admin" : a.role === "csr-admin" ? "CSR Admin" : a.role,
-											].map(
-												(val) =>
-													new TableCell({
-														children: [new Paragraph({ children: [new TextRun({ text: String(val) })] })],
-													}),
-											),
-										}),
-								),
-							],
-						}),
-					],
-				},
-			],
-		});
-
-		const blob = await Packer.toBlob(doc);
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = `Admins_Export_${new Date().toISOString().split("T")[0]}.docx`;
-		a.click();
-		URL.revokeObjectURL(url);
 	};
 
 	const handleCreateAdmin = async (e: React.FormEvent) => {
@@ -194,10 +166,14 @@ function AdminsPage() {
 			setShowSuccessModal(true);
 			queryClient.invalidateQueries({ queryKey: ["admins-list"] });
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Failed to create admin. Please try again.");
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Failed to create admin. Please try again.",
+			);
 		}
 	};
-	
+
 	const handleCloseSuccessModal = () => {
 		setShowSuccessModal(false);
 		setNewAdmin({ name: "", email: "", role: "", password: "" });
@@ -209,7 +185,11 @@ function AdminsPage() {
 		return () => document.removeEventListener("click", handleClickOutside);
 	}, []);
 
-	const { data: rawAdmins = [], isLoading, error } = useQuery({
+	const {
+		data: rawAdmins = [],
+		isLoading,
+		error,
+	} = useQuery({
 		queryKey: ["admins-list"],
 		queryFn: () => adminAuth.listAdmins(),
 	});
@@ -219,53 +199,68 @@ function AdminsPage() {
 		name: admin.name,
 		email: admin.email,
 		dateAdded: admin.createdAt ? new Date(admin.createdAt).getTime() : 0,
-		role: admin.role === "super_admin" ? "Super Admin" : admin.role === "csr-admin" ? "CSR Admin" : "Support Admin",
+		role:
+			admin.role === "super_admin"
+				? "Super Admin"
+				: admin.role === "csr-admin"
+					? "CSR Admin"
+					: "Support Admin",
 		avatar: admin.image || undefined,
 		mobileNumber: admin.mobileNumber,
 		permissions: admin.permissions,
 	}));
 
-	const filteredAdmins = allAdmins.filter(admin => {
-		if (activeTab === "support") return admin.role === "Support Admin";
-		if (activeTab === "csr") return admin.role === "CSR Admin";
-		return true;
-	}).filter(admin =>
-		search ? admin.name.toLowerCase().includes(search.toLowerCase()) || admin.email.toLowerCase().includes(search.toLowerCase()) : true
-	).filter(admin => {
-		if (selectedTimePeriod === "All") return true;
-		
-		const adminDate = new Date(admin.dateAdded);
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
+	const filteredAdmins = allAdmins
+		.filter((admin) => {
+			if (activeTab === "support") return admin.role === "Support Admin";
+			if (activeTab === "csr") return admin.role === "CSR Admin";
+			return true;
+		})
+		.filter((admin) =>
+			search
+				? admin.name.toLowerCase().includes(search.toLowerCase()) ||
+					admin.email.toLowerCase().includes(search.toLowerCase())
+				: true,
+		)
+		.filter((admin) => {
+			if (selectedTimePeriod === "All") return true;
 
-		if (selectedTimePeriod === "Today") {
-			return adminDate >= today;
-		}
-		if (selectedTimePeriod === "Yesterday") {
-			const yesterday = new Date(today);
-			yesterday.setDate(yesterday.getDate() - 1);
-			return adminDate >= yesterday && adminDate < today;
-		}
-		if (selectedTimePeriod === "Last week") {
-			const lastWeek = new Date(today);
-			lastWeek.setDate(lastWeek.getDate() - 7);
-			return adminDate >= lastWeek;
-		}
-		if (selectedTimePeriod === "Last month") {
-			const lastMonth = new Date(today);
-			lastMonth.setMonth(lastMonth.getMonth() - 1);
-			return adminDate >= lastMonth;
-		}
-		if (selectedTimePeriod === "Custom" && customRange?.start && customRange?.end) {
-			const start = new Date(customRange.start);
-			start.setHours(0, 0, 0, 0);
-			const end = new Date(customRange.end);
-			end.setHours(23, 59, 59, 999);
-			return adminDate >= start && adminDate <= end;
-		}
+			const adminDate = new Date(admin.dateAdded);
+			const today = new Date();
+			today.setHours(0, 0, 0, 0);
 
-		return true;
-	});
+			if (selectedTimePeriod === "Today") {
+				return adminDate >= today;
+			}
+			if (selectedTimePeriod === "Yesterday") {
+				const yesterday = new Date(today);
+				yesterday.setDate(yesterday.getDate() - 1);
+				return adminDate >= yesterday && adminDate < today;
+			}
+			if (selectedTimePeriod === "Last week") {
+				const lastWeek = new Date(today);
+				lastWeek.setDate(lastWeek.getDate() - 7);
+				return adminDate >= lastWeek;
+			}
+			if (selectedTimePeriod === "Last month") {
+				const lastMonth = new Date(today);
+				lastMonth.setMonth(lastMonth.getMonth() - 1);
+				return adminDate >= lastMonth;
+			}
+			if (
+				selectedTimePeriod === "Custom" &&
+				customRange?.start &&
+				customRange?.end
+			) {
+				const start = new Date(customRange.start);
+				start.setHours(0, 0, 0, 0);
+				const end = new Date(customRange.end);
+				end.setHours(23, 59, 59, 999);
+				return adminDate >= start && adminDate <= end;
+			}
+
+			return true;
+		});
 
 	const admins = filteredAdmins.slice((page - 1) * limit, page * limit);
 	const total = filteredAdmins.length;
@@ -283,46 +278,60 @@ function AdminsPage() {
 	const columns: Column<AdminUser>[] = [
 		{
 			header: "User ID",
-			accessor: "id"
+			accessor: "id",
 		},
 		{
 			header: "Admin Name",
 			accessor: (admin) => (
-				<div
-					className="flex items-center gap-3 min-w-0 cursor-pointer"
-				>
+				<div className="flex items-center gap-3 min-w-0 cursor-pointer">
 					<img
 						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${admin.name}`}
 						alt="avatar"
 						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0"
 					/>
-					<span className="font-medium text-sm text-gray-900 hover:text-primary transition-colors truncate" title={admin.name}>{admin.name}</span>
+					<span
+						className="font-medium text-sm text-gray-900 hover:text-primary transition-colors truncate"
+						title={admin.name}
+					>
+						{admin.name}
+					</span>
 				</div>
-			)
+			),
 		},
 		{
 			header: "Email address",
 			accessor: "email",
-			cellClassName: "text-gray-500"
+			cellClassName: "text-gray-500",
 		},
 		{
 			header: "Date added",
-			accessor: (admin) => admin.dateAdded ? new Date(admin.dateAdded).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-",
-			cellClassName: "text-gray-500"
+			accessor: (admin) =>
+				admin.dateAdded
+					? new Date(admin.dateAdded).toLocaleDateString("en-US", {
+							month: "short",
+							day: "numeric",
+							year: "numeric",
+						})
+					: "-",
+			cellClassName: "text-gray-500",
 		},
 		{
 			header: "Role",
 			accessor: "role",
-			cellClassName: "text-gray-500"
-		}
+			cellClassName: "text-gray-500",
+		},
 	];
 
 	return (
 		<div className="flex h-[calc(100vh-120px)]  flex-1 flex-col space-y-6 overflow-hidden">
 			<div className="flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-center">
 				<div>
-					<h2 className="font-bold text-2xl text-gray-900">Admin Panel/Other Admins</h2>
-					<p className="text-gray-600">Manage all admin access and activities</p>
+					<h2 className="font-bold text-2xl text-gray-900">
+						Admin Panel/Other Admins
+					</h2>
+					<p className="text-gray-600">
+						Manage all admin access and activities
+					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
 					<button
@@ -348,7 +357,7 @@ function AdminsPage() {
 
 					{admins.length > 0 && (
 						<div className="relative">
-							<button 
+							<button
 								type="button"
 								onClick={(e) => {
 									e.stopPropagation();
@@ -362,7 +371,7 @@ function AdminsPage() {
 								Export File as
 								<FaFileExport className="h-3.5 w-3.5 text-white" />
 							</button>
-							
+
 							{showExportDropdown && (
 								<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
 									<button
@@ -370,7 +379,7 @@ function AdminsPage() {
 										onClick={(e) => {
 											e.stopPropagation();
 											setShowExportDropdown(false);
-											exportToPdf();
+											exportAdmins("pdf");
 										}}
 										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 									>
@@ -382,7 +391,7 @@ function AdminsPage() {
 										onClick={(e) => {
 											e.stopPropagation();
 											setShowExportDropdown(false);
-											exportToDocx();
+											exportAdmins("docx");
 										}}
 										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 									>
@@ -394,7 +403,7 @@ function AdminsPage() {
 										onClick={(e) => {
 											e.stopPropagation();
 											setShowExportDropdown(false);
-											exportToExcel();
+											exportAdmins("xlsx");
 										}}
 										className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 									>
@@ -452,15 +461,15 @@ function AdminsPage() {
 						/>
 						<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
 					</div>
-					
+
 					<TimePeriodFilter
-								onFilterChange={(period, range) => {
-									setSelectedTimePeriod(period);
-									setCustomRange(range);
-									setPage(1);
-								}}
-								buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
-							/>
+						onFilterChange={(period, range) => {
+							setSelectedTimePeriod(period);
+							setCustomRange(range);
+							setPage(1);
+						}}
+						buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
+					/>
 				</form>
 			</div>
 
@@ -505,57 +514,86 @@ function AdminsPage() {
 								onClick={() => setShowAddModal(false)}
 								className="text-gray-500 w-[39px] h-[39px] flex items-center justify-center hover:text-gray-900 rounded-full border border-[#03002B] cursor-pointer"
 							>
-								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+								<svg
+									className="h-5 w-5"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M6 18L18 6M6 6l12 12"
+									/>
 								</svg>
 							</button>
 						</div>
-						<form
-							onSubmit={handleCreateAdmin}
-							className="space-y-4"
-						>
+						<form onSubmit={handleCreateAdmin} className="space-y-4">
 							<div>
-								<label className="block font-medium text-gray-900 text-sm">Name</label>
+								<label className="block font-medium text-gray-900 text-sm">
+									Name
+								</label>
 								<Input
 									type="text"
 									value={newAdmin.name}
-									onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
+									onChange={(e) =>
+										setNewAdmin({ ...newAdmin, name: e.target.value })
+									}
 									required
 									className="mt-1"
 								/>
 							</div>
 							<div>
-								<label className="block font-medium text-gray-900 text-sm">Email</label>
+								<label className="block font-medium text-gray-900 text-sm">
+									Email
+								</label>
 								<Input
 									type="email"
 									value={newAdmin.email}
-									onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
+									onChange={(e) =>
+										setNewAdmin({ ...newAdmin, email: e.target.value })
+									}
 									required
 									className="mt-1"
 								/>
 							</div>
 							<div>
-								<label className="block font-medium text-gray-900 text-sm">Role</label>
+								<label className="block font-medium text-gray-900 text-sm">
+									Role
+								</label>
 								<select
 									value={newAdmin.role}
-									onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
+									onChange={(e) =>
+										setNewAdmin({ ...newAdmin, role: e.target.value })
+									}
 									className="mt-1 w-full h-13 text-sm rounded-md bg-[#F9F9F9] px-3 pr-10 py-2 text-gray-900 focus:outline-none placeholder:text-gray-500 bg-[position:right_1rem_center]"
 								>
-									<option value="" className="text-gray-900">choose a role</option>
-									<option value="Support Admin" className="text-gray-900">Support Admin</option>
-									<option value="CSR Admin" className="text-gray-900">CSR Admin</option>
+									<option value="" className="text-gray-900">
+										choose a role
+									</option>
+									<option value="Support Admin" className="text-gray-900">
+										Support Admin
+									</option>
+									<option value="CSR Admin" className="text-gray-900">
+										CSR Admin
+									</option>
 								</select>
 							</div>
 							<div>
 								<div className="flex items-center justify-between mb-1">
-									<label className="block font-medium text-gray-900 text-sm">Password</label>
+									<label className="block font-medium text-gray-900 text-sm">
+										Password
+									</label>
 									<button
 										type="button"
 										onClick={() => {
 											const pwd = generateRandomPassword(8, 12);
 											setNewAdmin((prev) => ({ ...prev, password: pwd }));
 											setShowPassword(true);
-											toast.success(`Password autogenerated (${pwd.length} characters)`);
+											toast.success(
+												`Password autogenerated (${pwd.length} characters)`,
+											);
 										}}
 										className="text-xs font-semibold text-[#1BAA04] hover:text-[#158903] flex items-center gap-1 cursor-pointer transition-colors"
 									>
@@ -567,7 +605,9 @@ function AdminsPage() {
 									<Input
 										type={showPassword ? "text" : "password"}
 										value={newAdmin.password}
-										onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+										onChange={(e) =>
+											setNewAdmin({ ...newAdmin, password: e.target.value })
+										}
 										required
 										className="pr-10"
 									/>
@@ -576,12 +616,15 @@ function AdminsPage() {
 										onClick={() => setShowPassword(!showPassword)}
 										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none flex items-center justify-center cursor-pointer"
 									>
-										{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+										{showPassword ? (
+											<EyeOff className="h-4 w-4" />
+										) : (
+											<Eye className="h-4 w-4" />
+										)}
 									</button>
 								</div>
 							</div>
 							<div className="flex justify-center gap-3 pt-2">
-
 								<button
 									type="submit"
 									className="w-[240px] h-12 rounded-full text-sm bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90"
@@ -605,19 +648,32 @@ function AdminsPage() {
 							label: "View admin",
 							onClick: async () => {
 								try {
-									const adminDetails = await adminAuth.getAdmin(actionDropdown.user.id);
+									const adminDetails = await adminAuth.getAdmin(
+										actionDropdown.user.id,
+									);
 									setSelectedProfileAdmin({
 										id: adminDetails.id,
 										name: adminDetails.name,
 										email: adminDetails.email,
-										dateAdded: adminDetails.createdAt ? new Date(adminDetails.createdAt).getTime() : 0,
-										role: adminDetails.role === "super_admin" ? "Super Admin" : adminDetails.role === "csr-admin" ? "CSR Admin" : "Support Admin",
+										dateAdded: adminDetails.createdAt
+											? new Date(adminDetails.createdAt).getTime()
+											: 0,
+										role:
+											adminDetails.role === "super_admin"
+												? "Super Admin"
+												: adminDetails.role === "csr-admin"
+													? "CSR Admin"
+													: "Support Admin",
 										avatar: adminDetails.image || undefined,
 										mobileNumber: adminDetails.mobileNumber,
 										permissions: adminDetails.permissions || [],
 									});
 								} catch (error) {
-									toast.error(error instanceof Error ? error.message : "Failed to fetch admin details");
+									toast.error(
+										error instanceof Error
+											? error.message
+											: "Failed to fetch admin details",
+									);
 								} finally {
 									setActionDropdown(null);
 								}
@@ -638,10 +694,18 @@ function AdminsPage() {
 										label: "Force Log out",
 										onClick: async () => {
 											try {
-												await adminAuth.forceLogoutAdmin(actionDropdown.user.id);
-												toast.success(`Forced logout for ${actionDropdown.user.name}`);
+												await adminAuth.forceLogoutAdmin(
+													actionDropdown.user.id,
+												);
+												toast.success(
+													`Forced logout for ${actionDropdown.user.name}`,
+												);
 											} catch (error) {
-												toast.error(error instanceof Error ? error.message : "Failed to force logout admin");
+												toast.error(
+													error instanceof Error
+														? error.message
+														: "Failed to force logout admin",
+												);
 											} finally {
 												setActionDropdown(null);
 											}
@@ -654,16 +718,24 @@ function AdminsPage() {
 										onClick: async () => {
 											try {
 												await adminAuth.deleteAdmin(actionDropdown.user.id);
-												toast.success(`Admin ${actionDropdown.user.name} deleted successfully`);
-												queryClient.invalidateQueries({ queryKey: ["admins-list"] });
+												toast.success(
+													`Admin ${actionDropdown.user.name} deleted successfully`,
+												);
+												queryClient.invalidateQueries({
+													queryKey: ["admins-list"],
+												});
 											} catch (error) {
-												toast.error(error instanceof Error ? error.message : "Failed to delete admin");
+												toast.error(
+													error instanceof Error
+														? error.message
+														: "Failed to delete admin",
+												);
 											} finally {
 												setActionDropdown(null);
 											}
 										},
 									},
-							  ]
+								]
 							: []),
 					]}
 				/>
@@ -682,7 +754,11 @@ function AdminsPage() {
 							await adminAuth.forceLogoutAdmin(id);
 							toast.success(`Forced logout for ${selectedProfileAdmin.name}`);
 						} catch (error) {
-							toast.error(error instanceof Error ? error.message : "Failed to force logout");
+							toast.error(
+								error instanceof Error
+									? error.message
+									: "Failed to force logout",
+							);
 						} finally {
 							setSelectedProfileAdmin(null);
 						}
@@ -690,10 +766,16 @@ function AdminsPage() {
 					onDeleteAdmin={async (id) => {
 						try {
 							await adminAuth.deleteAdmin(id);
-							toast.success(`Admin ${selectedProfileAdmin.name} deleted successfully`);
+							toast.success(
+								`Admin ${selectedProfileAdmin.name} deleted successfully`,
+							);
 							queryClient.invalidateQueries({ queryKey: ["admins-list"] });
 						} catch (error) {
-							toast.error(error instanceof Error ? error.message : "Failed to delete admin");
+							toast.error(
+								error instanceof Error
+									? error.message
+									: "Failed to delete admin",
+							);
 						} finally {
 							setSelectedProfileAdmin(null);
 						}
@@ -725,11 +807,12 @@ function AdminsPage() {
 							}
 						} else if (showGlobalNoticeModal) {
 							const adminIds = allAdmins.map((a) => a.id);
-							const result = await notificationService.sendNotificationToMultiple(
-								data.title,
-								data.message,
-								adminIds
-							);
+							const result =
+								await notificationService.sendNotificationToMultiple(
+									data.title,
+									data.message,
+									adminIds,
+								);
 							if (result.success) {
 								toast.success("Notice sent to all admins");
 							} else {
@@ -753,17 +836,35 @@ function AdminsPage() {
 							onClick={handleCloseSuccessModal}
 							className="absolute right-4 top-4 text-gray-500 w-[30px] h-[30px] flex items-center justify-center hover:text-gray-900 rounded-full border border-[#03002B] cursor-pointer"
 						>
-							<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+							<svg
+								className="h-4 w-4"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M6 18L18 6M6 6l12 12"
+								/>
 							</svg>
 						</button>
 
-						<img src={SuccessIndicator} alt="Success" className="w-[74px] h-[70px] object-contain mb-4 mt-6" />
+						<img
+							src={SuccessIndicator}
+							alt="Success"
+							className="w-[74px] h-[70px] object-contain mb-4 mt-6"
+						/>
 
-						<h3 className="font-bold text-[28px] text-[#03002B] mb-2">Success!</h3>
+						<h3 className="font-bold text-[28px] text-[#03002B] mb-2">
+							Success!
+						</h3>
 
 						<p className="text-[#4F4F4F] text-center text-[15px] mb-8 px-4 leading-[22px]">
-							The admin user {newAdmin.name} has been<br/>successfully added to the system.
+							The admin user {newAdmin.name} has been
+							<br />
+							successfully added to the system.
 						</p>
 
 						<button
