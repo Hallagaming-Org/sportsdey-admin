@@ -20,6 +20,24 @@ class GamesService {
     return fetchApi<ApiGame[]>("/games");
   }
 
+  async createGames(
+    games: Array<{
+      name: string;
+      code: string;
+      imageUrl?: string | null;
+      enabled?: boolean;
+    }>,
+  ): Promise<{
+    success: boolean;
+    data?: ApiGame[];
+    error?: string;
+  }> {
+    return fetchApi<ApiGame[]>("/games", {
+      method: "POST",
+      body: games,
+    });
+  }
+
   async toggleGame(
     id: string,
     enable: boolean,

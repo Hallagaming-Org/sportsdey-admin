@@ -1,6 +1,16 @@
-let API_BASE = import.meta.env.VITE_API_BASE as string;
+const viteApiBase = String(import.meta.env.VITE_API_BASE ?? "").replace(
+	/\/$/,
+	"",
+);
+
+let API_BASE = viteApiBase;
 if (import.meta.env.DEV && import.meta.env.MODE === "staging") {
 	API_BASE = "/staging-api";
+} else if (!API_BASE) {
+	API_BASE =
+		import.meta.env.MODE === "production"
+			? "https://api.sportsdey.com"
+			: "https://staging-api.sportsdey.com";
 }
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
