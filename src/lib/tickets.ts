@@ -5,24 +5,26 @@ export type TicketTab = "all" | "casino" | "sportsbook" | "prediction_market";
 
 
 export interface MatchSelection {
-	id?: string | number;
-	matchId?: string;           
-	match: string;
-	pick?: string;
-	marketId?: string;         
-	oddId?: string;
-	odds: number | string;
-	status?: "Won" | "Lost" | "Pending" | "Void";
-	oddStatus?: number;
+  id?: string | number;
+  matchId?: string;           
+  match: string;
+  pick?: string;
+  marketId?: string;         
+  oddId?: string;
+  odds: number | string;
+  status?: "Won" | "Lost" | "Pending" | "Void" | "win" | "loss" | "pending"; // Add lowercase variants
+  oddStatus?: number;
 }
 
 export interface BetBuilderLeg {
-	matchId?: string | null;
-	match?: string;
-	marketId?: string | null;
-	oddId?: string | null;
-	odds?: string | number | null;
-	oddStatus?: number | null;
+  matchId?: string | null;
+  match?: string;
+  marketId?: string | null;
+  oddId?: string | null;
+  odds?: string | number | null;
+  oddStatus?: number | null;
+  pick?: string | null; 
+  status?: "Won" | "Lost" | "Pending" | "Void" | "win" | "loss" | "pending";
 }
 
 export interface BetBuilderSelection {
