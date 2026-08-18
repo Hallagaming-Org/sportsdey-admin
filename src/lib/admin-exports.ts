@@ -6,7 +6,8 @@ export type ExportSource =
 	| "users"
 	| "transactions"
 	| "ticket-history"
-	| "cms";
+	| "cms"
+	| "kyc";
 export type ExportFormat = "xlsx" | "docx" | "pdf";
 export type ExportFilters = Record<string, string | number | boolean | undefined>;
 

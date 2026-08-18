@@ -22,11 +22,8 @@ import { TimePeriodFilter, type TimePeriod } from "#/components/TimePeriodFilter
 import { getDateRangeForPeriod } from "#/lib/time-period";
 import { notificationService } from "#/lib/notifications";
 import { type KycStatusFilter, kycService } from "@/lib/kyc";
-import * as XLSX from "xlsx";
 import { FaFileExport, FaFileExcel, FaFilePdf, FaFileWord } from "react-icons/fa6";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType } from "docx";
+import { startAdminExport } from "../../lib/admin-exports";
 
 export const Route = createFileRoute("/app/kyc")({
 	beforeLoad: ({ context }) => {
@@ -280,140 +277,17 @@ function KycPage() {
 		);
 	}, [records, sortAsc]);
 
-	const exportToPdf = () => {
-		if (sorted.length === 0) return;
-		const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
-		doc.text("KYC Documents Report", 14, 15);
-		autoTable(doc, {
-			head: [["S/N", "Player Name", "Document Name", "Size", "Date Uploaded", "Document Type", "Status"]],
-			body: sorted.map((r) => [
-				r.sn,
-				r.playerName,
-				r.documentName,
-				r.size,
-				r.dateUploaded,
-				r.type,
-				STATUS_LABELS[r.status] || r.status,
-			]),
-			startY: 20,
-			styles: { overflow: 'visible', minCellWidth: 30 },
+	const exportKyc = (format: "xlsx" | "docx" | "pdf") => {
+		void startAdminExport({
+			source: "kyc",
+			format,
+			filters: {
+				search: search || undefined,
+				status: statusParam,
+				fromDate,
+				toDate,
+			},
 		});
-		doc.save(`kyc_documents_${new Date().toISOString().split("T")[0]}.pdf`);
-	};
-
-	const exportToDocx = () => {
-		if (sorted.length === 0) return;
-		const docx = new Document({
-			sections: [
-				{
-					properties: {
-						page: {
-							size: {
-								width: 25000,
-								height: 12000,
-							},
-						},
-					},
-					children: [
-						new Paragraph({
-							children: [
-								new TextRun({
-									text: "KYC Documents Report",
-									bold: true,
-									size: 32,
-								}),
-							],
-							spacing: { after: 400 },
-						}),
-						new Table({
-							width: { size: 100, type: WidthType.PERCENTAGE },
-							rows: [
-								new TableRow({
-									children: [
-										"S/N",
-										"Player Name",
-										"Document Name",
-										"Size",
-										"Date Uploaded",
-										"Document Type",
-										"Status",
-									].map(
-										(header) =>
-											new TableCell({
-												children: [
-													new Paragraph({
-														children: [new TextRun({ text: header, bold: true })],
-													}),
-												],
-												shading: { fill: "f3f4f6" },
-												margins: { top: 100, bottom: 100, left: 100, right: 100 },
-											}),
-									),
-								}),
-								...sorted.map(
-									(r) =>
-										new TableRow({
-											children: [
-												r.sn,
-												r.playerName,
-												r.documentName,
-												r.size,
-												r.dateUploaded,
-												r.type,
-												STATUS_LABELS[r.status] || r.status,
-											].map(
-												(cell) =>
-													new TableCell({
-														children: [new Paragraph(String(cell))],
-														margins: { top: 100, bottom: 100, left: 100, right: 100 },
-													}),
-											),
-										}),
-								),
-							],
-						}),
-					],
-				},
-			],
-		});
-
-		Packer.toBlob(docx).then((blob) => {
-			const link = document.createElement("a");
-			const url = URL.createObjectURL(blob);
-			link.setAttribute("href", url);
-			link.setAttribute("download", `kyc_documents_${new Date().toISOString().split("T")[0]}.docx`);
-			link.style.visibility = "hidden";
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-		});
-	};
-
-	const exportToExcel = () => {
-		if (sorted.length === 0) return;
-		const dataToExport = sorted.map((r) => ({
-			"S/N": r.sn,
-			"Player Name": r.playerName,
-			"Document Name": r.documentName,
-			Size: r.size,
-			"Date Uploaded": r.dateUploaded,
-			"Document Type": r.type,
-			Status: STATUS_LABELS[r.status] || r.status,
-		}));
-
-		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-		worksheet["!cols"] = [
-			{ wch: 10 }, // S/N
-			{ wch: 25 }, // Player Name
-			{ wch: 25 }, // Document Name
-			{ wch: 15 }, // Size
-			{ wch: 20 }, // Date Uploaded
-			{ wch: 15 }, // Document Type
-			{ wch: 15 }, // Status
-		];
-		const workbook = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(workbook, worksheet, "KYC Documents");
-		XLSX.writeFile(workbook, `kyc_documents_${new Date().toISOString().split("T")[0]}.xlsx`);
 	};
 
 	const totalPages = Math.max(
@@ -541,7 +415,7 @@ function KycPage() {
 											onClick={(e) => {
 												e.stopPropagation();
 												setShowExportDropdown(false);
-												exportToPdf();
+								exportKyc("pdf");
 											}}
 											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 										>
@@ -553,7 +427,7 @@ function KycPage() {
 											onClick={(e) => {
 												e.stopPropagation();
 												setShowExportDropdown(false);
-												exportToDocx();
+								exportKyc("docx");
 											}}
 											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 										>
@@ -565,7 +439,7 @@ function KycPage() {
 											onClick={(e) => {
 												e.stopPropagation();
 												setShowExportDropdown(false);
-												exportToExcel();
+								exportKyc("xlsx");
 											}}
 											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 										>
