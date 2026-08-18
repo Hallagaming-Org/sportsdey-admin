@@ -1,17 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import {
-	Document,
-	Packer,
-	Paragraph,
-	Table,
-	TableCell,
-	TableRow,
-	TextRun,
-	WidthType,
-} from "docx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { Copy, Eye, PauseCircle, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -21,7 +9,6 @@ import {
 	FaFileWord,
 } from "react-icons/fa6";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
 import NotificationIcon from "#/assets/NotificationIcon";
 import { ActionDropdown } from "#/components/ActionDropdown";
 import { type Column, DataTable } from "#/components/DataTable";
@@ -148,222 +135,15 @@ function TicketsPage() {
 
 	const exportToExcel = () => {
 		exportTickets("xlsx");
-		return;
-		const dataToExport = tickets.map((t) => ({
-			"Bet ID": t.id,
-			"Player Name": t.playerName,
-			"Bet Amount": t.betAmount,
-			"Potential Win": t.potentialWin || "-",
-			Payout: t.payout || t.payOut || "-",
-			"Game Type": t.gameType,
-			"Game Name": t.gameName || "-",
-			Provider: t.provider || "-",
-			"Round ID": t.roundId || "-",
-			Odds:
-				t.odds ??
-				(t as any).odd ??
-				(t as any).totalOdds ??
-				(t as any).multiplier ??
-				"-",
-			Date: t.createdAt,
-			"Balance Before": t.balanceBefore || "-",
-			"Balance After": t.balanceAfter || "-",
-			Status: t.outcome,
-		}));
-
-		const exportData = res.data?.tickets || [];
-		if (exportData.length === 0) {
-			toast.error("No tickets to export", { id: toastId });
-			return;
-		}
-
-		const dataToExport = (exportData as any[]).map((t: any) => ({
-			"Bet ID": t.id,
-			"Player Name": t.playerName,
-			"Bet Amount": t.betAmount,
-			"Potential Win": t.potentialWin || "-",
-			Payout: t.payout || t.payOut || "-",
-			"Game Type": t.gameType,
-			"Game Name": t.gameName || "-",
-			Provider: t.provider || "-",
-			"Round ID": t.roundId || "-",
-			Odds:
-				t.odds ??
-				(t as any).odd ??
-				(t as any).totalOdds ??
-				(t as any).multiplier ??
-				"-",
-			Date: t.createdAt,
-			"Balance Before": t.balanceBefore || "-",
-			"Balance After": t.balanceAfter || "-",
-			Status: t.outcome,
-		}));
-
-		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-		worksheet["!cols"] = [
-			{ wch: 15 }, // Bet ID
-			{ wch: 25 }, // Player Name
-			{ wch: 15 }, // Bet Amount
-			{ wch: 15 }, // Potential Win
-			{ wch: 15 }, // Payout
-			{ wch: 15 }, // Game Type
-			{ wch: 20 }, // Game Name
-			{ wch: 20 }, // Provider
-			{ wch: 20 }, // Round ID
-			{ wch: 10 }, // Odds
-			{ wch: 20 }, // Date
-			{ wch: 15 }, // Balance Before
-			{ wch: 15 }, // Balance After
-			{ wch: 15 }, // Status
-		];
-		const workbook = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(workbook, worksheet, "Tickets");
-		XLSX.writeFile(
-			workbook,
-			`Tickets_Export_${new Date().toISOString().split("T")[0]}.xlsx`,
-		);
-		toast.success("Export successful", { id: toastId });
 	};
-	catch (err: any) 
-      toast.error(err.message || "Failed to export tickets",
-	{
-		id: toastId;
-	}
-	)
-}
 
-const exportToPdf = () => {
-	exportTickets("pdf");
-	return;
-	if (!tickets || tickets.length === 0) {
-		toast.error("No tickets to export");
-		return;
-	}
-};
+	const exportToPdf = () => {
+		exportTickets("pdf");
+	};
 
-const exportToDocx = async () => {
-	exportTickets("docx");
-	return;
-	if (!tickets || tickets.length === 0) {
-		toast.error("No tickets to export");
-		return;
-	}
-
-	const exportData = res.data?.tickets || [];
-	if (exportData.length === 0) {
-		toast.error("No tickets to export", { id: toastId });
-		return;
-	}
-
-	const doc = new Document({
-		sections: [
-			{
-				properties: {
-					page: {
-						size: {
-							width: 30000,
-							height: 12000,
-						},
-					},
-				},
-				children: [
-					new Paragraph({
-						children: [
-							new TextRun({
-								text: "Ticket History",
-								bold: true,
-								size: 32,
-							}),
-						],
-						spacing: { after: 400 },
-					}),
-					new Table({
-						width: { size: 100, type: WidthType.PERCENTAGE },
-						rows: [
-							new TableRow({
-								children: [
-									"Bet ID",
-									"Player Name",
-									"Amount",
-									"Potential Win",
-									"Payout",
-									"Game Type",
-									"Game Name",
-									"Provider",
-									"Round ID",
-									"Odds",
-									"Date",
-									"Status",
-								].map(
-									(header) =>
-										new TableCell({
-											children: [
-												new Paragraph({
-													children: [new TextRun({ text: header, bold: true })],
-												}),
-											],
-											shading: { fill: "f3f4f6" },
-										}),
-								),
-							}),
-							...(exportData as any[]).map(
-								(t: any) =>
-									new TableRow({
-										children: [
-											t.id,
-											t.playerName,
-											t.betAmount,
-											t.potentialWin || "-",
-											t.payout || t.payOut || "-",
-											t.gameType,
-											t.gameName || "-",
-											t.provider || "-",
-											t.roundId || "-",
-											t.odds ??
-												(t as any).odd ??
-												(t as any).totalOdds ??
-												(t as any).multiplier ??
-												"-",
-											t.createdAt,
-											t.outcome,
-										].map(
-											(val) =>
-												new TableCell({
-													children: [
-														new Paragraph({
-															children: [new TextRun({ text: String(val) })],
-														}),
-													],
-												}),
-										),
-									}),
-							),
-						],
-					}),
-				],
-			},
-		],
-	});
-
-	const blob = await Packer.toBlob(doc);
-	const url = URL.createObjectURL(blob);
-	const link = document.createElement("a");
-	link.setAttribute("href", url);
-	link.setAttribute(
-		"download",
-		`Tickets_Export_${new Date().toISOString().split("T")[0]}.docx`,
-	);
-	link.style.visibility = "hidden";
-	document.body.appendChild(link);
-	link.click();
-	document.body.removeChild(link);
-	toast.success("Export successful", { id: toastId });
-};
-catch (err: any)
-{
-	toast.error(err.message || "Failed to export tickets", { id: toastId });
-}
-}
+	const exportToDocx = () => {
+		exportTickets("docx");
+	};
 
 const toggleSuspendMutation = useMutation({
 	mutationFn: async ({

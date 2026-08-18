@@ -5,18 +5,6 @@ import {
 	useRouter,
 	useRouterState,
 } from "@tanstack/react-router";
-import {
-	Document,
-	Packer,
-	Paragraph,
-	Table,
-	TableCell,
-	TableRow,
-	TextRun,
-	WidthType,
-} from "docx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { ChevronDown, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
@@ -25,8 +13,6 @@ import {
 	FaFilePdf,
 	FaFileWord,
 } from "react-icons/fa6";
-import { toast } from "sonner";
-import * as XLSX from "xlsx";
 import { type Column, DataTable } from "#/components/DataTable";
 import {
 	type TimePeriod,
@@ -315,35 +301,9 @@ function WalletPage() {
 									(
 										<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
 										<button
-											onClick={async () => {
+											onClick={() => {
 												setShowExportMenu(false);
 												exportTransactions("pdf");
-												return;
-												if (transactions.length === 0) return;
-
-													const doc = new jsPDF({ orientation: "landscape", format: [700, 300] });
-													doc.text("Transactions", 14, 15);
-													autoTable(doc, {
-														head: [["ID", "User ID", "User Email", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"]],
-														body: exportData.map((t: any) => [
-															t.id,
-															t.user_id || "-",
-															t.user_email || "-",
-															t.dateTime.replace(/\n/g, ' '),
-															t.type,
-															t.paymentMethod || "N/A",
-															t.amount?.replace(/₦/g, 'NGN '),
-															t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
-															t.status
-														]),
-														startY: 20,
-														styles: { overflow: 'visible', minCellWidth: 30 },
-													});
-													doc.save(`transactions_export_${new Date().toISOString().split('T')[0]}.pdf`);
-													toast.success("Export successful", { id: toastId });
-												} catch (err: any) {
-													toast.error(err.message || "Failed to export transactions", { id: toastId });
-												}
 											}}
 											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
 										>
@@ -351,79 +311,9 @@ function WalletPage() {
 											PDF
 										</button>
 										<button
-											onClick={async () => {
+											onClick={() => {
 												setShowExportMenu(false);
 												exportTransactions("docx");
-												return;
-												if (transactions.length === 0) return;
-
-													const docx = new Document({
-														sections: [
-															{
-																properties: {
-																	page: {
-																		size: { width: 30000, height: 12000 },
-																	},
-																},
-																children: [
-																	new Paragraph({
-																		children: [
-																			new TextRun({
-																				text: "Transactions",
-																				bold: true,
-																				size: 32,
-																			}),
-																		],
-																		spacing: { after: 400 },
-																	}),
-																	new Table({
-																		width: { size: 100, type: WidthType.PERCENTAGE },
-																		rows: [
-																			new TableRow({
-																				children: ["ID", "User ID", "User Email", "Date & Time", "Type", "Payment Method", "Amount", "Balance After", "Status"].map(
-																					header => new TableCell({
-																						children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
-																						shading: { fill: "f3f4f6" },
-																						margins: { top: 100, bottom: 100, left: 100, right: 100 }
-																					})
-																				),
-																			}),
-																			...exportData.map((t: any) => new TableRow({
-																				children: [
-																					t.id,
-																					t.user_id || "-",
-																					t.user_email || "-",
-																					t.dateTime.replace(/\n/g, ' '),
-																					t.type,
-																					t.paymentMethod || "N/A",
-																					t.amount?.replace(/₦/g, 'NGN '),
-																					t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
-																					t.status
-																				].map(cell => new TableCell({
-																					children: [new Paragraph(String(cell))],
-																					margins: { top: 100, bottom: 100, left: 100, right: 100 }
-																				})),
-																			}))
-																		],
-																	}),
-																],
-															},
-														],
-													});
-
-													const blob = await Packer.toBlob(docx);
-													const url = URL.createObjectURL(blob);
-													const link = document.createElement("a");
-													link.setAttribute("href", url);
-													link.setAttribute("download", `transactions_export_${new Date().toISOString().split('T')[0]}.docx`);
-													link.style.visibility = 'hidden';
-													document.body.appendChild(link);
-													link.click();
-													document.body.removeChild(link);
-													toast.success("Export successful", { id: toastId });
-												} catch (err: any) {
-													toast.error(err.message || "Failed to export transactions", { id: toastId });
-												}
 											}}
 											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
 										>
@@ -431,43 +321,9 @@ function WalletPage() {
 											DOCX
 										</button>
 										<button
-											onClick={async () => {
+											onClick={() => {
 												setShowExportMenu(false);
 												exportTransactions("xlsx");
-												return;
-												if (transactions.length === 0) return;
-
-													const dataToExport = exportData.map((t: any) => ({
-														"ID": t.id,
-														"User ID": t.user_id || "-",
-														"User Email": t.user_email || "-",
-														"Date & Time": t.dateTime.replace(/\n/g, ' '),
-														"Type": t.type,
-														"Payment Method": t.paymentMethod || "N/A",
-														"Amount": t.amount?.replace(/₦/g, 'NGN '),
-														"Balance After": t.balanceAfter?.replace(/₦/g, 'NGN ') || "N/A",
-														"Status": t.status
-													}));
-
-													const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-													worksheet["!cols"] = [
-														{ wch: 15 }, // ID
-														{ wch: 20 }, // User ID
-														{ wch: 30 }, // User Email
-														{ wch: 20 }, // Date & Time
-														{ wch: 15 }, // Type
-														{ wch: 20 }, // Payment Method
-														{ wch: 15 }, // Amount
-														{ wch: 15 }, // Balance After
-														{ wch: 15 }, // Status
-													];
-													const workbook = XLSX.utils.book_new();
-													XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-													XLSX.writeFile(workbook, `transactions_export_${new Date().toISOString().split('T')[0]}.xlsx`);
-													toast.success("Export successful", { id: toastId });
-												} catch (err: any) {
-													toast.error(err.message || "Failed to export transactions", { id: toastId });
-												}
 											}}
 											className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
 										>
