@@ -16,6 +16,23 @@ export interface MatchSelection {
 	oddStatus?: number;
 }
 
+export interface BetBuilderLeg {
+	matchId?: string | null;
+	match?: string;
+	marketId?: string | null;
+	oddId?: string | null;
+	odds?: string | number | null;
+	oddStatus?: number | null;
+}
+
+export interface BetBuilderSelection {
+	matchId?: string | null;
+	match?: string;
+	ratio?: string | null;
+	status?: number | null;
+	legs: BetBuilderLeg[];
+}
+
 export interface CasinoRoundSummary {
 	id?: string | number;
 	betAmount: string | number;
@@ -43,6 +60,7 @@ export interface DetailedTicket extends TicketRecord {
 	ipAddress?: string;
 	deviceInfo?: string;
 	selections?: MatchSelection[];
+	betBuilderSelections?: BetBuilderSelection[]; 
 	// Casino specific fields
 	sessionId?: string | null;
 	betTime?: string;
