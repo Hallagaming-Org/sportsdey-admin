@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SortIcon from "@/logo/sort.svg?react";
 import GameCard from "#/components/GameCard";
-import { gamesService, type ApiGame } from "#/lib/games";
+import { gameMatchesQuery, gamesService, type ApiGame } from "#/lib/games";
 
 import Img21 from "#/assets/21.png";
 import Img777 from "#/assets/777.png";
@@ -18,6 +18,9 @@ import ImgLuckyRise from "#/assets/lucky_rise.png";
 import ImgXcape from "#/assets/xcape.png";
 
 export const Route = createFileRoute("/app/games")({
+  validateSearch: (search: Record<string, unknown>): { q?: string } => ({
+    q: typeof search.q === "string" && search.q.trim() ? search.q : undefined,
+  }),
   component: GamesPage,
 });
 
@@ -54,6 +57,7 @@ function GamesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { q: searchQuery = "" } = Route.useSearch();
 
   const { data: apiGames = [], isLoading } = useQuery<ApiGame[]>({
     queryKey: ["games"],
@@ -116,7 +120,11 @@ function GamesPage() {
     return b.name.localeCompare(a.name);
   });
 
-  const gamesByCategory = sortedGames.reduce((acc, game) => {
+  const visibleGames = sortedGames.filter((game) =>
+    gameMatchesQuery(game, searchQuery),
+  );
+
+  const gamesByCategory = visibleGames.reduce((acc, game) => {
     const cat = game.category.toLowerCase();
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(game);
@@ -145,7 +153,7 @@ function GamesPage() {
       router.invalidate();
       toast.success("Game status updated successfully");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error.message);
     }
   });
@@ -190,9 +198,9 @@ function GamesPage() {
               </div>
             ))}
           </div>
-        ) : Object.keys(gamesByCategory).length > 0 ? (
+        ) : visibleGames.length > 0 ? (
           sortedCategories.map((category) => {
-            const catGames = gamesByCategory[category];
+            const catGames = gamesByCategory[category] ?? [];
             return (
             <div key={category} className="mb-10">
               <h3 className="mb-4 text-xl font-bold text-gray-800 capitalize">{category}</h3>
@@ -206,7 +214,9 @@ function GamesPage() {
           })
         ) : (
           <div className="col-span-full text-center text-gray-500 py-10">
-            No active games found.
+            {searchQuery.trim()
+              ? `No games match "${searchQuery.trim()}".`
+              : "No games found."}
           </div>
         )}
       </div>
