@@ -82,11 +82,14 @@ function GamesPage() {
     retry: 1,
   });
 
-  const scorpioRowsByCode = new Map(
-    apiGames
-      .filter((game) => isScorpioLocalCode(game.code))
-      .map((game) => [game.code, game]),
-  );
+  const scorpioRowsByCode = new Map<string, ApiGame>();
+  for (const game of apiGames) {
+    if (!isScorpioLocalCode(game.code)) continue;
+    const existing = scorpioRowsByCode.get(game.code);
+    if (!existing || (existing.enabled && !game.enabled)) {
+      scorpioRowsByCode.set(game.code, game);
+    }
+  }
 
   const classicGames: Game[] = apiGames
     .filter((g) => !isScorpioLocalCode(g.code))
@@ -123,7 +126,7 @@ function GamesPage() {
       type: "Scorpio",
       color: "from-indigo-500 to-violet-700",
       accentColor: "#6366F1",
-      enabled: local ? local.enabled : true,
+      enabled: local ? local.enabled : g.enabled,
       image: g.imageUrl || ImgPlinko,
       category: g.providerName,
     };
@@ -228,13 +231,15 @@ function GamesPage() {
 
   const handleToggle = (id: string) => {
     if (toggleMutation.isPending) return;
-    const local = apiGames.find((g) => g.id === id);
+    const local =
+      apiGames.find((g) => g.id === id) ??
+      apiGames.find((g) => g.code === id);
     if (local) {
-      toggleMutation.mutate({ id, isCurrentlyEnabled: local.enabled });
+      toggleMutation.mutate({ id: local.id, isCurrentlyEnabled: local.enabled });
       return;
     }
 
-    const scorpio = scorpioGames.find((g) => g.id === id);
+    const scorpio = scorpioGames.find((g) => g.id === id || g.code === id);
     if (!scorpio) return;
     toggleMutation.mutate({
       id: scorpio.code,

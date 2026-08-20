@@ -24,6 +24,7 @@ export type ScorpioCatalogGame = {
 	name: string;
 	imageUrl: string | null;
 	inMaintenance: boolean;
+	enabled: boolean;
 };
 
 export function scorpioLocalCode(providerId: number, gameId: string): string {
@@ -129,6 +130,10 @@ export async function fetchScorpioCatalog(): Promise<{
 					name,
 					imageUrl: resolveScorpioImage(game.gameImage),
 					inMaintenance: game.inMaintenance === true,
+					enabled:
+						game.enabled !== false &&
+						game.inMaintenance !== true &&
+						game.status !== 0,
 				});
 			}
 			return mapped;
