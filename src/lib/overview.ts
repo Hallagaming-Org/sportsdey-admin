@@ -20,6 +20,12 @@ export interface ActivityResponse {
 	days: DayActivity[];
 }
 
+export interface TicketTrend {
+	totalTickets: number;
+	wonTickets: number;
+	lostTickets: number;
+}
+
 export interface TopBet {
 	id: string;
 	playerName: string;
@@ -129,12 +135,35 @@ class OverviewService {
 		);
 	}
 
-	async getTopBets(): Promise<{
+	async getTicketTrend(params?: {
+		fromDate?: string;
+		toDate?: string;
+	}): Promise<{
+		success: boolean;
+		data?: TicketTrend;
+		error?: string;
+	}> {
+		const searchParams = new URLSearchParams();
+		if (params?.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params?.toDate) searchParams.set("toDate", params.toDate);
+		const qs = searchParams.toString();
+		return fetchApi<TicketTrend>(
+			`/admin/overview/ticket-trend${qs ? `?${qs}` : ""}`,
+		);
+	}
+
+	async getTopBets(params?: { fromDate?: string; toDate?: string }): Promise<{
 		success: boolean;
 		data?: TopBetsResponse;
 		error?: string;
 	}> {
-		return fetchApi<TopBetsResponse>("/admin/overview/top-bets");
+		const searchParams = new URLSearchParams();
+		if (params?.fromDate) searchParams.set("fromDate", params.fromDate);
+		if (params?.toDate) searchParams.set("toDate", params.toDate);
+		const qs = searchParams.toString();
+		return fetchApi<TopBetsResponse>(
+			`/admin/overview/top-bets${qs ? `?${qs}` : ""}`,
+		);
 	}
 }
 

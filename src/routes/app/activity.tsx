@@ -1,85 +1,87 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { CloudSnow, Copy, Download, Eye, Trash } from "lucide-react";
-import FilterIcon from "@/logo/filter.svg?react";
-import SortIcon from "@/logo/sort.svg?react";
+import { useCallback, useEffect, useState } from "react";
 import { IoFilter } from "react-icons/io5";
-import { ActivityLogDetailsModal } from "../../components/ActivityLogDetailsModal";
-import { DataTable, type Column } from "#/components/DataTable";
-import { ActionDropdown } from "#/components/ActionDropdown";
+import { type Column, DataTable } from "#/components/DataTable";
+import {
+	type TimePeriod,
+	TimePeriodFilter,
+} from "#/components/TimePeriodFilter";
 import { ActivityChart as ActivityTrendChart } from "@/components/ActivityChart";
 import { TicketsTrendPie } from "@/components/TicketsTrendPie";
+import { type AdminActivity, getAdminActivity } from "@/lib/admin-activity";
 import {
-	TimePeriodFilter,
-	type TimePeriod,
-} from "#/components/TimePeriodFilter";
+	type DayActivity,
+	type TopBet as OverviewTopBet,
+	overviewService,
+	periodToDateRange,
+} from "@/lib/overview";
 
 export const Route = createFileRoute("/app/activity")({
 	beforeLoad: ({ context }) => {
 		const admin = (context as any).admin;
-		if (admin && admin.role !== "super_admin" && !admin.permissions?.includes("reports_issues")) {
+		if (
+			admin &&
+			admin.role !== "super_admin" &&
+			!admin.permissions?.includes("reports_issues")
+		) {
 			throw redirect({ to: "/app", replace: true });
 		}
 	},
 	component: ActivityPage,
 });
 
-interface ActivityRecord {
-	id: string;
-	name: string;
-	email: string;
-	role: string;
-	action: string;
-	date: string;
-	status: "Online" | "Offline";
-}
+function TopBets({ bets }: { bets: OverviewTopBet[] | null }) {
+	const formatAmount = (amount: number) =>
+		`NGN ${amount.toLocaleString("en-NG", {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2,
+		})}`;
 
-const DUMMY_ACTIVITIES: ActivityRecord[] = [
-	{ id: "012345", name: "George jones", email: "Georgejones@gmail.com", role: "Support Admin", action: "Approved document", date: "Aug 8, 2025", status: "Online" },
-	{ id: "012345", name: "Leslie Alexander", email: "Lesliealexander@gmail.com", role: "CSR Admin", action: "Uploaded content", date: "Aug 8, 2025", status: "Offline" },
-	{ id: "012345", name: "Savannah Nguyen", email: "Savannahnguyen@gmail.com", role: "Support Admin", action: "Exported File", date: "Aug 8, 2025", status: "Offline" },
-	{ id: "012345", name: "George jones", email: "Georgejones@gmail.com", role: "Support Admin", action: "Approved document", date: "Aug 8, 2025", status: "Online" },
-	{ id: "012345", name: "Leslie Alexander", email: "Lesliealexander@gmail.com", role: "CSR Admin", action: "Uploaded content", date: "Aug 8, 2025", status: "Offline" },
-	{ id: "012345", name: "Savannah Nguyen", email: "Savannahnguyen@gmail.com", role: "Support Admin", action: "Exported File", date: "Aug 8, 2025", status: "Online" },
-];
-
-const TOP_BETS = [
-	{ id: 1, name: "Balla Daniella", type: "Jackpot", amount: "NGN 325,805.68K", avatar: "B" },
-	{ id: 2, name: "Balla Daniella", type: "Quick Tipss", amount: "NGN 325,805.68K", avatar: "B" },
-	{ id: 3, name: "Balla Daniella", type: "Smart Bets", amount: "NGN 325,805.68K", avatar: "B" },
-	{ id: 4, name: "Balla Daniella", type: "Super Bets", amount: "NGN 325,805.68K", avatar: "B" },
-	{ id: 5, name: "Balla Daniella", type: "Mega 10", amount: "NGN 325,805.68K", avatar: "B" },
-];
-
-function TopBets() {
 	return (
 		<div className="flex h-full flex-col rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
 			<div className="mb-6 flex items-center justify-between">
-				<h3 className="font-bold text-lg text-gray-900">Top 5 Biggest Bets for today</h3>
-				<button className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
+				<h3 className="font-bold text-lg text-gray-900">Top 5 Biggest Bets</h3>
+				<button
+					type="button"
+					className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+				>
 					<span className="hidden lg:block">Time periods</span>
 					<IoFilter className="h-3.5 w-3.5" />
 				</button>
 			</div>
 			<div className="flex flex-col gap-4">
-				{TOP_BETS.map((bet) => (
-					<div key={bet.id} className="flex flex-wrap sm:flex-nowrap xl:grid xl:grid-cols-[1fr_auto_1fr] items-center justify-between gap-3 w-full overflow-hidden">
+				{bets?.map((bet) => (
+					<div
+						key={bet.id}
+						className="flex flex-wrap sm:flex-nowrap xl:grid xl:grid-cols-[1fr_auto_1fr] items-center justify-between gap-3 w-full overflow-hidden"
+					>
 						<div className="flex items-center gap-3 min-w-0 shrink">
 							<img
-								src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${bet.name}`}
-								alt="avatar"
+								src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${bet.id}`}
+								alt={bet.playerName}
 								className="h-8 w-8 rounded-full bg-[#FEECEB] object-cover shrink-0 p-1"
 							/>
-							<span className="font-bold text-sm text-gray-900 truncate" title={bet.name}>{bet.name}</span>
+							<span
+								className="font-bold text-sm text-gray-900 truncate"
+								title={bet.playerName}
+							>
+								{bet.playerName}
+							</span>
 						</div>
 
 						<div className="hidden xl:flex items-center justify-center px-4">
-							<span className="text-gray-400 font-medium text-sm truncate">{bet.type}</span>
+							<span className="text-gray-400 font-medium text-sm truncate">
+								{bet.betType}
+							</span>
 						</div>
 
 						<div className="flex items-center justify-end gap-4 shrink-0 sm:ml-auto">
-							<span className="text-gray-400 font-medium text-sm truncate max-w-[80px] sm:max-w-none xl:hidden">{bet.type}</span>
-							<span className="font-bold text-sm text-gray-900 text-right whitespace-nowrap">{bet.amount}</span>
+							<span className="text-gray-400 font-medium text-sm truncate max-w-[80px] sm:max-w-none xl:hidden">
+								{bet.betType}
+							</span>
+							<span className="font-bold text-sm text-gray-900 text-right whitespace-nowrap">
+								{formatAmount(bet.amount)}
+							</span>
 						</div>
 					</div>
 				))}
@@ -90,73 +92,108 @@ function TopBets() {
 
 function ActivityPage() {
 	const [page, setPage] = useState(1);
-	const [, setSelectedTimePeriod] =
-		useState<TimePeriod>("All");
-	const [actionDropdown, setActionDropdown] = useState<{ activity: ActivityRecord; top: number; right: number } | null>(null);
-	const [detailsModalActivity, setDetailsModalActivity] = useState<ActivityRecord | null>(null);
+	const [adminActivities, setAdminActivities] = useState<AdminActivity[]>([]);
+	const [activityPagination, setActivityPagination] = useState({
+		totalPages: 1,
+		total: 0,
+	});
+	const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+	const [activity, setActivity] = useState<DayActivity[] | null>(null);
+	const [topBets, setTopBets] = useState<OverviewTopBet[] | null>(null);
+	const [trendDateRange, setTrendDateRange] = useState<{
+		fromDate?: string;
+		toDate?: string;
+	}>({});
+
+	const fetchActivity = useCallback(
+		(period: TimePeriod, range?: { start: string; end: string }) => {
+			const normalizedPeriod =
+				period === "Last week"
+					? "A week ago"
+					: period === "Last month"
+						? "A month ago"
+						: period;
+			const { fromDate, toDate } = periodToDateRange(normalizedPeriod, range);
+			setTrendDateRange({ fromDate, toDate });
+
+			overviewService.getActivity({ fromDate, toDate }).then((res) => {
+				if (res.success && res.data) setActivity(res.data.days);
+			});
+			overviewService.getTopBets({ fromDate, toDate }).then((res) => {
+				if (res.success && res.data) setTopBets(res.data.bets);
+			});
+		},
+		[],
+	);
 
 	useEffect(() => {
-		const handleClickOutside = () => setActionDropdown(null);
-		document.addEventListener("click", handleClickOutside);
-		return () => document.removeEventListener("click", handleClickOutside);
-	}, []);
+		fetchActivity("All");
+	}, [fetchActivity]);
 
-	const columns: Column<ActivityRecord>[] = [
+	useEffect(() => {
+		setIsLoadingActivities(true);
+		getAdminActivity({ page, limit: 10 }).then((res) => {
+			if (res.success && res.data) {
+				setAdminActivities(res.data.activities);
+				setActivityPagination(res.data.pagination);
+			}
+			setIsLoadingActivities(false);
+		});
+	}, [page]);
+
+	const columns: Column<AdminActivity>[] = [
 		{
 			header: "User ID",
-			accessor: "id"
+			accessor: "adminId",
 		},
 		{
 			header: "Full Name",
 			accessor: (record) => (
 				<div className="flex items-center gap-3 min-w-0">
 					<img
-						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${record.name}`}
+						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${record.adminId}`}
 						alt="avatar"
 						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0"
 					/>
-					<span className="font-medium text-sm text-gray-900 truncate" title={record.name}>{record.name}</span>
+					<span
+						className="font-medium text-sm text-gray-900 truncate"
+						title={record.adminName}
+					>
+						{record.adminName}
+					</span>
 				</div>
-			)
+			),
 		},
 		{
 			header: "Email address",
-			accessor: "email",
-			cellClassName: "text-gray-500"
+			accessor: "adminEmail",
+			cellClassName: "text-gray-500",
 		},
 		{
 			header: "Role",
-			accessor: "role",
-			cellClassName: "text-gray-500"
+			accessor: "adminRole",
+			cellClassName: "text-gray-500",
 		},
 		{
 			header: "Action",
 			accessor: "action",
-			cellClassName: "text-gray-500"
+			cellClassName: "text-gray-500",
 		},
 		{
 			header: "Date",
-			accessor: "date",
-			cellClassName: "text-gray-500"
+			accessor: (record) => new Date(record.createdAt).toLocaleString("en-NG"),
+			cellClassName: "text-gray-500",
 		},
-		{
-			header: "Status",
-			accessor: (record) => (
-				<span className={`inline-flex items-center font-medium ${
-					record.status === "Online" ? "text-[#10C300]" : "text-[#EE201C]"
-				}`}>
-					{record.status}
-				</span>
-			)
-		}
 	];
 
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-1 flex-col overflow-hidden px-2 lg:px-4">
 			<div className="flex-none mb-6 flex items-center justify-between">
-				<h2 className="text-2xl font-bold text-gray-900">Activity Trends/Reports</h2>
+				<h2 className="text-2xl font-bold text-gray-900">
+					Activity Trends/Reports
+				</h2>
 				<TimePeriodFilter
-					onFilterChange={(period) => setSelectedTimePeriod(period)}
+					onFilterChange={fetchActivity}
 					buttonClassName="flex items-center gap-2 rounded-lg bg-white border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
 				/>
 			</div>
@@ -164,97 +201,38 @@ function ActivityPage() {
 			<div className="flex-1 overflow-y-auto custom-scrollbar pb-10 space-y-6">
 				{/* Top Section */}
 				<div className="h-[383px] w-full">
-					<ActivityTrendChart showHeader={false} />
-
+					<ActivityTrendChart showHeader={false} data={activity ?? undefined} />
 				</div>
 
 				{/* Middle Section */}
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<TicketsTrendPie />
-					<TopBets />
+					<TicketsTrendPie {...trendDateRange} />
+					<TopBets bets={topBets} />
 				</div>
 
 				{/* Bottom Section */}
 				<div className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 					<div className="flex items-center justify-between p-6 pb-4">
 						<h3 className="font-bold text-xl text-gray-900">Activity Log</h3>
-						<div className="flex items-center gap-3">
-							<button className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-3 py-1.5 font-medium text-gray-900 text-xs hover:bg-gray-50">
-								<SortIcon className="h-3 w-3" />
-								Sort
-							</button>
-							<button className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-3 py-1.5 font-medium text-gray-900 text-xs hover:bg-gray-50">
-								<FilterIcon className="h-3 w-3" />
-								Filter
-							</button>
-						</div>
 					</div>
 
 					<div className="flex-1 min-h-[350px]">
 						<DataTable
-							data={DUMMY_ACTIVITIES}
+							data={adminActivities}
 							columns={columns}
-							onActionClick={(activity, e) => {
-								e.stopPropagation();
-								e.nativeEvent.stopImmediatePropagation();
-								const rect = e.currentTarget.getBoundingClientRect();
-								setActionDropdown({
-									activity,
-									top: rect.bottom + window.scrollY,
-									right: window.innerWidth - rect.right,
-								});
-							}}
+							isLoading={isLoadingActivities}
 							emptyMessage="No activity found"
 							pagination={{
 								currentPage: page,
-								totalPages: 10,
+								totalPages: activityPagination.totalPages,
 								onPageChange: setPage,
-								totalItems: 100,
+								totalItems: activityPagination.total,
 								itemsPerPage: 10,
 							}}
 						/>
 					</div>
 				</div>
 			</div>
-
-			{actionDropdown && (
-				<ActionDropdown
-					top={actionDropdown.top}
-					right={actionDropdown.right}
-					onClose={() => setActionDropdown(null)}
-					items={[
-						{
-							icon: <Eye className="w-4 h-4" />,
-							label: "View Details",
-							onClick: () => {
-								setDetailsModalActivity(actionDropdown.activity);
-								setActionDropdown(null);
-							},
-						},
-						{
-							icon: <Download className="w-4 h-4" />,
-							label: "Download Activity log",
-							onClick: () => setActionDropdown(null),
-						},
-						{
-							icon: <Copy className="w-4 h-4" />,
-							label: "Copy Log link",
-							onClick: () => setActionDropdown(null),
-						},
-						{
-							icon: <CloudSnow className="w-4 h-4" />,
-							label: "Report this Activity",
-							onClick: () => setActionDropdown(null),
-						},
-					]}
-				/>
-			)}
-			{/* Activity Details Modal */}
-			<ActivityLogDetailsModal
-				activity={detailsModalActivity}
-				isOpen={!!detailsModalActivity}
-				onClose={() => setDetailsModalActivity(null)}
-			/>
 		</div>
 	);
 }
