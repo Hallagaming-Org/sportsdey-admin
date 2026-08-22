@@ -216,7 +216,7 @@ function ActivityPage() {
 						<h3 className="font-bold text-xl text-gray-900">Activity Log</h3>
 					</div>
 
-					<div className="flex-1 min-h-[350px]">
+					<div>
 						<DataTable
 							data={adminActivities}
 							columns={columns}
