@@ -5,15 +5,34 @@ export type TicketTab = "all" | "casino" | "sportsbook" | "prediction_market";
 
 
 export interface MatchSelection {
-	id?: string | number;
-	matchId?: string;           
-	match: string;
-	pick?: string;
-	marketId?: string;         
-	oddId?: string;
-	odds: number | string;
-	status?: "Won" | "Lost" | "Pending" | "Void";
-	oddStatus?: number;
+  id?: string | number;
+  matchId?: string;           
+  match: string;
+  pick?: string;
+  marketId?: string;         
+  oddId?: string;
+  odds: number | string;
+  status?: "Won" | "Lost" | "Pending" | "Void" | "win" | "loss" | "pending"; // Add lowercase variants
+  oddStatus?: number;
+}
+
+export interface BetBuilderLeg {
+  matchId?: string | null;
+  match?: string;
+  marketId?: string | null;
+  oddId?: string | null;
+  odds?: string | number | null;
+  oddStatus?: number | null;
+  pick?: string | null; 
+  status?: "Won" | "Lost" | "Pending" | "Void" | "win" | "loss" | "pending";
+}
+
+export interface BetBuilderSelection {
+	matchId?: string | null;
+	match?: string;
+	ratio?: string | null;
+	status?: number | null;
+	legs: BetBuilderLeg[];
 }
 
 export interface CasinoRoundSummary {
@@ -43,6 +62,7 @@ export interface DetailedTicket extends TicketRecord {
 	ipAddress?: string;
 	deviceInfo?: string;
 	selections?: MatchSelection[];
+	betBuilderSelections?: BetBuilderSelection[]; 
 	// Casino specific fields
 	sessionId?: string | null;
 	betTime?: string;

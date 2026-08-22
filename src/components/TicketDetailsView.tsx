@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
   ArrowLeft, 
@@ -112,6 +112,7 @@ export function TicketDetailsView({
       }
     ] : []),
     selections: fetchedDetails?.selections || [],
+    betBuilderSelections: fetchedDetails?.betBuilderSelections || [],
   };
 
   const userForProfile: User = {
@@ -571,75 +572,74 @@ export function TicketDetailsView({
         </div>
       </div>
 
-{/* Bottom Table: Round Summary for Casino / Match Selections for Sportsbook */}
-<div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs mb-6">
-  <h4 className="text-base font-bold text-gray-900 mb-5">
-    {isCasino ? `${details.gameName} - Round Summary` : "Match Selections"}
-  </h4>
+  {/* Bottom Table: Round Summary for Casino / Match Selections for Sportsbook */}
+  <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs mb-6">
+    <h4 className="text-base font-bold text-gray-900 mb-5">
+      {isCasino ? `${details.gameName} - Round Summary` : "Match Selections"}
+    </h4>
 
-  <div className="overflow-x-auto">
-    <table className="w-full text-left text-xs border-collapse">
-      <thead className="bg-[#F9F9F9]">
-        {isCasino ? (
-          <tr className="text-gray-400 font-medium">
-            <th className="py-3 px-4 rounded-l-xl w-12 font-normal">#</th>
-            <th className="py-3 px-4 font-normal">Bet Amount</th>
-            <th className="py-3 px-4 font-normal">Cashed out at</th>
-            <th className="py-3 px-4 font-normal">Win Amount</th>
-            <th className="py-3 px-4 rounded-r-xl w-12 text-center font-normal"></th>
-          </tr>
-        ) : (
-          <tr className="text-gray-400 font-medium">
-            <th className="py-3 px-4 rounded-l-xl w-12 font-normal">#</th>
-            <th className="py-3 px-4 font-normal">Match</th>
-            <th className="py-3 px-4 font-normal">Pick</th>
-            <th className="py-3 px-4 font-normal">Odds</th>
-            <th className="py-3 px-4 rounded-r-xl w-12 text-center font-normal">Status</th>
-          </tr>
-        )}
-      </thead>
-      <tbody className="divide-y divide-gray-100 text-gray-800">
-        {isLoading ? (
-          <TableSkeleton columnsCount={4} rowCount={3} />
-        ) : isCasino ? (
-          details.roundSummary?.map((round, idx: number) => (
-            <tr key={idx}>
-              <td className="py-3.5 px-4 font-medium text-gray-400">
-                {idx + 1}
-              </td>
-              <td className="py-3.5 px-4 font-semibold text-gray-900">
-                {round.betAmount}
-              </td>
-              <td className="py-3.5 px-4 font-medium text-gray-700">
-                {formatDate(round.cashedOutAt)}
-              </td>
-              <td className="py-3.5 px-4 font-semibold text-[#10C300]">
-                {round.winAmount}
-              </td>
-              <td className="py-3.5 px-4 text-center">
-                {round.status === "Lost" ? (
-                  <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
-                ) : round.status === "Pending" ? (
-                  <Clock className="w-4 h-4 text-[#FFB000] inline-block" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
-                )}
-              </td>
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-xs border-collapse">
+        <thead className="bg-[#F9F9F9]">
+          {isCasino ? (
+            <tr className="text-gray-400 font-medium">
+              <th className="py-3 px-4 rounded-l-xl w-12 font-normal">#</th>
+              <th className="py-3 px-4 font-normal">Bet Amount</th>
+              <th className="py-3 px-4 font-normal">Cashed out at</th>
+              <th className="py-3 px-4 font-normal">Win Amount</th>
+              <th className="py-3 px-4 rounded-r-xl w-12 text-center font-normal">Status</th>
             </tr>
-          ))
-        ) : (
-          <>
-            {/* Check if selections exist and have data */}
-            {details.selections && details.selections.length > 0 ? (
-              <>
-                {details.selections.map((sel: MatchSelection, idx: number) => {
-                  let status = "Pending";
-                  if (sel.oddStatus === 2) status = "Won";
-                  else if (sel.oddStatus === 3) status = "Lost";
-                  else if (sel.oddStatus === 1) status = "Pending";
-                  
-                  return (
-                    <tr key={idx}>
+          ) : (
+            <tr className="text-gray-400 font-medium">
+              <th className="py-3 px-4 rounded-l-xl w-12 font-normal">#</th>
+              <th className="py-3 px-4 font-normal">Match</th>
+              <th className="py-3 px-4 font-normal">Pick</th>
+              <th className="py-3 px-4 font-normal">Odds</th>
+              <th className="py-3 px-4 rounded-r-xl w-12 text-center font-normal">Status</th>
+            </tr>
+          )}
+        </thead>
+        <tbody className="divide-y divide-gray-100 text-gray-800">
+          {isLoading ? (
+            <TableSkeleton columnsCount={4} rowCount={3} />
+          ) : isCasino ? (
+            details.roundSummary?.map((round, idx: number) => (
+              <tr key={idx}>
+                <td className="py-3.5 px-4 font-medium text-gray-400">
+                  {idx + 1}
+                </td>
+                <td className="py-3.5 px-4 font-semibold text-gray-900">
+                  {round.betAmount}
+                </td>
+                <td className="py-3.5 px-4 font-medium text-gray-700">
+                  {formatDate(round.cashedOutAt)}
+                </td>
+                <td className="py-3.5 px-4 font-semibold text-[#10C300]">
+                  {round.winAmount}
+                </td>
+                <td className="py-3.5 px-4 text-center">
+                  {(() => {
+                    const status = (round.status || '').toLowerCase();
+                    if (status === 'lost' || status === 'lose' || status === 'loss') {
+                      return <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />;
+                    } else if (status === 'pending' || status === 'active' || status === '') {
+                      return <Clock className="w-4 h-4 text-[#FFB000] inline-block" />;
+                    } else if (status === 'won' || status === 'win') {
+                      return <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />;
+                    } else {
+                      return <Clock className="w-4 h-4 text-gray-400 inline-block" />;
+                    }
+                  })()}
+                </td>
+              </tr>
+            ))
+          ) : (
+            <>
+              {/* Regular Selections */}
+              {details.selections && details.selections.length > 0 && (
+                <>
+                  {details.selections.map((sel: MatchSelection, idx: number) => (
+                    <tr key={`reg-${idx}`}>
                       <td className="py-3.5 px-4 font-medium text-gray-400">
                         {idx + 1}
                       </td>
@@ -653,17 +653,82 @@ export function TicketDetailsView({
                         {sel.odds || "—"}
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        {status === "Lost" ? (
+                        {sel.oddStatus === 3 ? (
                           <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
-                        ) : status === "Pending" ? (
+                        ) : sel.oddStatus === 1 || sel.oddStatus === 0 ? (
                           <Clock className="w-4 h-4 text-[#FFB000] inline-block" />
-                        ) : (
+                        ) : sel.oddStatus === 2 ? (
                           <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
+                        ) : (
+                          <Clock className="w-4 h-4 text-gray-400 inline-block" />
                         )}
                       </td>
                     </tr>
-                  );
-                })}
+                  ))}
+                </>
+              )}
+
+              {/* Bet Builder Selections */}
+              {(details as any).betBuilderSelections && (details as any).betBuilderSelections.length > 0 && (
+                <>
+                  <tr className="bg-[#F0F7FF]">
+                    <td colSpan={5} className="py-2 px-4 text-xs font-semibold text-blue-600">
+                      Bet Builder Selections
+                    </td>
+                  </tr>
+                  {(details as any).betBuilderSelections.map((builder: any, idx: number) => (
+                    <React.Fragment key={`builder-${idx}`}>
+                      {/* Group header */}
+                      <tr className="bg-gray-50">
+                        <td colSpan={5} className="py-1.5 px-4 text-xs font-medium text-gray-600">
+                          Builder {idx + 1}: {builder.match || "Unknown"}
+                          {builder.ratio && ` (Ratio: ${builder.ratio})`}
+                        </td>
+                      </tr>
+                      {/* Legs within the builder */}
+                      {builder.legs && builder.legs.length > 0 ? (
+                        builder.legs.map((leg: any, legIdx: number) => (
+                          <tr key={`builder-${idx}-leg-${legIdx}`} className="pl-4">
+                            <td className="py-3 px-4 font-medium text-gray-400 pl-8">
+                              {`${idx + 1}.${legIdx + 1}`}
+                            </td>
+                            <td className="py-3 px-4 font-semibold text-gray-900">
+                              {leg.match || leg.matchId || "Unknown Match"}
+                            </td>
+                            <td className="py-3 px-4 text-gray-700">
+                              {leg.pick || leg.marketId || leg.oddId || "—"}
+                            </td>
+                            <td className="py-3 px-4 font-semibold text-gray-900">
+                              {leg.odds || "—"}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {leg.oddStatus === 3 ? (
+                                <XCircle className="w-4 h-4 text-red-500 fill-red-500 text-white inline-block" />
+                              ) : leg.oddStatus === 1 || leg.oddStatus === 0 ? (
+                                <Clock className="w-4 h-4 text-[#FFB000] inline-block" />
+                              ) : leg.oddStatus === 2 ? (
+                                <CheckCircle2 className="w-4 h-4 text-[#10C300] fill-[#10C300] text-white inline-block" />
+                              ) : (
+                                <Clock className="w-4 h-4 text-gray-400 inline-block" />
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5} className="py-3 px-4 text-xs text-gray-400 pl-8">
+                            No legs available for this builder
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </>
+              )}
+
+              {/* Total Odds row - only if there are selections or bet builders */}
+              {(details.selections && details.selections.length > 0 ||
+                (details as any).betBuilderSelections && (details as any).betBuilderSelections.length > 0) && (
                 <tr className="bg-[#E8F8E5]/50 border-t border-gray-100 font-bold">
                   <td className="py-3.5 px-4"></td>
                   <td colSpan={2} className="py-3.5 px-4 text-[#10C300] font-bold">
@@ -674,20 +739,23 @@ export function TicketDetailsView({
                   </td>
                   <td className="py-3.5 px-4"></td>
                 </tr>
-              </>
-            ) : (
-              <tr>
-                <td colSpan={5} className="py-8 text-center text-gray-500">
-                  {!isLoading ? "No selections available for this ticket" : "Loading selections..."}
-                </td>
-              </tr>
-            )}
-          </>
-        )}
-      </tbody>
-    </table>
+              )}
+
+              {/* No selections message */}
+              {(!details.selections || details.selections.length === 0) &&
+              (!(details as any).betBuilderSelections || (details as any).betBuilderSelections.length === 0) && (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-gray-500">
+                    {!isLoading ? "No selections available for this ticket" : "Loading selections..."}
+                  </td>
+                </tr>
+              )}
+            </>
+          )}
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
 
 
     </div>

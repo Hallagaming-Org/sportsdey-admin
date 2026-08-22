@@ -299,7 +299,7 @@ function WalletPage() {
 									<FaFileExport className="h-3.5 w-3.5 text-white" />
 								</button>
 								{showExportMenu && (
-										<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
+									<div className="absolute right-0 z-[70] mt-2 w-40 rounded-xl border border-gray-200 bg-white p-1 shadow-lg overflow-hidden">
 										<button
 											type="button"
 											onClick={() => {

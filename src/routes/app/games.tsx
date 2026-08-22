@@ -1,10 +1,17 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { Search } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SortIcon from "@/logo/sort.svg?react";
 import GameCard from "#/components/GameCard";
-import { gamesService, type ApiGame } from "#/lib/games";
+import { gameMatchesQuery, gamesService, type ApiGame } from "#/lib/games";
+import {
+  fetchScorpioCatalog,
+  isScorpioLocalCode,
+  scorpioLocalCode,
+  type ScorpioCatalogGame,
+} from "#/lib/scorpio";
 
 import Img21 from "#/assets/21.png";
 import Img777 from "#/assets/777.png";
@@ -51,6 +58,7 @@ const GAME_METADATA: Record<string, { tagline: string, type: string, color: stri
 
 function GamesPage() {
   const [sort, setSort] = useState<"asc" | "desc">("asc");
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -64,7 +72,27 @@ function GamesPage() {
     }
   });
 
-  const games: Game[] = apiGames
+  const { data: scorpioCatalog = [] } = useQuery<ScorpioCatalogGame[]>({
+    queryKey: ["scorpio-catalog"],
+    queryFn: async () => {
+      const res = await fetchScorpioCatalog();
+      if (!res.success) return [];
+      return res.data || [];
+    },
+    retry: 1,
+  });
+
+  const scorpioRowsByCode = new Map<string, ApiGame>();
+  for (const game of apiGames) {
+    if (!isScorpioLocalCode(game.code)) continue;
+    const existing = scorpioRowsByCode.get(game.code);
+    if (!existing || (existing.enabled && !game.enabled)) {
+      scorpioRowsByCode.set(game.code, game);
+    }
+  }
+
+  const classicGames: Game[] = apiGames
+    .filter((g) => !isScorpioLocalCode(g.code))
     .map((g) => {
       const meta = GAME_METADATA[g.code] || {
         tagline: g.category || "Sportsdey game",
@@ -86,6 +114,25 @@ function GamesPage() {
         category: g.category || "Others",
       };
     });
+
+  const scorpioGames: Game[] = scorpioCatalog.map((g) => {
+    const code = scorpioLocalCode(g.providerId, g.gameId);
+    const local = scorpioRowsByCode.get(code);
+    return {
+      id: local?.id ?? code,
+      code,
+      name: g.name,
+      tagline: g.providerName,
+      type: "Scorpio",
+      color: "from-indigo-500 to-violet-700",
+      accentColor: "#6366F1",
+      enabled: local ? local.enabled : g.enabled,
+      image: g.imageUrl || ImgPlinko,
+      category: g.providerName,
+    };
+  });
+
+  const games: Game[] = [...scorpioGames, ...classicGames];
 
   const GAME_PRIORITY = [
     "solitaire",
@@ -116,14 +163,21 @@ function GamesPage() {
     return b.name.localeCompare(a.name);
   });
 
-  const gamesByCategory = sortedGames.reduce((acc, game) => {
+  const visibleGames = sortedGames.filter((game) =>
+    gameMatchesQuery(game, searchQuery),
+  );
+
+  const gamesByCategory = visibleGames.reduce((acc, game) => {
     const cat = game.category.toLowerCase();
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(game);
     return acc;
   }, {} as Record<string, Game[]>);
 
-  const CATEGORY_ORDER = ["popular", "others"];
+  const scorpioCategoryOrder = [
+    ...new Set(scorpioGames.map((game) => game.category.toLowerCase())),
+  ];
+  const CATEGORY_ORDER = [...scorpioCategoryOrder, "popular", "others"];
 
   const sortedCategories = Object.keys(gamesByCategory).sort((a, b) => {
     const aIdx = CATEGORY_ORDER.indexOf(a);
@@ -135,25 +189,65 @@ function GamesPage() {
   });
 
   const toggleMutation = useMutation({
-    mutationFn: async ({ id, isCurrentlyEnabled }: { id: string; isCurrentlyEnabled: boolean }) => {
+    mutationFn: async ({
+      id,
+      isCurrentlyEnabled,
+      createIfMissing,
+      name,
+      imageUrl,
+    }: {
+      id: string;
+      isCurrentlyEnabled: boolean;
+      createIfMissing?: boolean;
+      name?: string;
+      imageUrl?: string | null;
+    }) => {
+      if (createIfMissing) {
+        const res = await gamesService.createGames([
+          {
+            name: name || id,
+            code: id,
+            imageUrl: imageUrl ?? null,
+            enabled: !isCurrentlyEnabled,
+          },
+        ]);
+        if (!res.success) throw new Error(res.error || "Failed to update game");
+        return res.data;
+      }
       const res = await gamesService.toggleGame(id, !isCurrentlyEnabled);
       if (!res.success) throw new Error(res.error || "Failed to update game");
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
+      queryClient.invalidateQueries({ queryKey: ["scorpio-catalog"] });
       router.invalidate();
       toast.success("Game status updated successfully");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error.message);
     }
   });
 
   const handleToggle = (id: string) => {
-    const game = apiGames.find(g => g.id === id);
-    if (!game) return;
-    toggleMutation.mutate({ id, isCurrentlyEnabled: game.enabled });
+    if (toggleMutation.isPending) return;
+    const local =
+      apiGames.find((g) => g.id === id) ??
+      apiGames.find((g) => g.code === id);
+    if (local) {
+      toggleMutation.mutate({ id: local.id, isCurrentlyEnabled: local.enabled });
+      return;
+    }
+
+    const scorpio = scorpioGames.find((g) => g.id === id || g.code === id);
+    if (!scorpio) return;
+    toggleMutation.mutate({
+      id: scorpio.code,
+      isCurrentlyEnabled: scorpio.enabled,
+      createIfMissing: true,
+      name: scorpio.name,
+      imageUrl: scorpio.image === ImgPlinko ? null : scorpio.image,
+    });
   };
 
   return (
@@ -170,7 +264,22 @@ function GamesPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search games..."
+              aria-label="Search games"
+              autoComplete="off"
+              spellCheck={false}
+              maxLength={80}
+              className="h-9 w-64 rounded-full border border-gray-200 bg-white pr-4 pl-9 text-sm text-gray-900 outline-none shadow-[0_2px_8px_rgba(0,0,0,0.06)] focus:border-accent focus:ring-1 focus:ring-accent"
+            />
+          </div>
           <button
+            type="button"
             onClick={() => setSort((s) => (s === "asc" ? "desc" : "asc"))}
             className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-primary px-2 py-2 font-medium text-gray-900 text-sm hover:bg-gray-50"
           >
@@ -190,9 +299,9 @@ function GamesPage() {
               </div>
             ))}
           </div>
-        ) : Object.keys(gamesByCategory).length > 0 ? (
+        ) : visibleGames.length > 0 ? (
           sortedCategories.map((category) => {
-            const catGames = gamesByCategory[category];
+            const catGames = gamesByCategory[category] ?? [];
             return (
             <div key={category} className="mb-10">
               <h3 className="mb-4 text-xl font-bold text-gray-800 capitalize">{category}</h3>
@@ -206,7 +315,9 @@ function GamesPage() {
           })
         ) : (
           <div className="col-span-full text-center text-gray-500 py-10">
-            No active games found.
+            {searchQuery.trim()
+              ? `No games match "${searchQuery.trim()}".`
+              : "No games found."}
           </div>
         )}
       </div>
