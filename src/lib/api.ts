@@ -130,10 +130,16 @@ async function fetchApi<T>(
 		if (response.status === 401) {
 			redirectToSignIn();
 		}
+		const serverError =
+			typeof result.error === "string" && result.error.trim()
+				? result.error.trim()
+				: typeof result.error?.data?.message === "string"
+					? result.error.data.message
+					: "";
 		const errorMessage =
 			response.status === 400
-				? result.error || "Invalid request."
-				: "An error occurred. Try again later.";
+				? serverError || "Invalid request."
+				: serverError || "An error occurred. Try again later.";
 		return {
 			success: false,
 			error: errorMessage,

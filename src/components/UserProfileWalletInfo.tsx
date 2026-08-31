@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DataTable, type Column } from "./DataTable";
 import { TimePeriodFilter, type TimePeriod } from "./TimePeriodFilter";
@@ -43,6 +43,8 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [successData, setSuccessData] = useState<{ type: "credit" | "debit"; amount: string } | null>(null);
+  /** Stable per click-attempt so retries after a false/network error do not double-credit. */
+  const idempotencyKeyRef = useRef<string | null>(null);
 
   const { fromDate, toDate } = getDateRangeForPeriod(selectedTimePeriod, customRange, { output: "iso" });
 
@@ -75,15 +77,23 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
       if (!reason.trim()) {
         throw new Error("Please select a reason");
       }
+      if (!idempotencyKeyRef.current) {
+        idempotencyKeyRef.current =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `manual_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+      }
       const res = await userService.processManualTransaction(userId, {
         type: transactionType,
         amount: numAmount,
         reason: reason.trim(),
+        idempotencyKey: idempotencyKeyRef.current,
       });
       if (!res.success) throw new Error(res.error || "Failed to process manual transaction");
       return res;
     },
     onSuccess: () => {
+      idempotencyKeyRef.current = null;
       queryClient.invalidateQueries({ queryKey: ["user-wallet-overview", userId] });
       queryClient.invalidateQueries({ queryKey: ["user-wallet-transactions", userId] });
       queryClient.invalidateQueries({ queryKey: ["user-profile", userId] });
@@ -455,7 +465,10 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
               <div className="flex items-center gap-2">
                 <button 
                   type="button"
-                  onClick={() => setTransactionType("credit")}
+                  onClick={() => {
+                    setTransactionType("credit");
+                    idempotencyKeyRef.current = null;
+                  }}
                   className={`inline-flex items-center gap-2 px-2 w-[84px] py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
                     transactionType === "credit" ? "border-[#10C300] bg-[#F7FEF7] text-[#10C300]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                   }`}
@@ -467,7 +480,10 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
                 </button>
                 <button 
                   type="button"
-                  onClick={() => setTransactionType("debit")}
+                  onClick={() => {
+                    setTransactionType("debit");
+                    idempotencyKeyRef.current = null;
+                  }}
                   className={`inline-flex items-center gap-2 px-2 w-[84px] py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer ${
                     transactionType === "debit" ? "border-[#EE201C] bg-[#FEECEB] text-[#EE201C]" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                   }`}
@@ -487,7 +503,10 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
                 min="1"
                 placeholder="Enter amount"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  idempotencyKeyRef.current = null;
+                }}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-[#10C300] focus:outline-none focus:ring-1 focus:ring-[#10C300]"
               />
             </div>
@@ -497,7 +516,10 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
               <div className="relative">
                 <select
                   value={reason}
-                  onChange={(e) => setReason(e.target.value)}
+                  onChange={(e) => {
+                    setReason(e.target.value);
+                    idempotencyKeyRef.current = null;
+                  }}
                   className="w-full appearance-none rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#10C300] focus:outline-none focus:ring-1 focus:ring-[#10C300] cursor-pointer"
                 >
                   <option value="" disabled>Select a reason</option>

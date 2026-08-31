@@ -196,9 +196,14 @@ class UserService {
 		return fetchApi<UserTransactionsResponse>(`/user/${userId}/wallet/transactions${qs ? `?${qs}` : ""}`);
 	}
 
-	async processManualTransaction(
+  async processManualTransaction(
 		userId: string,
-		data: { type: "credit" | "debit"; amount: number; reason: string },
+		data: {
+			type: "credit" | "debit";
+			amount: number;
+			reason: string;
+			idempotencyKey: string;
+		},
 	): Promise<{ success: boolean; error?: string }> {
 		return fetchApi(`/user/${userId}/wallet/manual`, {
 			method: "POST",
