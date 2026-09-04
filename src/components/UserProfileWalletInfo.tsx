@@ -115,26 +115,69 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
   const rawTxList = (txData as any)?.transactions || (txData as any)?.data || (Array.isArray(txData) ? txData : []);
   const transactions: UserTransaction[] = Array.isArray(rawTxList) ? rawTxList : [];
 
+  const formatAmount = (value: number | string | null | undefined, showSign = false) => {
+    if (value === null || value === undefined || value === "") return "—";
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return String(value);
+    const sign = showSign && amount > 0 ? "+" : "";
+    return `${sign}₦${amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const transactionLabel = (t: UserTransaction) => {
+    const typeStr = String(t.type || "").toLowerCase();
+    if (typeStr === "deposit") return "Deposit";
+    if (typeStr === "withdrawal") return "Withdrawal";
+    if (typeStr === "manual_credit" || typeStr === "credit") return "Manual Credit";
+    if (typeStr === "manual_debit" || typeStr === "debit") return "Manual Debit";
+    return t.type || "Transaction";
+  };
+
   const columns: Column<UserTransaction>[] = [
     {
       header: "Type",
-      accessor: (t) => {
-        const typeStr = String(t.type || "").toLowerCase();
-        if (typeStr === "deposit") return "Deposit";
-        if (typeStr === "withdrawal") return "Withdrawal";
-        if (typeStr === "manual_credit" || typeStr === "credit") return "Manual Credit";
-        if (typeStr === "manual_debit" || typeStr === "debit") return "Manual Debit";
-        return t.type || "Transaction";
-      },
+      accessor: transactionLabel,
       cellClassName: "font-medium text-gray-900",
     },
     {
-      header: "Amount",
+      header: "Direction",
       accessor: (t) => {
-        const amt = typeof t.amount === "number" ? t.amount : parseFloat(String(t.amount || 0));
-        return `₦${(isNaN(amt) ? 0 : amt).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const direction = String(t.direction || "").toLowerCase();
+        const debit = direction === "debit";
+        const credit = direction === "credit";
+        return direction ? (
+          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${debit ? "bg-[#FEECEB] text-[#EE201C]" : credit ? "bg-[#E8F8E5] text-[#10C300]" : "bg-gray-100 text-gray-600"}`}>
+            {direction}
+          </span>
+        ) : "—";
       },
+    },
+    {
+      header: "Amount",
+      accessor: (t) => formatAmount(t.amount),
       cellClassName: "font-bold text-gray-900",
+    },
+    {
+      header: "Wallet Effect",
+      accessor: (t) => {
+        const effect = Number(t.walletEffect);
+        const effectClass = Number.isFinite(effect) ? effect < 0 ? "text-[#EE201C]" : effect > 0 ? "text-[#10C300]" : "text-gray-500" : "text-gray-500";
+        return <span className={`font-semibold ${effectClass}`}>{formatAmount(t.walletEffect, true)}</span>;
+      },
+    },
+    {
+      header: "Balance After",
+      accessor: (t) => formatAmount(t.balanceAfter),
+      cellClassName: "font-medium text-gray-900",
+    },
+    {
+      header: "Purpose",
+      accessor: (t) => t.purpose || "—",
+      cellClassName: "text-gray-500 max-w-[220px] truncate",
+    },
+    {
+      header: "Payment Method",
+      accessor: (t) => t.paymentMethod || "—",
+      cellClassName: "text-gray-500",
     },
     {
       header: "Reference ID",
@@ -191,8 +234,13 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
 
   const exportToExcel = () => {
     const dataToExport = transactions.map((t) => ({
-      "Type": String(t.type || ""),
-      "Amount": typeof t.amount === "number" ? `₦${t.amount.toLocaleString()}` : String(t.amount || 0),
+      "Type": transactionLabel(t),
+      "Direction": t.direction || "-",
+      "Amount": formatAmount(t.amount),
+      "Wallet Effect": formatAmount(t.walletEffect, true),
+      "Balance After": formatAmount(t.balanceAfter),
+      "Purpose": t.purpose || "-",
+      "Payment Method": t.paymentMethod || "-",
       "Reference ID": t.referenceId || t.id || "-",
       "Date & Time": t.dateTime || "-",
       "Status": t.status || "Completed",
@@ -206,7 +254,12 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     worksheet["!cols"] = [
       { wch: 15 }, // Type
+      { wch: 12 }, // Direction
       { wch: 15 }, // Amount
+      { wch: 15 }, // Wallet Effect
+      { wch: 16 }, // Balance After
+      { wch: 24 }, // Purpose
+      { wch: 18 }, // Payment Method
       { wch: 20 }, // Reference ID
       { wch: 20 }, // Date & Time
       { wch: 15 }, // Status
@@ -224,10 +277,15 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
     const doc = new jsPDF({ orientation: "landscape", format: [600, 300] });
     doc.text("Transaction Summary", 14, 15);
     autoTable(doc, {
-      head: [["Type", "Amount", "Reference ID", "Date & Time", "Status"]],
+      head: [["Type", "Direction", "Amount", "Wallet Effect", "Balance After", "Purpose", "Payment Method", "Reference ID", "Date & Time", "Status"]],
       body: transactions.map((t) => [
-        String(t.type || ""),
-        typeof t.amount === "number" ? `₦${t.amount.toLocaleString()}` : String(t.amount || 0),
+        transactionLabel(t),
+        t.direction || "-",
+        formatAmount(t.amount),
+        formatAmount(t.walletEffect, true),
+        formatAmount(t.balanceAfter),
+        t.purpose || "-",
+        t.paymentMethod || "-",
         t.referenceId || t.id || "-",
         t.dateTime || "-",
         t.status || "Completed",
@@ -267,7 +325,7 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: [
                 new TableRow({
-                  children: ["Type", "Amount", "Reference ID", "Date & Time", "Status"].map(
+                  children: ["Type", "Direction", "Amount", "Wallet Effect", "Balance After", "Purpose", "Payment Method", "Reference ID", "Date & Time", "Status"].map(
                     (header) =>
                       new TableCell({
                         children: [new Paragraph({ children: [new TextRun({ text: header, bold: true })] })],
@@ -279,8 +337,13 @@ export function UserProfileWalletInfo({ userId, balance }: UserProfileWalletInfo
                   (t) =>
                     new TableRow({
                       children: [
-                        String(t.type || ""),
-                        typeof t.amount === "number" ? `₦${t.amount.toLocaleString()}` : String(t.amount || 0),
+                        transactionLabel(t),
+                        t.direction || "-",
+                        formatAmount(t.amount),
+                        formatAmount(t.walletEffect, true),
+                        formatAmount(t.balanceAfter),
+                        t.purpose || "-",
+                        t.paymentMethod || "-",
                         t.referenceId || t.id || "-",
                         t.dateTime || "-",
                         t.status || "Completed",

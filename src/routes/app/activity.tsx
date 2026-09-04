@@ -7,8 +7,14 @@ import {
 	TimePeriodFilter,
 } from "#/components/TimePeriodFilter";
 import { ActivityChart as ActivityTrendChart } from "@/components/ActivityChart";
+import { ActivityLogDetailsModal } from "@/components/ActivityLogDetailsModal";
 import { TicketsTrendPie } from "@/components/TicketsTrendPie";
-import { type AdminActivity, getAdminActivity } from "@/lib/admin-activity";
+import {
+	formatActivityAmount,
+	type AdminActivity,
+	getAdminActivity,
+	isWalletActivity,
+} from "@/lib/admin-activity";
 import {
 	type DayActivity,
 	type TopBet as OverviewTopBet,
@@ -98,6 +104,7 @@ function ActivityPage() {
 		total: 0,
 	});
 	const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+	const [selectedActivity, setSelectedActivity] = useState<AdminActivity | null>(null);
 	const [activity, setActivity] = useState<DayActivity[] | null>(null);
 	const [topBets, setTopBets] = useState<OverviewTopBet[] | null>(null);
 	const [trendDateRange, setTrendDateRange] = useState<{
@@ -143,7 +150,7 @@ function ActivityPage() {
 
 	const columns: Column<AdminActivity>[] = [
 		{
-			header: "User ID",
+			header: "Admin ID",
 			accessor: "adminId",
 		},
 		{
@@ -173,6 +180,27 @@ function ActivityPage() {
 			header: "Role",
 			accessor: "adminRole",
 			cellClassName: "text-gray-500",
+		},
+		{
+			header: "Affected User",
+			accessor: (record) => record.targetUserName || record.targetUserEmail || record.targetUserId || "—",
+			cellClassName: "text-gray-500",
+		},
+		{
+			header: "Wallet",
+			accessor: (record) =>
+				isWalletActivity(record) ? record.walletType || record.walletId || "Main wallet" : "—",
+			cellClassName: "text-gray-500",
+		},
+		{
+			header: "Amount",
+			accessor: (record) => isWalletActivity(record) ? formatActivityAmount(record) : "—",
+			cellClassName: "font-medium text-gray-900",
+		},
+		{
+			header: "Purpose",
+			accessor: (record) => record.purpose || "—",
+			cellClassName: "text-gray-500 max-w-[220px] truncate",
 		},
 		{
 			header: "Action",
@@ -222,6 +250,9 @@ function ActivityPage() {
 							columns={columns}
 							isLoading={isLoadingActivities}
 							emptyMessage="No activity found"
+							actionMenuItems={[
+								{ label: "View activity details", onClick: setSelectedActivity },
+							]}
 							pagination={{
 								currentPage: page,
 								totalPages: activityPagination.totalPages,
@@ -233,6 +264,11 @@ function ActivityPage() {
 					</div>
 				</div>
 			</div>
+			<ActivityLogDetailsModal
+				activity={selectedActivity}
+				isOpen={selectedActivity !== null}
+				onClose={() => setSelectedActivity(null)}
+			/>
 		</div>
 	);
 }

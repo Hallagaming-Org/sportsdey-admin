@@ -75,6 +75,11 @@ export interface UserTransaction {
 	referenceId: string;
 	dateTime: string;
 	status: string;
+	direction?: "debit" | "credit" | string | null;
+	walletEffect?: number | string | null;
+	balanceAfter?: number | string | null;
+	purpose?: string | null;
+	paymentMethod?: string | null;
 }
 
 export interface UserTransactionsResponse {
