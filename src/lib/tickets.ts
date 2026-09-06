@@ -8,11 +8,17 @@ export interface MatchSelection {
   id?: string | number;
   matchId?: string;           
   match: string;
+  market?: string;
+  marketLabel?: string;
   pick?: string;
+  pickLabel?: string;
+  selectionName?: string;
+  outcomeName?: string;
+  oddName?: string;
   marketId?: string;         
   oddId?: string;
   odds: number | string;
-  status?: "Won" | "Lost" | "Pending" | "Void" | "win" | "loss" | "pending"; // Add lowercase variants
+  status?: "Won" | "Lost" | "Pending" | "Void" | "win" | "loss" | "pending";
   oddStatus?: number;
 }
 
@@ -23,7 +29,13 @@ export interface BetBuilderLeg {
   oddId?: string | null;
   odds?: string | number | null;
   oddStatus?: number | null;
-  pick?: string | null; 
+	pick?: string | null;
+	market?: string | null;
+	marketLabel?: string | null;
+	pickLabel?: string | null;
+	selectionName?: string | null;
+	outcomeName?: string | null;
+	oddName?: string | null;
   status?: "Won" | "Lost" | "Pending" | "Void" | "win" | "loss" | "pending";
 }
 
@@ -53,8 +65,9 @@ export interface DetailedTicket extends TicketRecord {
 	playerEmail?: string;
 	playerPhone?: string;
 	playerVerified?: boolean;
-	betType?: string;
+	betType?: string | number;
 	selectionCount?: number;
+	selection?: number | string;
 	totalOdds?: number | string;
 	freeBet?: boolean | string;
 	bonusUsed?: boolean | string;
@@ -95,6 +108,36 @@ export interface TicketRecord {
 	balanceBefore: string | null;
 	balanceAfter: string | null;
 	userSuspended?: boolean;
+}
+
+export function formatBetType(betType?: string | number | null): string {
+	if (typeof betType === "number") {
+		return betType === 1 ? "Single" : betType === 2 ? "Multiple" : `Type ${betType}`;
+	}
+	const normalized = String(betType ?? "").trim().toLowerCase();
+	if (normalized === "1") return "Single";
+	if (normalized === "2") return "Multiple";
+	return normalized ? String(betType) : "—";
+}
+
+export function getSelectionCount(ticket: Pick<DetailedTicket, "selectionCount" | "selection" | "selections" | "betBuilderSelections">): number {
+	if (typeof ticket.selectionCount === "number") return ticket.selectionCount;
+	const legacyCount = Number(ticket.selection);
+	if (Number.isInteger(legacyCount) && legacyCount >= 0) return legacyCount;
+	const regularSelections = ticket.selections?.length ?? 0;
+	const betBuilderLegs = ticket.betBuilderSelections?.reduce(
+		(total, builder) => total + (builder.legs?.length ?? 0),
+		0,
+	) ?? 0;
+	return regularSelections + betBuilderLegs;
+}
+
+export function getSelectionPick(selection: MatchSelection | BetBuilderLeg): string {
+	return selection.pick || selection.pickLabel || selection.selectionName || selection.outcomeName || selection.oddName || "—";
+}
+
+export function getSelectionMarket(selection: MatchSelection | BetBuilderLeg): string {
+	return selection.market || selection.marketLabel || "—";
 }
 
 export interface TicketsResponse {
@@ -197,7 +240,7 @@ class TicketService {
 	async getTicketDetails(
 		ticketId: string,
 	): Promise<{ success: boolean; data?: DetailedTicket; error?: string }> {
-		return fetchApi<DetailedTicket>(`/admin/tickets/${ticketId}`);
+		return fetchApi<DetailedTicket>(`/admin/tickets/${encodeURIComponent(ticketId)}`);
 	}
 }
 

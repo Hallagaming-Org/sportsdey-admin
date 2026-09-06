@@ -18,7 +18,16 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { TableSkeleton } from "./TableSkeleton";
 
-import { ticketService, type TicketRecord, type DetailedTicket, type MatchSelection } from "#/lib/tickets";
+import {
+  formatBetType,
+  getSelectionCount,
+  getSelectionMarket,
+  getSelectionPick,
+  ticketService,
+  type TicketRecord,
+  type DetailedTicket,
+  type MatchSelection,
+} from "#/lib/tickets";
 import type { User } from "#/lib/users";
 
 interface TicketDetailsViewProps {
@@ -85,8 +94,13 @@ export function TicketDetailsView({
     balanceBefore: (fetchedDetails as any)?.player?.balanceBefore || ticket.balanceBefore || "—",
     balanceAfter: (fetchedDetails as any)?.player?.balanceAfter || ticket.balanceAfter || "—",
     image: (fetchedDetails as any)?.player?.image || ticket.image,
-    betType: fetchedDetails?.betType || ticket.gameType || "—",
-    selectionCount: fetchedDetails?.selectionCount || 0,
+    betType: formatBetType(fetchedDetails?.betType),
+    selectionCount: getSelectionCount({
+      selectionCount: fetchedDetails?.selectionCount,
+      selection: fetchedDetails?.selection,
+      selections: fetchedDetails?.selections,
+      betBuilderSelections: fetchedDetails?.betBuilderSelections,
+    }),
     totalOdds: fetchedDetails?.totalOdds || "—",
     freeBet: fetchedDetails?.freeBet ?? "—",
     bonusUsed: fetchedDetails?.bonusUsed ?? "—",
@@ -154,7 +168,7 @@ export function TicketDetailsView({
         body: details.selections?.map((s: MatchSelection, idx: number) => [
           idx + 1,
           s.match ?? "-",
-          s.pick ?? s.oddId ?? "-",
+          `${getSelectionMarket(s)}: ${getSelectionPick(s)}`,
           s.odds ?? "-",
         ]) || [],
         startY: 38,
@@ -647,7 +661,8 @@ export function TicketDetailsView({
                         {sel.match || sel.matchId || "Unknown Match"}
                       </td>
                       <td className="py-3.5 px-4 text-gray-700">
-                        {sel.pick || sel.marketId || sel.oddId || "—"}
+                        <div>{getSelectionPick(sel)}</div>
+                        <div className="mt-0.5 text-[10px] text-gray-400">{getSelectionMarket(sel)}</div>
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-gray-900">
                         {sel.odds || "—"}
@@ -696,7 +711,8 @@ export function TicketDetailsView({
                               {leg.match || leg.matchId || "Unknown Match"}
                             </td>
                             <td className="py-3 px-4 text-gray-700">
-                              {leg.pick || leg.marketId || leg.oddId || "—"}
+                              <div>{getSelectionPick(leg)}</div>
+                              <div className="mt-0.5 text-[10px] text-gray-400">{getSelectionMarket(leg)}</div>
                             </td>
                             <td className="py-3 px-4 font-semibold text-gray-900">
                               {leg.odds || "—"}
