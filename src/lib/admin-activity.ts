@@ -2,43 +2,41 @@ import { fetchApi } from "./api";
 
 export interface AdminActivity {
 	id: string;
-	adminId: string;
-	adminName: string;
-	adminEmail: string;
-	adminRole: string;
+	userId: string;
+	fullName: string;
+	emailAddress: string;
+	role: string;
+	username: string | null;
+	avatar: string | null;
+	status: "online" | "offline";
 	action: string;
 	createdAt: string;
-	targetUserId?: string | null;
-	targetUserName?: string | null;
-	targetUserEmail?: string | null;
-	walletId?: string | null;
-	walletType?: string | null;
-	amount?: number | string | null;
-	currency?: string | null;
-	purpose?: string | null;
-	referenceId?: string | null;
-	balanceBefore?: number | string | null;
-	balanceAfter?: number | string | null;
-	status?: string | null;
-	description?: string | null;
+	targetUser: {
+		id: string;
+		name: string | null;
+		email: string | null;
+		username: string | null;
+	} | null;
+	details: {
+		transactionType?: "credit" | "debit";
+		amount?: number;
+		currency?: string;
+		reason?: string;
+		transactionId?: string;
+		balanceAfter?: number;
+	} | null;
 }
 
 export function isWalletActivity(activity: AdminActivity): boolean {
-	return Boolean(
-		activity.walletId ||
-		activity.walletType ||
-		activity.amount !== null && activity.amount !== undefined ||
-		/\b(wallet|credit|debit|deposit|withdrawal)\b/i.test(activity.action),
-	);
+	return Boolean(activity.details?.transactionType);
 }
 
 export function formatActivityAmount(activity: AdminActivity): string {
-	if (activity.amount === null || activity.amount === undefined || activity.amount === "") return "—";
-	const amount = Number(activity.amount);
-	if (!Number.isFinite(amount)) return String(activity.amount);
+	const amount = activity.details?.amount;
+	if (amount === null || amount === undefined) return "—";
 	return new Intl.NumberFormat("en-NG", {
 		style: "currency",
-		currency: activity.currency || "NGN",
+		currency: activity.details?.currency || "NGN",
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
 	}).format(amount);

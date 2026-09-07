@@ -59,21 +59,22 @@ export function ActivityLogDetailsModal({ activity, isOpen, onClose }: ActivityL
 								<Row label="Performed by:" value={
 									<div className="flex items-center gap-2">
 										<img 
-											src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${activity.adminId}`}
+											src={activity.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${activity.userId}`}
 											alt="avatar" 
 											className="h-5 w-5 rounded-full bg-[#FEECEB]" 
 										/>
-										<span className="font-medium text-gray-900">{activity.adminName} <span className="text-gray-500 font-normal">(ID {activity.adminId})</span></span>
+										<span className="font-medium text-gray-900">{activity.fullName} <span className="text-gray-500 font-normal">(ID {activity.userId})</span></span>
 									</div>
 								} />
-								<Row label="Role:" value={activity.adminRole} />
+								<Row label="Role:" value={activity.role} />
+								<Row label="Username:" value={activity.username || "—"} />
 								<Row label="Action:" value={activity.action} />
 								<Row label="Date & time:" value={timestamp} />
 								
 								<div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100 -mx-5 px-5">
 									<span className="text-sm font-medium text-green-600">Status</span>
 									<span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600 border border-green-200">
-										{activity.status || "Completed"}
+										{activity.status === "online" ? "Online" : "Offline"}
 									</span>
 								</div>
 							</div>
@@ -83,10 +84,10 @@ export function ActivityLogDetailsModal({ activity, isOpen, onClose }: ActivityL
 							<div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm space-y-4">
 								<h3 className="font-bold text-gray-900 text-sm">Action Details</h3>
 								<div className="space-y-3">
-									<Row label="Description" value={activity.description || activity.action} vertical />
-									<Row label="Affected user" value={activity.targetUserName || activity.targetUserEmail || activity.targetUserId || "—"} vertical />
-									<Row label="User ID" value={activity.targetUserId || "—"} vertical />
-									<Row label="Reference" value={activity.referenceId || "—"} vertical />
+									<Row label="Description" value={activity.action} vertical />
+									<Row label="Affected user" value={activity.targetUser?.name || activity.targetUser?.email || "—"} vertical />
+									<Row label="User ID" value={activity.targetUser?.id || "—"} vertical />
+									<Row label="User contact" value={activity.targetUser?.username || activity.targetUser?.email || "—"} vertical />
 								</div>
 							</div>
 
@@ -94,12 +95,12 @@ export function ActivityLogDetailsModal({ activity, isOpen, onClose }: ActivityL
 								<h3 className="font-bold text-gray-900 text-sm">{walletActivity ? "Wallet Details" : "Additional Information"}</h3>
 								<div className="space-y-3">
 									{walletActivity ? <>
-										<Row label="Wallet" value={activity.walletType || activity.walletId || "—"} vertical />
+										<Row label="Adjustment" value={activity.details?.transactionType === "credit" ? "Credit" : "Debit"} vertical />
 										<Row label="Amount" value={formatActivityAmount(activity)} vertical />
-										<Row label="Purpose" value={activity.purpose || "—"} vertical />
-										<Row label="Balance before" value={formatBalance(activity.balanceBefore, activity.currency || undefined)} vertical />
-										<Row label="Balance after" value={formatBalance(activity.balanceAfter, activity.currency || undefined)} vertical />
-									</> : <Row label="Admin email" value={activity.adminEmail || "—"} vertical />}
+										<Row label="Reason" value={activity.details?.reason || "—"} vertical />
+										<Row label="Transaction ID" value={activity.details?.transactionId || "—"} vertical />
+										<Row label="Balance after" value={formatBalance(activity.details?.balanceAfter, activity.details?.currency)} vertical />
+									</> : <Row label="Admin email" value={activity.emailAddress || "—"} vertical />}
 								</div>
 							</div>
 						</div>

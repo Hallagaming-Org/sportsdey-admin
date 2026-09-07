@@ -13,7 +13,6 @@ import {
 	formatActivityAmount,
 	type AdminActivity,
 	getAdminActivity,
-	isWalletActivity,
 } from "@/lib/admin-activity";
 import {
 	type DayActivity,
@@ -150,67 +149,73 @@ function ActivityPage() {
 
 	const columns: Column<AdminActivity>[] = [
 		{
-			header: "Admin ID",
-			accessor: "adminId",
+			header: "User ID",
+			accessor: "userId",
 		},
 		{
 			header: "Full Name",
 			accessor: (record) => (
 				<div className="flex items-center gap-3 min-w-0">
 					<img
-						src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${record.adminId}`}
+						src={record.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${record.userId}`}
 						alt="avatar"
 						className="h-8 w-8 rounded-full bg-gray-100 object-cover shrink-0"
 					/>
 					<span
 						className="font-medium text-sm text-gray-900 truncate"
-						title={record.adminName}
+						title={record.fullName}
 					>
-						{record.adminName}
+						{record.fullName}
 					</span>
 				</div>
 			),
 		},
 		{
 			header: "Email address",
-			accessor: "adminEmail",
+			accessor: "emailAddress",
 			cellClassName: "text-gray-500",
 		},
 		{
 			header: "Role",
-			accessor: "adminRole",
+			accessor: "role",
 			cellClassName: "text-gray-500",
-		},
-		{
-			header: "Affected User",
-			accessor: (record) => record.targetUserName || record.targetUserEmail || record.targetUserId || "—",
-			cellClassName: "text-gray-500",
-		},
-		{
-			header: "Wallet",
-			accessor: (record) =>
-				isWalletActivity(record) ? record.walletType || record.walletId || "Main wallet" : "—",
-			cellClassName: "text-gray-500",
-		},
-		{
-			header: "Amount",
-			accessor: (record) => isWalletActivity(record) ? formatActivityAmount(record) : "—",
-			cellClassName: "font-medium text-gray-900",
-		},
-		{
-			header: "Purpose",
-			accessor: (record) => record.purpose || "—",
-			cellClassName: "text-gray-500 max-w-[220px] truncate",
 		},
 		{
 			header: "Action",
-			accessor: "action",
+			accessor: (record) => (
+				<div className="min-w-[220px] whitespace-normal">
+					<div className="font-medium text-gray-900">{record.action}</div>
+					{record.targetUser && (
+						<div className="mt-1 text-xs text-gray-500">
+							<span className="font-medium text-gray-700">{record.targetUser.name || "User"}</span>
+							<span> · User ID: {record.targetUser.id}</span>
+						</div>
+					)}
+					{record.details?.transactionType && (
+						<div className={`mt-1 text-xs ${record.details.transactionType === "credit" ? "text-[#10C300]" : "text-[#EE201C]"}`}>
+							{record.details.transactionType === "credit" ? "Credited" : "Debited"} {formatActivityAmount(record)}
+							{record.details.reason ? ` · ${record.details.reason}` : ""}
+						</div>
+					)}
+				</div>
+			),
+		},
+		{
+			header: "Username",
+			accessor: (record) => record.username || "—",
 			cellClassName: "text-gray-500",
 		},
 		{
 			header: "Date",
 			accessor: (record) => new Date(record.createdAt).toLocaleString("en-NG"),
 			cellClassName: "text-gray-500",
+		},
+		{
+			header: "Status",
+			accessor: (record) => {
+				const online = record.status === "online";
+				return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${online ? "bg-[#E8F8E5] text-[#10C300]" : "bg-[#FEECEB] text-[#EE201C]"}`}>{online ? "Online" : "Offline"}</span>;
+			},
 		},
 	];
 
