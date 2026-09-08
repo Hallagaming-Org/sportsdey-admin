@@ -161,7 +161,6 @@ export function ActivityChart({
 						<div className="absolute bottom-0 left-0 right-0 top-0 flex items-end justify-between px-2 lg:px-8">
 							{displayData.map((day, idx) => (
 								<div
-									// biome-ignore lint/suspicious/noArrayIndexKey: static day list, order never changes
 									key={idx}
 									className="flex h-full w-16 items-end justify-center gap-1 z-10 group relative"
 								>
@@ -189,7 +188,6 @@ export function ActivityChart({
 					<div className="pt-2 flex justify-between px-2 lg:px-8 text-xs font-semibold text-gray-500">
 						{days.map((day, idx) => (
 							<span
-								// biome-ignore lint/suspicious/noArrayIndexKey: static day list, order never changes
 								key={idx}
 								className="w-16 text-center uppercase tracking-wider"
 							>

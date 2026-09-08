@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { IoFilter } from "react-icons/io5";
+import { Copy, Download, Eye, Flag } from "lucide-react";
+import { toast } from "sonner";
 import { type Column, DataTable } from "#/components/DataTable";
 import {
 	type TimePeriod,
@@ -13,6 +15,7 @@ import {
 	formatActivityAmount,
 	type AdminActivity,
 	getAdminActivity,
+	getAdminActivityDetail,
 } from "@/lib/admin-activity";
 import {
 	type DayActivity,
@@ -104,6 +107,8 @@ function ActivityPage() {
 	});
 	const [isLoadingActivities, setIsLoadingActivities] = useState(true);
 	const [selectedActivity, setSelectedActivity] = useState<AdminActivity | null>(null);
+	const [reportActivity, setReportActivity] = useState<AdminActivity | null>(null);
+	const [reportText, setReportText] = useState("");
 	const [activity, setActivity] = useState<DayActivity[] | null>(null);
 	const [topBets, setTopBets] = useState<OverviewTopBet[] | null>(null);
 	const [trendDateRange, setTrendDateRange] = useState<{
@@ -219,6 +224,20 @@ function ActivityPage() {
 		},
 	];
 
+	const downloadActivity = async (record: AdminActivity) => {
+		const response = await getAdminActivityDetail(record.id);
+		if (!response.success || !response.data) return toast.error(response.error || "Could not download activity log");
+		const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement("a");
+		anchor.href = url; anchor.download = `activity-log-${record.id}.json`; anchor.click();
+		URL.revokeObjectURL(url);
+	};
+	const copyActivityLink = async (record: AdminActivity) => {
+		await navigator.clipboard?.writeText(`${window.location.origin}/app/activity?activityId=${encodeURIComponent(record.id)}`);
+		toast.success("Protected activity-log link copied");
+	};
+
 	return (
 		<div className="flex h-[calc(100vh-120px)] flex-1 flex-col overflow-hidden px-2 lg:px-4">
 			<div className="flex-none mb-6 flex items-center justify-between">
@@ -256,7 +275,10 @@ function ActivityPage() {
 							isLoading={isLoadingActivities}
 							emptyMessage="No activity found"
 							actionMenuItems={[
-								{ label: "View activity details", onClick: setSelectedActivity },
+								{ label: "View Details", icon: <Eye className="h-4 w-4" />, onClick: setSelectedActivity },
+								{ label: "Download Activity Log", icon: <Download className="h-4 w-4" />, onClick: downloadActivity },
+								{ label: "Copy Log Link", icon: <Copy className="h-4 w-4" />, onClick: copyActivityLink },
+								{ label: "Report this Activity", icon: <Flag className="h-4 w-4" />, onClick: setReportActivity },
 							]}
 							pagination={{
 								currentPage: page,
@@ -274,6 +296,7 @@ function ActivityPage() {
 				isOpen={selectedActivity !== null}
 				onClose={() => setSelectedActivity(null)}
 			/>
+			{reportActivity && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><form onSubmit={(event) => { event.preventDefault(); toast.success("Report captured locally. No report recipient is configured yet."); setReportActivity(null); setReportText(""); }} className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"><h2 className="text-lg font-bold">Report Activity</h2><p className="mt-1 text-sm text-gray-500">Activity ID: {reportActivity.id}</p><textarea required value={reportText} onChange={(event) => setReportText(event.target.value)} placeholder="Describe the issue" className="mt-4 h-28 w-full rounded-lg border border-gray-300 p-3 text-sm" /><div className="mt-4 flex justify-end gap-3"><button type="button" onClick={() => setReportActivity(null)} className="rounded-lg px-4 py-2 text-sm">Cancel</button><button className="rounded-lg bg-[#1BAA04] px-4 py-2 text-sm font-medium text-white">Submit report</button></div></form></div>}
 		</div>
 	);
 }

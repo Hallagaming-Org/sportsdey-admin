@@ -27,6 +27,20 @@ export interface AdminActivity {
 	} | null;
 }
 
+export interface AdminActivityDetail extends AdminActivity {
+	module?: string | null;
+	sessionId?: string | null;
+	ipAddress?: string | null;
+	device?: string | null;
+	browser?: string | null;
+	location?: string | null;
+	timeZone?: string | null;
+	screenResolution?: string | null;
+	reference?: string | null;
+	description?: string | null;
+	executionStatus?: "completed" | string | null;
+}
+
 export function isWalletActivity(activity: AdminActivity): boolean {
 	return Boolean(activity.details?.transactionType);
 }
@@ -65,4 +79,17 @@ export async function getAdminActivity(params: {
 		limit: String(params.limit),
 	});
 	return fetchApi<AdminActivityResponse>(`/admin/activity?${searchParams}`);
+}
+
+export async function getAdminActivityDetail(activityId: string): Promise<{
+	success: boolean;
+	data?: AdminActivityDetail;
+	error?: string;
+}> {
+	const response = await fetchApi<{ activity: AdminActivityDetail }>(
+		`/admin/activity/${encodeURIComponent(activityId)}`,
+	);
+	return response.success
+		? { success: true, data: response.data?.activity }
+		: { success: false, error: response.error };
 }

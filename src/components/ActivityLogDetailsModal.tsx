@@ -1,138 +1,48 @@
-import { Copy, X, Wallet } from "lucide-react";
-import {
-	formatActivityAmount,
-	isWalletActivity,
-	type AdminActivity,
-} from "@/lib/admin-activity";
+import { useQuery } from "@tanstack/react-query";
+import { Copy, Loader2, Wallet, X } from "lucide-react";
+import { formatActivityAmount, getAdminActivityDetail, isWalletActivity, type AdminActivity, type AdminActivityDetail } from "@/lib/admin-activity";
 
-interface ActivityLogDetailsModalProps {
-	activity: AdminActivity | null;
-	isOpen: boolean;
-	onClose: () => void;
+interface Props { activity: AdminActivity | null; isOpen: boolean; onClose: () => void; }
+const recorded = (value?: string | null) => value || "Not recorded";
+
+export function ActivityLogDetailsModal({ activity, isOpen, onClose }: Props) {
+  const { data: detail, isLoading } = useQuery({
+    queryKey: ["admin-activity-detail", activity?.id],
+    queryFn: async () => {
+      if (!activity) return null;
+      const result = await getAdminActivityDetail(activity.id);
+      if (!result.success) throw new Error(result.error || "Could not load activity details");
+      return result.data || null;
+    },
+    enabled: isOpen && !!activity?.id,
+  });
+  if (!isOpen || !activity) return null;
+  const record: AdminActivityDetail = detail || activity;
+  const walletActivity = isWalletActivity(record);
+  const copy = (value?: string | null) => value && navigator.clipboard?.writeText(value);
+  const status = record.executionStatus || "completed";
+
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Activity log details">
+    <div className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-[#f8f9fb] shadow-xl">
+      <header className="flex items-center justify-between border-b border-gray-100 bg-white p-6"><div className="flex items-center gap-4"><span className="flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700"><Wallet /></span><h2 className="text-2xl font-bold text-gray-900">Activity Log Details</h2></div><button type="button" onClick={onClose} className="rounded-full bg-[#08083b] p-3 text-white"><X /></button></header>
+      <div className="overflow-y-auto p-6 custom-scrollbar">
+        {isLoading ? <div className="flex min-h-64 items-center justify-center text-gray-500"><Loader2 className="mr-2 animate-spin" /> Loading activity details…</div> : <div className="space-y-5">
+          <Panel title="Activity Overview">
+            <Field label="Log ID" value={<span className="flex items-center gap-2">{record.id}<button type="button" onClick={() => copy(record.id)} className="text-green-600"><Copy className="h-4 w-4" /></button></span>} />
+            <Field label="Admin User" value={<span className="flex items-center gap-2"><img src={record.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${record.userId}`} className="h-6 w-6 rounded-full" alt="" />{record.fullName} (ID {record.userId})</span>} />
+            <Field label="Role" value={record.role} /><Field label="Action" value={record.action} /><Field label="Module" value={recorded(record.module)} /><Field label="IP Address" value={recorded(record.ipAddress)} /><Field label="Device" value={recorded(record.device)} /><Field label="Browser" value={recorded(record.browser)} /><Field label="Location" value={recorded(record.location)} />
+            <div className="mt-5 flex items-center justify-between border-t pt-4"><span className="font-medium text-green-700">Status</span><span className="rounded-full border border-green-300 bg-green-50 px-4 py-1 text-sm font-medium capitalize text-green-700">{status}</span></div>
+          </Panel>
+          <div className="grid gap-5 md:grid-cols-2">
+            <Panel title="Action Details"><Field label="Description" value={record.description || record.action} /><Field label="Reference" value={record.reference || "—"} />{record.targetUser && <><Field label="Affected user" value={record.targetUser.name || "User"} /><Field label="User ID" value={record.targetUser.id} /><Field label="Email" value={record.targetUser.email || "—"} /></>}{walletActivity && <><Field label="Adjustment" value={record.details?.transactionType === "credit" ? `Credited: ${formatActivityAmount(record)}` : `Debited: ${formatActivityAmount(record)}`} /><Field label="Reason" value={record.details?.reason || "—"} /><Field label="Transaction ID" value={record.details?.transactionId || "—"} /><Field label="Balance after" value={formatNaira(record.details?.balanceAfter)} /></>}</Panel>
+            <Panel title="Additional Information"><Field label="Session ID" value={recorded(record.sessionId)} /><Field label="Browser" value={recorded(record.browser)} /><Field label="Device" value={recorded(record.device)} /><Field label="Screen Resolution" value={recorded(record.screenResolution)} /><Field label="Time Zone" value={recorded(record.timeZone)} /><Field label="Reference" value={record.reference || "—"} /></Panel>
+          </div>
+        </div>}
+      </div>
+    </div>
+  </div>;
 }
 
-export function ActivityLogDetailsModal({ activity, isOpen, onClose }: ActivityLogDetailsModalProps) {
-	if (!isOpen || !activity) return null;
-
-	const walletActivity = isWalletActivity(activity);
-	const copy = async (value?: string | null) => {
-		if (value) await navigator.clipboard?.writeText(value);
-	};
-	const date = new Date(activity.createdAt);
-	const timestamp = Number.isNaN(date.getTime()) ? activity.createdAt : date.toLocaleString("en-NG");
-
-	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-			<div className="flex w-full max-w-[600px] flex-col rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-hidden">
-				{/* Header */}
-				<div className="flex items-center justify-between border-b border-gray-100 p-5">
-					<div className="flex items-center gap-3">
-						<div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 text-green-600">
-							<Wallet className="h-5 w-5" />
-						</div>
-						<h2 className="text-lg font-bold text-gray-900">Activity Log Details</h2>
-					</div>
-					<button
-						onClick={onClose}
-						className="flex h-6 w-6 items-center justify-center rounded-full bg-black text-white hover:bg-gray-800"
-					>
-						<X className="h-4 w-4" />
-					</button>
-				</div>
-
-				{/* Body */}
-				<div className="flex-1 overflow-y-auto p-5 custom-scrollbar bg-gray-50/30">
-					<div className="space-y-4">
-						{/* Activity Overview */}
-						<div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm space-y-4">
-							<h3 className="font-bold text-gray-900 text-sm">Activity Overview</h3>
-							
-							<div className="space-y-3">
-								<Row label="Log ID:" value={
-									<div className="flex items-center gap-2">
-										<span className="font-medium">{activity.id}</span>
-										<button type="button" onClick={() => copy(activity.id)} className="text-green-600 hover:text-green-700" aria-label="Copy log ID">
-											<Copy className="h-3.5 w-3.5" />
-										</button>
-									</div>
-								} />
-								<Row label="Performed by:" value={
-									<div className="flex items-center gap-2">
-										<img 
-											src={activity.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${activity.userId}`}
-											alt="avatar" 
-											className="h-5 w-5 rounded-full bg-[#FEECEB]" 
-										/>
-										<span className="font-medium text-gray-900">{activity.fullName} <span className="text-gray-500 font-normal">(ID {activity.userId})</span></span>
-									</div>
-								} />
-								<Row label="Role:" value={activity.role} />
-								<Row label="Username:" value={activity.username || "—"} />
-								<Row label="Action:" value={activity.action} />
-								<Row label="Date & time:" value={timestamp} />
-								
-								<div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100 -mx-5 px-5">
-									<span className="text-sm font-medium text-green-600">Status</span>
-									<span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600 border border-green-200">
-										{activity.status === "online" ? "Online" : "Offline"}
-									</span>
-								</div>
-							</div>
-						</div>
-
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm space-y-4">
-								<h3 className="font-bold text-gray-900 text-sm">Action Details</h3>
-								<div className="space-y-3">
-									<Row label="Description" value={activity.action} vertical />
-									<Row label="Affected user" value={activity.targetUser?.name || activity.targetUser?.email || "—"} vertical />
-									<Row label="User ID" value={activity.targetUser?.id || "—"} vertical />
-									<Row label="User contact" value={activity.targetUser?.username || activity.targetUser?.email || "—"} vertical />
-								</div>
-							</div>
-
-							<div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm space-y-4">
-								<h3 className="font-bold text-gray-900 text-sm">{walletActivity ? "Wallet Details" : "Additional Information"}</h3>
-								<div className="space-y-3">
-									{walletActivity ? <>
-										<Row label="Adjustment" value={activity.details?.transactionType === "credit" ? "Credit" : "Debit"} vertical />
-										<Row label="Amount" value={formatActivityAmount(activity)} vertical />
-										<Row label="Reason" value={activity.details?.reason || "—"} vertical />
-										<Row label="Transaction ID" value={activity.details?.transactionId || "—"} vertical />
-										<Row label="Balance after" value={formatBalance(activity.details?.balanceAfter, activity.details?.currency)} vertical />
-									</> : <Row label="Admin email" value={activity.emailAddress || "—"} vertical />}
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function formatBalance(value: number | string | null | undefined, currency = "NGN") {
-	if (value === null || value === undefined || value === "") return "—";
-	const amount = Number(value);
-	return Number.isFinite(amount)
-		? new Intl.NumberFormat("en-NG", { style: "currency", currency, minimumFractionDigits: 2 }).format(amount)
-		: String(value);
-}
-
-function Row({ label, value, vertical = false }: { label: string; value: React.ReactNode; vertical?: boolean }) {
-	if (vertical) {
-		return (
-			<div className="flex items-center justify-between gap-4">
-				<span className="text-xs text-gray-500">{label}</span>
-				<span className="text-xs font-medium text-gray-900 text-right truncate">{value}</span>
-			</div>
-		);
-	}
-
-	return (
-		<div className="flex items-center justify-between gap-4">
-			<span className="text-sm text-gray-500">{label}</span>
-			<span className="text-sm font-medium text-gray-900 text-right truncate">{value}</span>
-		</div>
-	);
-}
+function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section className="rounded-3xl bg-white p-6 shadow-sm"><h3 className="mb-5 text-xl font-bold text-[#08083b]">{title}</h3><div className="space-y-3">{children}</div></section>; }
+function Field({ label, value }: { label: string; value: React.ReactNode }) { return <div className="grid grid-cols-[minmax(120px,1fr)_minmax(0,2fr)] gap-4 text-sm"><span className="text-gray-500">{label}</span><span className="break-words text-right font-medium text-[#25254d]">{value}</span></div>; }
+function formatNaira(value?: number) { return value === undefined ? "—" : new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(value); }
