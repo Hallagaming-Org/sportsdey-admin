@@ -206,10 +206,12 @@ function TicketsPage() {
 			accessor: (t) => (
 				<div className="flex items-center gap-1.5 font-mono text-xs">
 					<span
-						className="font-medium text-gray-900 truncate max-w-[90px]"
+						className="font-medium text-gray-900 max-w-[140px] break-all"
 						title={t.id}
 					>
-						{t.id.length > 10 ? `${t.id.substring(0, 10)}...` : t.id}
+						{t.id.length > 16
+							? `${t.id.substring(0, 8)}…${t.id.slice(-6)}`
+							: t.id}
 					</span>
 					<button
 						type="button"
@@ -366,7 +368,7 @@ function TicketsPage() {
 					<span
 						className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${OUTCOME_STYLES[outcomeKey] || "bg-gray-100 text-gray-700"}`}
 					>
-						{t.outcome === "Active" ? "Pending" : t.outcome}
+						{t.outcome}
 					</span>
 				);
 			},
