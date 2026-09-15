@@ -43,12 +43,13 @@ export const Route = createFileRoute("/app/transactions")({
 });
 
 type TabKey = "all" | "deposits" | "withdrawals" | "payments";
-type StatusFilter = "all" | "success" | "pending" | "failed" | "refund";
+type StatusFilter = "all" | "success" | "pending" | "failed" | "rejected" | "refund";
 
 const STATUS_STYLES: Record<TransactionStatus, string> = {
 	Success: "bg-[#E8F8E5] text-[#10C300]",
 	Pending: "bg-[#FFF8E5] text-[#FFB000]",
 	Failed: "bg-[#FEECEB] text-[#EE201C]",
+	Rejected: "bg-[#FEE2E2] text-[#DC2626]",
 	Refund: "bg-[#EFF6FF] text-[#3B82F6]",
 };
 
@@ -65,6 +66,7 @@ const STATUS_OPTIONS: { key: StatusFilter; label: string }[] = [
 	{ key: "success", label: "Success" },
 	{ key: "pending", label: "Pending" },
 	{ key: "failed", label: "Failed" },
+	{ key: "rejected", label: "Rejected" },
 	{ key: "refund", label: "Refund" },
 ];
 

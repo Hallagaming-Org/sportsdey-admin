@@ -368,7 +368,14 @@ function Content({
         </span>
       );
     }
-    if (norm.includes("fail") || norm.includes("decline") || norm.includes("reject")) {
+    if (norm.includes("reject") || norm.includes("decline")) {
+      return (
+        <span className="inline-flex items-center rounded-full bg-[#FEE2E2] px-3.5 py-1 text-sm font-semibold text-[#DC2626] border border-[#FCA5A5]">
+          Rejected
+        </span>
+      );
+    }
+    if (norm.includes("fail")) {
       return (
         <span className="inline-flex items-center rounded-full bg-[#FEE2E2] px-3.5 py-1 text-sm font-semibold text-[#DC2626] border border-[#FCA5A5]">
           Failed
