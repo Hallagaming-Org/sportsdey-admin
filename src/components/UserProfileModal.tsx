@@ -79,7 +79,7 @@ export function UserProfileModal({
 
 	const queryClient = useQueryClient();
 	const [isEditing, setIsEditing] = useState(false);
-	const [editData, setEditData] = useState({ dob: "", mobileNumber: "", status: "" });
+	const [editData, setEditData] = useState({  name: "", dob: "", mobileNumber: "", status: "" });
 	const [isUpdating, setIsUpdating] = useState(false);
 
 	const { data: fetchedProfile, isLoading: isProfileQueryLoading, isFetching: isProfileFetching } = useQuery({
@@ -377,6 +377,7 @@ export function UserProfileModal({
 											type="button"
 											onClick={() => {
 												setEditData({
+													name: displayData.name || "",
 													dob: profile?.dob || "",
 													mobileNumber: mobileNumber || "",
 													status: status || "approved",
@@ -391,14 +392,24 @@ export function UserProfileModal({
 								</div>
 								<div className="space-y-5 text-sm flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0">
 									<div className="flex justify-between items-start">
-										<span className="text-gray-500 text-xs">Full Name:</span>
-										{loading ? (
-											<Skeleton className="h-4 w-24" />
-										) : (
-											<span className="font-medium text-gray-900 text-sm text-left">
-												{capitalizeName(displayData.name)}
-											</span>
-										)}
+									<span className="text-gray-500 text-xs">Full Name:</span>
+									{loading ? (
+										<Skeleton className="h-4 w-24" />
+									) : isEditing ? (
+										<input
+										type="text"
+										value={editData.name}
+										onChange={(e) =>
+											setEditData((prev) => ({ ...prev, name: e.target.value }))
+										}
+										placeholder="Enter full name"
+										className="border border-gray-200 rounded px-2 py-1 text-sm w-40 focus:outline-none focus:border-[#10C300]"
+										/>
+									) : (
+										<span className="font-medium text-gray-900 text-sm text-left">
+										{capitalizeName(displayData.name)}
+										</span>
+									)}
 									</div>
 									<div className="flex justify-between items-start">
 										<span className="text-gray-500 text-xs">
